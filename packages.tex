@@ -1,0 +1,44 @@
+\usepackage[dvipsnames]{xcolor}
+\usepackage{amsmath}
+%\usepackage{amssymb}
+\usepackage{stmaryrd}
+%\usepackage{amsthm}
+\usepackage{mathtools}
+\DeclarePairedDelimiter\abs{\lvert}{\rvert}
+\usepackage{mdframed}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usepackage{csquotes}
+\usetikzlibrary{patterns,shapes,positioning,automata}
+\usepackage[altpo]{backnaur}
+\usepackage[shortlabels]{enumitem}
+\usepackage{multicol}
+\usepackage{adjustbox}
+\usepackage{wrapfig}
+\usepackage{nicefrac}
+\usepackage{makecell}
+\usepackage{siunitx}
+\usepackage{colortbl}
+\usepackage{listings}
+\usepackage{cleveref}
+\usepackage{thmtools}
+\usepackage{thm-restate}
+\usepackage{bussproofs}
+\usepackage{xspace}
+\usepackage{pifont}
+%,disable
+\usepackage[textsize=scriptsize,bordercolor=white]{todonotes}
+\usepackage{setspace}
+\setlength{\marginparwidth}{40mm} % make todo notes wider
+%\setlength{\marginparsep}{2pt} % decrease space between margin notes and main text
+
+\newcommand{\genericcomment}[3]{\todo[color=#1,fancyline]{\begin{spacing}{0.7}\textbf{#2:} #3\end{spacing}}}
+\newcommand{\genericcommentinline}[3]{\todo[inline,color=#1,,author=#2]{#3}\xspace}
+\newcommand{\kb}[1]{\genericcomment{violet!35}{KB}{#1}\xspace}
+\newcommand{\kbin}[1]{\genericcommentinline{violet!35}{KB}{#1}\xspace}
+\newcommand{\jpk}[1]{\genericcomment{red!35}{JPK}{#1}\xspace}
+\newcommand{\jpkin}[1]{\genericcommentinline{red!35}{JPK}{#1}\xspace}
+\newcommand{\dz}[1]{\genericcomment{Goldenrod!35}{DZ}{#1}\xspace}
+\newcommand{\dzin}[1]{\genericcommentinline{Goldenrod!35}{DZ}{#1}\xspace}
+\newcommand{\tw}[1]{\genericcomment{RoyalBlue!20}{TW}{#1}\xspace}
+\newcommand{\twin}[1]{\genericcommentinline{RoyalBlue!20}{TW}{#1}\xspace}

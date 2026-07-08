@@ -1,0 +1,270 @@
+% colors
+\newcommand{\blue}[1]{\textcolor{Blue}{#1}}
+\newcommand{\red}[1]{\textcolor{Bittersweet}{#1}}
+\newcommand{\gray}[1]{\textcolor{gray}{#1}}
+
+%Preliminaries
+\newcommand{\weight}[1]{|#1|}
+\newcommand{\nweight}[1]{|#1|_{\prsqbrackop\prsqbrackcl}}
+\newcommand{\subdists}{{\Deltasub \Sigma}}
+\newcommand{\subdist}[1]{{\Deltasub #1}}
+\newcommand{\subhalfdists}{{\Deltasubhalf \Sigma}}
+\newcommand{\dists}{{\Delta \Sigma}}
+\newcommand{\onlybdists}{\langle \bool \rangle}%Not used everywhere in the document
+\newcommand{\onlynbdists}{\langle \neg \bool \rangle}%Not used everywhere in the document
+\newcommand{\Deltasub}{\Delta_{\leq 1}}
+\newcommand{\Deltasubhalf}{\Delta_{\leq 0.5}}
+\newcommand{\Deltaspec}[1]{\Delta_{#1}}%Delta Speciale. (rarely used)
+\newcommand{\statevals}{\textnormal{E}}
+\newcommand{\LFPstateval}{e}
+\newcommand{\LFPset}{X}%For the reach transformer
+\newcommand{\LFPhoset}{X}%For the pre transformer: higher order
+\newcommand{\Mfdr}{\initSet_{\textsc{fdr}}}
+\newcommand{\varsfdr}{\vars_{\textsc{fdr}}}
+\newcommand{\Mfldr}{\initSet_{\textsc{fldr}}}
+\newcommand{\varsfldr}{\vars_\textsc{fldr}}
+\newcommand{\stratsfdr}{\Pi^{\epsilon}_{\textsc{fdr}}}
+\newcommand{\modelst}{\models_t}
+\newcommand{\modelsp}{\models_p}
+\newcommand{\initDist}{\mu_0} %Not used everywhere in the document?
+\newcommand{\initStateVal}{\mu_0} %Not used everywhere in the document?
+\newcommand{\initSet}{M} 
+\newcommand{\postSet}{M} %FOR THE PRE TRANSFORMER
+\newcommand{\statevalSet}{M} %Only once used
+\newcommand{\hSetOne}{M} %hoare Sets (=(sub)-distribution sets)
+\newcommand{\hSetTwo}{N}
+\newcommand{\hSetThree}{O}
+\newcommand{\hSetFour}{P}
+\newcommand{\triple}[3]{\{\hspace{-2.1pt}|#1|\hspace{-2.1pt}\}~#2~\{\hspace{-2.1pt}|#3|\hspace{-2.1pt}\}} % braces could be improved
+\newcommand{\tripleGen}{\triple{\hSetOne}{\prog}{\hSetTwo}} % generic triple
+\newcommand{\inv}{I}
+\newcommand{\statesSet}[4]{S_{\progvar{#1} \rightarrow #2}^{\progvar{#3} \rightarrow #4}}%WIRD auch für nur 2 Argumente Ohne Makro im Dokument verwendet
+\newcommand{\marg}[2]{\mathbb{M}_{#1}(#2)}
+\newcommand{\fixation}[3]{\mathbb{F}_{#1 \rightarrow #2 \sim #3}}
+\newcommand{\unif}[3]{\mathsf{unif}_{#1}(#2,\dots,#3)}
+\newcommand{\unifeps}[3]{\mathsf{unif}_{#1}^{\pm\epsilon}(#2,\dots,#3)}
+\newcommand{\pro}[3]{\textnormal{Pr}_{#1}(#2 \mapsto #3)}
+\newcommand{\prosim}[4]{\textnormal{Pr}_{#1}[#2 #3 #4]}
+\newcommand{\diff}[1]{\textnormal{diff}(#1)}
+\newcommand{\diffn}[2]{\textnormal{diff}_{#1}^{#2}}
+\newcommand{\pr}[2]{\textnormal{Pr}_{#1}[#2]}
+\newcommand{\minim}[2]{\min\{#1, #2\}}%Minimum
+\newcommand{\dirac}[1]{\delta_{#1}} % Dirac distribution over state #1
+
+
+%Conventional Letters
+\newcommand{\prog}{C}
+\newcommand{\loopbody}{B}
+\newcommand{\progZero}{\prog_0}
+\newcommand{\progOne}{\prog_1}
+\newcommand{\progTwo}{\prog_2}
+\newcommand{\progThree}{\prog_3}
+\newcommand{\progFour}{\prog_4}
+\newcommand{\arith}{E}
+\newcommand{\bool}{\varphi}
+\newcommand{\probability}{p}
+\newcommand{\textvar}[1]{\normalfont #1}%Program variables IN TEXTS. That means when either only "variable v is..." occurs in text or VERY short math thins like "(v,c) is..." In longer math equations or "\sigma(v)..." always progvar macro is used. In lstlisting outside of math mode annotations, nothing is used.
+\newcommand{\progvar}[1]{#1}%Program variables
+\newcommand{\numb}[1]{\mathbf{#1}}%VALUES of IDENTICAL NAMES prog vars
+\newcommand{\supp}{\textnormal{supp}}
+\newcommand{\pgcl}{\textnormal{pGCL}}
+\newcommand{\loops}{\textnormal{Loop}}
+\newcommand{\pgclwhile}{\abs{\pgcl}_{\textnormal{while}}}
+\newcommand{\progwhile}[1]{\abs{#1}_{\textnormal{while}}}
+\newcommand{\conf}{\textnormal{Conf}}
+
+%Einfache Namen
+\newcommand{\vars}{\mathit{Var}}
+\newcommand{\false}{\mathsf{f}}
+\newcommand{\true}{\mathsf{t}}
+\newcommand{\bools}{\mathbb{B}}
+\newcommand{\Ifdr}{I^{\epsilon}_{\textsc{fdr}}}
+\newcommand{\Ifldr}{I_{\textsc{fldr}}}
+\newcommand{\Inim}{I_{\textsc{nim}}}
+\newcommand{\progfldr}{\mathit{\prog_\textsc{fldr}}}
+\newcommand{\progfdr}{\mathit{\prog_\textsc{fdr}}}
+\newcommand{\prob}[2]{\textnormal{prob}_{#1}(#2)}
+\newcommand{\probt}[2]{\textnormal{probt}_{#1}(#2)}
+\newcommand{\prep}{\textnormal{prep}}
+\newcommand{\lfp}{\mathsf{lfp\,}}
+\newcommand{\nats}{\mathbb{N}}
+\newcommand{\RgeqZero}{\mathbb{R}_{\geq 0}}
+\newcommand{\RgeqZeroInf}{\mathbb{R}^{\infty}_{\geq 0}}
+\newcommand{\RgZeroInf}{\mathbb{R}^{\infty}_{> 0}}
+\newcommand{\supr}{\textnormal{sup}}
+\newcommand{\infimum}{\textnormal{inf}}
+\newcommand{\unmod}[1]{\textnormal{unmod}(#1)}
+
+%Transformer
+\newcommand{\reach}[1]{\mathsf{reach}\llbracket #1\rrbracket}
+\newcommand{\post}[1]{\mathsf{sp}\llbracket #1\rrbracket}
+\newcommand{\den}[1]{\mathsf{D}\llbracket #1\rrbracket}
+\renewcommand{\wp}[1]{\textnormal{pre}\llbracket #1\rrbracket} %Should be the same, just old and new macro
+\newcommand{\pre}[1]{\textnormal{pre}\llbracket #1\rrbracket} %Should be the same, just old and new macro
+
+
+%n for normal: für wenn du die Namen der Transformer im Text benutzen möchtest
+\newcommand{\reachn}{\mathsf{reach}}
+\newcommand{\postn}{\mathsf{sp}}
+\newcommand{\postcupn}{\mathsf{sp}^{\cup}}
+\newcommand{\denn}{\mathsf{D}}
+\newcommand{\wpn}{\textnormal{pre}} %Should be the same, just old and new macro
+\newcommand{\pren}{\textnormal{pre}} %Should be the same, just old and new macro
+
+
+
+%Inductive program structure
+% UPPER CASE VERSION ARE SYNTAX FRAGMENTS TO BE USED IN ALIGN
+\newcommand{\prfont}[1]{\textnormal{\texttt{#1}}}
+\newcommand{\prspace}{\,}
+\newcommand{\prparenop}{\prfont{(}}
+\newcommand{\prparencl}{\prfont{)}}
+\newcommand{\prsqbrackop}{\prfont{[}}
+\newcommand{\prsqbrackcl}{\prfont{]}}
+\newcommand{\prbraceop}{\prfont{\{}}
+\newcommand{\prbracecl}{\prfont{\}}}
+\newcommand{\ski}{\prfont{skip}}
+\newcommand{\ass}[2]{#1\prspace\prfont{:=}\prspace#2}
+\newcommand{\pchoice}[3]{\prbraceop#1\prbracecl \prspace \prsqbrackop#2\prsqbrackcl \prspace \prbraceop#3\prbracecl}
+\newcommand{\nchoice}[2]{\{#1\} \prsqbrackop\prsqbrackcl \{#2\}}
+\newcommand{\nchoicebox}{\prsqbrackop\prsqbrackcl}
+\newcommand{\comp}[2]{#1\prspace\prfont{;}\prspace#2}
+\newcommand{\SEMICLN}{\prspace\prfont{;}\prspace}
+\newcommand{\ifelse}[3]{\prfont{if}\prspace\prparenop#1\prparencl\prspace\prbraceop#2\prbracecl\prspace\prfont{else}\prspace\prbraceop#3\prbracecl}
+\newcommand{\ifelseskip}[2]{\prfont{if}\prspace\prparenop#1\prparencl\prspace\prbraceop#2\prbracecl}
+\newcommand{\ELSE}{\prbracecl\prspace\prfont{else}\prspace\prbraceop}
+\newcommand{\IF}[1]{\prfont{if}\prspace\prparenop#1\prparencl\prspace\prbraceop}
+\newcommand{\while}[2]{\prfont{while}\prspace\prparenop#1\prparencl\prspace\prbraceop#2\prbracecl}
+\newcommand{\WHILE}[1]{\prfont{while}\prspace\prparenop#1\prparencl\prspace\prbraceop}
+
+
+%Preprocessing FLDR
+\renewcommand{\H}[2]{H[#1,#2]}
+\newcommand{\bound}[2]{\phi_{#1}(#2)}
+\newcommand{\isThere}[2]{\Theta_{#1}(#2)}
+
+%Shorthand Notation for Transformer Tables
+%\newcommand{\postass}[2]{\overset{\rightharpoonup}{\ass{#1}{#2}}}
+%\newcommand{\postass}[2]{\xrightharpoonup[\ass{#1}{#2}]{}}
+%\newcommand{\preass}[2]{\xleftharpoonup[\ass{#1}{#2}]{}}
+%\xrightharpoonup[below]{above}
+\newcommand{\postass}[2]{\overset{\rightharpoonup}{\ass{#1}{#2}}}
+\newcommand{\preass}[2]{\overset{\leftharpoonup}{\ass{#1}{#2}}}
+
+\newcommand{\cl}[1]{\mathcal{M}_{#1}}%CLOSURE FOR BOOLS FOR PRE TRANSFORMER
+\newcommand{\idSubDists}{\textnormal{id}_{2^{\subdists}}}
+
+\newcommand{\clos}{c\ell}%CLOSURE FOR HOARE NEW WHILE RULES
+\newcommand{\closOf}[1]{{\clos\,#1}}
+\newcommand{\infW}[1]{\textnormal{Inf}_{\textnormal{w}}(#1)}%CLOSURE FOR HOARE NEW WHILE RULES
+\newcommand{\closast}{\Delta_{\geq \infW{\inv}} \Sigma \cap \clos}
+\newcommand{\closastinv}[1]{\Delta_{\geq \infW{#1}} \Sigma \cap \clos}%FOR SPECIFYING THE INV
+
+
+
+%MDP Translation Stuff
+\newcommand{\mdp}{\mathcal{M}}
+\newcommand{\mdpTr}{\mdp_{\prog}}
+%\newcommand{\strat}{\sigma} THIS IS NOW FOR PROGRAM STRATEGIES
+\newcommand{\mdptuple}{(\states,\act,\prmdp)}
+\newcommand{\states}{S}
+\newcommand{\act}{{Act}}
+\newcommand{\prmdp}{P}
+\newcommand{\distsStates}{\Delta \states}
+\newcommand{\subdistsStates}{\Deltasub \states}
+\newcommand{\mdpDist}{\eta}
+\newcommand{\mdpInitDist}{\eta_0}
+\newcommand{\mdpInitDistTr}{\eta_{\initDist}}
+\newcommand{\mdpInv}{\inv_{\mdp}}
+\newcommand{\smallstep}[2]{\overset{#1.#2}{\longrightarrow}}
+\newcommand{\bigstep}[1]{\overset{#1}{\rightsquigarrow}}
+\newcommand{\bigstepn}{\rightsquigarrow}
+\newcommand{\nextdist}[1]{#1}
+
+%Markov Chains:
+\newcommand{\markc}{\mathcal{M}}
+\newcommand{\markctuple}{(\states,\prmdp)}
+\newcommand{\markcTr}{\markc_{\prog}}
+
+% from Tobi (intro)
+\newcommand{\htrip}[3]{\blue{\{\hspace{-2.1pt}|#1|\hspace{-2.1pt}\}}~#2~\blue{\{\hspace{-2.1pt}|#3|\hspace{-2.1pt}\}}}
+\newcommand{\intropre}{pre}
+\newcommand{\intropost}{post}
+
+
+\newcommand{\splitStateInline}[2]{\tikz[baseline=-2.75pt] \node [circle split,draw,rotate=90,inner sep=0.5pt] {\rotatebox{-90}{\tiny$#1$} \nodepart{lower} \rotatebox{-90}{\tiny$#2$}};}
+
+% program annotation
+\newcommand{\progAnno}[1]{\blue{\prfont{/\!\!/}~#1}}
+\newcommand{\progAnnoNoSlashes}[1]{\blue{\textcolor{white}{\prfont{/\!\!/}}~#1}}
+
+% space stuff
+\newcommand{\eeq}{~{}={}~}
+\newcommand{\iiff}{~{}\iff{}~}
+\newcommand{\lland}{~{}\land{}~}
+
+
+
+%Nondeterministic Choice Stuff
+\newcommand{\lef}{l}
+\newcommand{\rig}{r}
+\newcommand{\progstrat}{\prog^{\strat}}
+\newcommand{\denstrat}[1]{\mathsf{D}^{\strat}\llbracket #1\rrbracket}
+\newcommand{\dens}[2]{\mathsf{D}^{#1}\llbracket #2\rrbracket}
+\newcommand{\denhelper}[1]{\mathsf{H}^{\strat}\llbracket #1\rrbracket}
+\newcommand{\denhelpernormal}{\mathsf{H}^{\strat}}
+\newcommand{\denhelperf}[1]{\mathsf{F}^{\strat}\llbracket #1\rrbracket}
+\newcommand{\denhelperfnormal}{\mathsf{F}^{\strat}}
+\newcommand{\reachstrat}[1]{\mathsf{reach}^{\strat}\llbracket #1\rrbracket}
+\newcommand{\poststrat}[1]{\mathsf{sp}^{\strat}\llbracket #1\rrbracket}
+\newcommand{\posts}[2]{\mathsf{sp}^{#1}\llbracket #2\rrbracket}
+\newcommand{\postcup}[1]{\mathsf{sp}^{\cup}\llbracket #1\rrbracket}
+\newcommand{\postcap}[1]{\mathsf{sp}^{\cap}\llbracket #1\rrbracket}
+\newcommand{\postall}[1]{\mathsf{sp}^{\forall}\llbracket #1\rrbracket}
+\newcommand{\reachall}[1]{\mathsf{reach}^{\cup}\llbracket #1\rrbracket}
+\newcommand{\strats}{\Pi}
+\newcommand{\strat}{\pi}
+\newcommand{\modelscup}{\models^{\cup}}
+\newcommand{\postpi}[3]{\mathsf{sp}^{#1}_{#2}\llbracket #3\rrbracket}
+\newcommand{\postmu}[3]{\mathsf{sp}^{#1}_{#2}\llbracket #3\rrbracket}
+
+\newcommand{\stratsD}{\Pi}
+\newcommand{\stratsMem}{\Pi_{\textnormal{Mem}}}
+\newcommand{\stratsSigD}{\Pi_{\Sigma}}
+\newcommand{\stratsN}{\Pi^{\Delta}}
+\newcommand{\stratsSigN}{\Pi_{\Sigma}^{\Delta}}
+\newcommand{\stratsSigNLC}{{}^{LC}\Pi_{\Sigma}^{\Delta}}
+\newcommand{\stratsSigsD}{\Pi_{\Sigma^*}}
+\newcommand{\stratsSigsN}{\Pi_{\Sigma^*}^{\Delta}}
+\newcommand{\stratsCSigsD}{\Pi_{(\prog, \Sigma)^*}}
+\newcommand{\stratsCSigsN}{\Pi_{(\prog, \Sigma)^*}^{\Delta}}
+\newcommand{\stratsDeq}{{}^{=}\Pi}
+\newcommand{\stratsSigDeq}{{}^{=}\Pi_{\Sigma}}
+\newcommand{\stratsNeq}{{}^{=}\Pi^{\Delta}}
+\newcommand{\stratsSigNeq}{{}^{=}\Pi_{\Sigma}^{\Delta}}
+\newcommand{\stratsSigsDeq}{{}^{=}\Pi_{\Sigma^*}}
+\newcommand{\stratsSigsNeq}{{}^{=}\Pi_{\Sigma^*}^{\Delta}}
+\newcommand{\stratsCSigsDeq}{{}^{=}\Pi_{(\prog, \Sigma)^*}}
+\newcommand{\stratsCSigsNeq}{{}^{=}\Pi_{(\prog, \Sigma)^*}^{\Delta}}
+\newcommand{\stratsall}{\Pi^*}
+\newcommand{\resprog}{\downharpoonright_{\sigma}}
+\newcommand{\weaker}{\triangleright}
+\newcommand{\loopc}{\textnormal{LC}}
+
+
+%MDP Strategies
+\newcommand{\tstrat}[1]{\mathfrak{S}_{#1}} %MDP strat that got translated from a (program) strat
+
+
+
+%Nim Game
+\newcommand{\Mnim}{\initSet_{\textsc{nim}}}
+\newcommand{\prognim}{\mathit{\prog_\textsc{nim}}}
+\newcommand{\stratnim}{\strat_{\textsc{nim}}}
+
+%Tool names (used in related work)
+\newcommand{\toolzar}{\textsf{Zar}\xspace}
+\newcommand{\toolpsi}{\textsf{PSI}\xspace}
+
+% wp shorthand in related work
+\providecommand{\wpRelWork}{\wpn}
