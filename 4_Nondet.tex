@@ -1,2 +1,51 @@
-\section{Sec 4}
-\label{sec:4}
+\section{A Program-Level Rule for AST}
+\label{sec:rule}
+
+Consider a program $C=\while{b}{B}$ whose body $B$ is loop-free. Let $M$ be a set of initial subdistributions. We now state the main contribution.
+
+\begin{theorem}[Program-level AST rule]
+\label{thm:program-rule}
+The loop $C$ is AST on $M$ if there exist:
+\begin{enumerate}[label=(\arabic*)]
+ \item a distributional invariant $I$ for $C$ and $M$;
+ \item a function $v:\supp(I)\to\mathbb{R}_{\geq0}$ such that
+   \begin{enumerate}[label=(\alph*)]
+    \item $v(\sigma)=0$ iff $\sigma\in\supp(I)\cap\llbracket\neg b\rrbracket$;
+    \item for every $\sigma\in\supp(I)\cap\llbracket b\rrbracket$,
+    \[
+      \sum_{\sigma'}\post{B}(\dirac{\sigma})(\sigma')v(\sigma')\leq v(\sigma);
+    \]
+   \end{enumerate}
+ \item a function $u:\supp(I)\to\mathbb{N}$ such that
+   \begin{enumerate}[label=(\alph*)]
+    \item $u(\sigma)=0$ for $\sigma\in\supp(I)\cap\llbracket\neg b\rrbracket$;
+    \item there exists $\varepsilon>0$ for which, for every enabled $\sigma$,
+    \[
+      \sum_{\sigma':u(\sigma')<u(\sigma)}
+        \post{B}(\dirac{\sigma})(\sigma')\geq\varepsilon;
+      \tag{Decrease}
+    \]
+    \item for every $r\geq0$, the set
+    $\{u(\sigma)\mid \sigma\in\supp(I),\ v(\sigma)\leq r\}$ is bounded.
+   \end{enumerate}
+\end{enumerate}
+\end{theorem}
+
+The conditions deliberately do not require $u$ to decrease in expectation. It may increase sharply on some outcomes, as happens when a rejection sampler restarts. The rule asks only for a fixed positive mass of outcomes that reduce $u$. Nor must $u$ be globally bounded. Its boundedness is local to sublevel sets of $v$, allowing null-recurrent computations.
+
+\paragraph{Proof intuition.}
+Fix a sublevel set $v_{\le r}$ and let $K_r$ bound $u$ there. From every nonterminal state in this set, a complete loop iteration has probability at least $\varepsilon$ of decreasing $u$. Hence there is probability at least $\varepsilon^{K_r}$ of following enough decreasing iterations to reach zero, provided the run stays in the set. Repeating this argument rules out nontermination confined to $v_{\le r}$. Meanwhile, the supermartingale property bounds the probability of reaching arbitrarily large values of $v$; non-negative supermartingale convergence rules out escaping every finite sublevel set with positive probability. Thus all nonterminating behavior has measure zero.
+
+\paragraph{Iteration-level abstraction.}
+The essential difference to \Cref{thm:pcfg-rule} is the granularity of the decrease condition. For a body containing $m$ internal control-flow steps, the pCFG rule needs a value at each intermediate location and a descent-compatible branch at each probabilistic node. The new rule evaluates the final post-distribution once. Assignments, guards, and choices internal to $B$ are hidden behind $\post{B}$. This has three practical consequences:
+\begin{enumerate}
+ \item certificates are functions of program states, not location--state pairs;
+ \item an existing distributional invariant can be reused directly; and
+ \item algebraic simplification of $\post{B}(\dirac{\sigma})$ exposes exactly the outcomes relevant to progress.
+\end{enumerate}
+
+\paragraph{Uniform versus sublevel-dependent progress.}
+The pCFG rule permits an $\varepsilon_r$ for each sublevel set. We use a global $\varepsilon$ because source programs here contain only fixed rational probabilistic choices, and because both samplers use fair bits. A more general statement can replace $\varepsilon$ by $\varepsilon_r$ throughout without changing the proof architecture.
+
+\paragraph{Modularity.}
+Initial deterministic code preceding the loop is handled by transforming $M$ into the set of loop-entry distributions. For a sampler with preprocessing, we regard the resulting finite data structure as read-only parameters of the sampling loop. The preprocessing itself terminates by ordinary bounded-loop reasoning. This isolates the probabilistic AST argument to the loop where it is needed.

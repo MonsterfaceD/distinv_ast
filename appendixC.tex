@@ -1,2 +1,20 @@
-\section{Appendix to \Cref{sec:4}}
-\label{app:4}
+\section{Proof-Obligation Comparison}
+\label{app:comparison}
+
+The comparison below counts categories of obligations rather than lines of prose.
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+ & pCFG level & program level\\
+\midrule
+Invariant & one predicate per location & one distributional invariant\\
+Supermartingale & edge/choice obligations & one expected body-step inequality\\
+Variant & edge-wise strict/probabilistic descent & one post-distribution inequality\\
+Control-flow constants & scaling and location offsets & none\\
+Reuse from partial correctness & requires projection/lifting & direct\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+For FDR, both columns are feasible and prove the same AST fact. This makes FDR a controlled comparison of proof style. For FLDR, rejection resets create additional pCFG locations and certificate cases, while the program proof depends only on the probability mass of non-reset outcomes.

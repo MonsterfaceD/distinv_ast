@@ -1,2 +1,17 @@
-\section{More Details on Preliminaries}
-\label{app:prelims}
+\section{Translation and AST Preservation}
+\label{app:translation}
+
+This appendix records the correspondence used by the metatheory. The structural translation $\mathcal{T}$ introduces entry and exit locations for every command. Assignment edges update the valuation, guarded edges encode conditionals and loop tests, and a probabilistic-choice location has outgoing probabilities $p$ and $1-p$. Sequential composition identifies the first command's exit with the second command's entry.
+
+\begin{lemma}[Loop-free correspondence]
+For loop-free $B$ and states $\sigma,\sigma'$,
+\[
+ \post{B}(\dirac{\sigma})(\sigma')
+ =\Pr(\mathsf{Paths}_{\mathcal{T}[B]}((\ell_{\rm in},\sigma),(\ell_{\rm out},\sigma'))).
+\]
+\end{lemma}
+\begin{proof}
+By structural induction on $B$. Skip and assignment have one path. Sequential composition uses convolution over intermediate states. Conditional paths are partitioned by the guard. Probabilistic choice multiplies branch-path probabilities by $p$ and $1-p$, matching linearity of the post-transformer.
+\end{proof}
+
+For a loop, the $j$th Kleene approximant of its characteristic functional equals the probability distribution of pCFG runs that exit within at most $j$ visits to the guard. Taking suprema gives equality between post-distribution weight and pCFG reachability probability. Therefore $\weight{\post{C}(\dirac{\sigma})}=1$ iff the translated graph reaches its exit almost surely from $(\ell_{\rm in},\sigma)$. Linearity extends the equivalence to arbitrary initial subdistributions.

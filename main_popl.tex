@@ -1,71 +1,31 @@
-	% [DZ] created 08.06.26 for purpose of POPL 2027 submission
-%
-%\documentclass[acmsmall]{acmart}
+% Draft prepared from Jonas Seidel's MSc thesis (31 March 2026).
+% Venue-independent working version; keep anonymous review mode until a venue is chosen.
 \documentclass[acmsmall,screen,review,anonymous,nonacm]{acmart}
-%
+
 \usepackage[T1]{fontenc}
-% T1 fonts will be used to generate the final print and online PDFs,
-% so please use T1 fonts in your manuscript whenever possible.
-% Other font encondings may result in incorrect characters.
-%
 \usepackage{graphicx}
-% Used for displaying a sample figure. If possible, figure files should
-% be included in EPS format.
-%
-%\usepackage[colorlinks=true, allcolors=blue]{hyperref}
-% If you use the hyperref package, please uncomment the following two lines
-% to display URLs in blue roman font according to Springer's eBook style:
-%\usepackage{color}
-%\renewcommand\UrlFont{\color{blue}\rmfamily}
-%\urlstyle{rm}
-%
 \input{packages}
 \input{macros}
-%\newcommand{\citet}[1]{\cite{#1}} % [TW] to compile previous ACM version with \citet commands, probably needs fixing everywhere
-%
-\newif\ifappendixversion
- %\appendixversiontrue     % ← AN
- \appendixversionfalse   % ← AUS
-% 
-\begin{document}
-%
-\title{Verifying Nondeterministic Sampling Algorithms via\\Distributional Invariants}
-%
-%\titlerunning{Abbreviated paper title}
-% If the paper title is too long for the running head, you can set
-% an abbreviated paper title here
-%
-\author{% the current order is alphabetical
-    %Kevin Batz\inst{2}\orcidID{0000-0001-8705-2564}\and%
-    %Joost-Pieter Katoen\inst{1}\orcidID{0000-0002-6143-1926}\and%
-    %Tobias Winkler\inst{1}\orcidID{0000-0003-1084-6408}\and%
-    %Daniel Zilken\inst{1}\orcidID{0009-0007-7221-2554}%
-    Anonymous author(s)
-}
-%
-%\authorrunning{D. Zilken, K. Batz, J.-P. Katoen, T. Winkler}
-% First names are abbreviated in the running head.
-% If there are more than two authors, 'et al.' is used.
-%
-%\institute{%
-%    RWTH Aachen University, Aachen, Germany%
-%    \and%
-%    University College London, London, United Kingdom\\
-  %  Anonymous institute(s)
-%}
-\begin{abstract}
-    We present a Hoare-like verification framework for discrete probabilistic programs with \emph{nondeterministic} choices, applied to two non-trivial case studies: the Nim game and an error-tolerant variant of Lumbroso's Fast Dice Roller in which fair coin flips are replaced by adversarial choices biased by up to~$\epsilon$.
-    Our framework extends inductive \emph{distributional loop invariants} from the purely probabilistic setting to programs that combine randomness with nondeterminism, supporting both \emph{existential} verification (some strategy achieves the goal) and \emph{universal} verification (a property holds under all strategies of a chosen class).
-    At the core of our development is a fine-grained landscape of program-level strategies---ranging from memoryless deterministic to history-dependent randomized---and an explicit translation theorem showing that program-level strategies precisely correspond to strategies on the program's underlying Markov decision process.
-    As a key intermediate result, we prove that \emph{loop-counter} strategies are as expressive as full-memory strategies, yielding a more compact and intuitive program-level strategy that retains the full expressive power of full-memory strategies.
-    Using this framework, we verify a winning strategy and a strategy-universal zero-sum property for the Nim game, and prove that the nondeterministic Fast Dice Roller produces a~$\epsilon$-uniform output distribution under \emph{all} adversarial coin strategies.
 
-    \keywords{Sampling algorithms \and Loop invariants \and Probabilistic programs \and Nondeterministic programs \and Program verification \and Hoare logic \and Markov decision processes \and Strategies}
+\newif\ifappendixversion
+\appendixversiontrue
+
+\begin{document}
+
+\title{Program-Level Proof Rules for Almost-Sure Termination\\of Probabilistic Sampling Algorithms}
+
+\author{Anonymous author(s)}
+
+\begin{abstract}
+Almost-sure termination (AST) is indispensable for turning partial-correctness arguments about randomized algorithms into total-correctness guarantees. Recent work gives a sound and relatively complete AST rule for probabilistic control-flow graphs (pCFGs), but applying it to source programs requires a translation and location-dependent certificates. We present a new proof rule directly at program level. The rule interprets a loop body as a distribution transformer and separates two obligations: a non-negative supermartingale controls escape to unbounded regions, while a natural-valued variant has a uniformly positive probability of decreasing and is bounded on every supermartingale sublevel set. Consequently, certificates describe complete loop iterations rather than individual control-flow edges. We prove the rule sound and relatively complete for probabilistic while-loops with loop-free bodies by relating it to the pCFG rule.
+
+We first use a one-dimensional random walk to expose the rule's core mechanism. We then compare pCFG-level and program-level proofs for the Fast Dice Roller: both approaches apply, but the program-level proof reuses an existing distributional invariant and avoids location-indexed certificate engineering. Finally, we establish AST of the Fast Loaded Dice Roller. This case study demonstrates the main practical benefit of the rule: rejection and restart are handled by a compact iteration-level argument based on the preprocessed decision tree, whereas a pCFG proof would require certificates for every intermediate location. Together with existing partial-correctness results, our AST proofs yield total-correctness arguments for both samplers.
+
+\keywords{almost-sure termination, probabilistic programs, sampling algorithms, distribution transformers, loop invariants, supermartingales, Fast Dice Roller}
 \end{abstract}
-%
-\maketitle              % typeset the header of the contribution
-%
-% [TW] our sections go here
+
+\maketitle
+
 \input{1_Introduction}
 \input{2_Preliminaries}
 \input{3_MDPs}
@@ -75,45 +35,15 @@
 \input{7_NondetFDR}
 \input{8_RelatedWork}
 \input{9_Conclusion}
-%
-% [TW] our appendix goes here
-%\newpage
+
 \ifappendixversion
 \appendix
 \input{appendixA}
 \input{appendixB}
 \input{appendixC}
 \input{appendixD}
-%\input{appendixE} %Currently not needed
-%\input{appendixF} %Currently not needed
 \fi
 
-%
-% [TW] consider the following for camera ready (was in samplepaper)
-%\begin{credits}
-%\subsubsection{\ackname} A bold run-in heading in small font size at the end of the paper is
-%used for general acknowledgments, for example: This study was funded
-%by X (grant number Y).
-%%
-%\subsubsection{\discintname}
-%It is now necessary to declare any competing interests or to specifically
-%state that the authors have no competing interests. Please place the
-%statement with a bold run-in heading in small font size beneath the
-%(optional) acknowledgments\footnote{If EquinOCS, our proceedings submission
-%system, is used, then the disclaimer can be provided directly in the system.},
-%for example: The authors have no competing interests to declare that are
-%relevant to the content of this article. Or: Author A has received research
-%grants from Company W. Author B has received a speaker honorarium from
-%Company X and owns stock in Company Y. Author C is a member of committee Z.
-%\end{credits}
-%
-%
-% ---- Bibliography ----
-%
-% BibTeX users should specify bibliography style 'splncs04'.
-% References will then be sorted and formatted in the correct style.
-%
-\bibliographystyle{splncs04}
+\bibliographystyle{ACM-Reference-Format}
 \bibliography{references}
-%
 \end{document}

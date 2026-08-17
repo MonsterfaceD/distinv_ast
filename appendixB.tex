@@ -1,2 +1,12 @@
-\section{Appendix to \Cref{sec:3}}
-\label{app:3}
+\section{Detailed One-Iteration Calculations}
+\label{app:calculations}
+
+\paragraph{FDR.}
+Starting in $\sigma$, doubling $v$ and sampling the bit produces the two Dirac states $\sigma[v/2v,c/2c]$ and $\sigma[v/2v,c/2c+1]$, each of mass $1/2$. Filtering by $c\ge n$ and applying both subtraction assignments yields \Cref{eq:fdr-post}. On the left-bit outcome, subtraction of $n$ from both variables preserves their difference, hence in all enabled cases
+\[
+ (v'-c')=2(v-c).
+\]
+This is the algebraic core of the FDR variant argument.
+
+\paragraph{FLDR.}
+After incrementing $c$, the fair choice reaches indices $2d$ and $2d+1$. A rejecting child maps to $(c,d)=(0,0)$; a non-rejecting child retains depth $c+1$. Since preprocessing never places the unique rejecting outcome in both children of one internal node, the total mass of non-reset successors is at least $1/2$. Every such successor reduces $k-c$ by one.

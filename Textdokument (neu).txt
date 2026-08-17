@@ -1,0 +1,16 @@
+dist Ast regel einfacher?? Beispiele finden wo ast proof deutlich eleganter wird
+
+könnte man soundness und rel compl beweis OHNE auf Majumdar zurückzuführen hinkriegen?
+
+neuen sampler algo mit einfacherere invariante beweisen
+
+
+ast regel auf Quantum Programme erweitern -> Christina fragen. Christinas Aufgabe ist es generell, Verifikationstechniken für Programme auf Quantum zu erweitern.
+Idee: evtl. ne Masterarbeit draus zu machen
+
+
+Moves Workshop: Jonas Regel präsenteiren und fragen: auf welche Bereiche kann man die Regel anwendbar? Quantum, PGFs? Offene Fragen Folie mit Diskussion!
+
+
+Jonas' Paper wird dann entweder ein StandAlone Paper für eine (nicht soo qualitative) Konferenz oder ein ANHANG für unser FM Paper für eine mögliche Journal Version aber JPK ist sich selber nicht sicher ob sowas noch auf uns zukommt.
+

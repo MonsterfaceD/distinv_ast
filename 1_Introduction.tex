@@ -1,2 +1,41 @@
 \section{Introduction}
 \label{sec:intro}
+
+Randomized algorithms are routinely used in simulation, machine learning, network protocols, and exact sampling. Their correctness has two independent dimensions. \emph{Partial correctness} states that, whenever an algorithm returns, its result has the intended distribution. \emph{Almost-sure termination} (AST) states that it returns with probability one. Only their combination establishes total correctness: without AST, a sampler may produce the right distribution on terminating runs while losing probability mass to divergence.
+
+AST proofs are subtle. A probabilistic loop may terminate almost surely even though its expected runtime is infinite and even though no globally bounded ranking function exists. The symmetric random walk on the non-negative integers is the canonical example: from $x>0$, move to $x-1$ or $x+1$ with equal probability and stop at zero. It reaches zero with probability one, yet its expected hitting time is infinite. Classical finite-state or bounded-variant arguments therefore do not suffice.
+
+Majumdar and Sathiyanarayana recently introduced a sound and relatively complete rule for probabilistic termination at the level of probabilistic control-flow graphs (pCFGs)~\cite{DBLP:journals/pacmpl/MajumdarS25}. Their rule combines a supermartingale with a natural-valued variant. The supermartingale controls the probability of escaping to regions in which the variant becomes large; within each of its sublevel sets, the variant is bounded and decreases with a uniformly positive probability. This is a strong semantic characterization of AST.
+
+The pCFG level, however, is not always the right abstraction for proving source programs. A loop iteration that is conceptually a single sampling step becomes a collection of locations and transitions. Certificates must then be defined at every location and adjusted around assignments, guards, and probabilistic branches. For the Fast Dice Roller (FDR), for example, a simple source-level observation about the growth of $v-c$ turns into a location-indexed variant with several cases. This syntactic overhead is especially unfortunate for exact samplers, whose functional correctness is already naturally expressed by \emph{distributional invariants} and distribution-transformer semantics~\cite{zilken2026verifyingsamplingalgorithmsdistributional}.
+
+\paragraph{Our approach.}
+We lift the pCFG insight to the source-program level. Rather than asking a certificate to decrease along every internal control-flow edge, our rule summarizes the complete effect of one loop-body execution by its post-distribution. Let $C=\while{b}{B}$, where $B$ is loop-free. The rule requires:
+\begin{enumerate}[label=(\roman*)]
+  \item a distributional invariant $I$ closed under one loop iteration;
+  \item a non-negative supermartingale $v$ whose expected value does not increase after executing $B$;
+  \item a natural-valued variant $u$ that, with probability at least $\varepsilon>0$, is smaller after executing $B$; and
+  \item boundedness of $u$ in every sublevel set of $v$.
+\end{enumerate}
+All obligations are stated over source states and the distribution transformer $\post{B}$. The rule therefore reasons at the semantic granularity at which programmers understand a probabilistic loop: one iteration at a time.
+
+\paragraph{Why sampling algorithms?}
+Exact samplers are an instructive stress test. Their loop invariants often describe an entire distribution rather than merely a state predicate; rejection sampling introduces restarts that defeat na\"ive pointwise descent arguments; and total correctness requires the AST proof to compose with a pre-existing output-distribution proof. Our formulation supports precisely this workflow. Reachability information is extracted from the support of a distributional invariant, while the richer equal-mass constraints used for partial correctness can be reused unchanged.
+
+We use two algorithms to separate applicability from practical advantage. First, the Fast Dice Roller~\cite{DBLP:journals/corr/abs-1304-1916} samples uniformly from $\{0,\ldots,n-1\}$ using fair bits. Both the pCFG rule and our program-level rule apply. This direct comparison shows that the new rule does not merely prove a different class of examples: it gives a markedly shorter and more modular proof of the same algorithm. Second, the Fast Loaded Dice Roller (FLDR)~\cite{DBLP:conf/aistats/SaadFRM20} samples from an arbitrary finite discrete distribution using a compact decision-tree representation and rejection. At program level, the key termination fact is simple: from every internal node, at least one successor continues towards a non-rejecting leaf, so the remaining tree depth decreases with probability at least $1/2$. The resulting certificate is compact; encoding the same reasoning location by location would obscure it.
+
+\paragraph{Contributions.}
+This paper makes the following contributions.
+\begin{enumerate}
+  \item We present a new program-level proof rule for AST of probabilistic while-loops with loop-free bodies. The rule is phrased entirely in distribution-transformer semantics and cleanly separates the supermartingale and variant obligations (\Cref{sec:rule}).
+  \item We establish soundness by compiling program-level certificates into certificates for the relatively complete pCFG rule. Conversely, we derive program-level certificates from pCFG certificates, yielding relative completeness with respect to the underlying first-order arithmetic theory (\Cref{sec:metatheory}).
+  \item We illustrate the mechanism on the one-dimensional random walk and explain how the source-level rule removes location-dependent bookkeeping (\Cref{sec:walk}).
+  \item We give parallel pCFG- and program-level AST proofs for FDR. The comparison isolates the reduction in proof complexity and shows how to reuse an existing distributional invariant (\Cref{sec:fdr}).
+  \item We prove AST of FLDR at program level. Combined with existing partial-correctness results, the FDR and FLDR arguments provide total-correctness proofs for both samplers (\Cref{sec:fldr}).
+\end{enumerate}
+
+\paragraph{Scope.}
+The present rule targets a single while-loop with loop-free body. This restriction makes ``one iteration'' a finite distribution-transformer step and keeps the connection to pCFG paths transparent. It already covers the main sampling loops studied here. Nested loops can be handled modularly once AST summaries for inner loops are available; a fully compositional extension is left for future work.
+
+\paragraph{Outline.}
+\Cref{sec:prelims} introduces probabilistic programs, subdistributions, AST, and distributional invariants. \Cref{sec:background} recalls the pCFG rule that underpins our metatheory. \Cref{sec:rule} states the new rule and gives intuition. \Cref{sec:metatheory} proves soundness and relative completeness. The random walk, FDR comparison, and FLDR case study appear in \Cref{sec:walk,sec:fdr,sec:fldr}. We discuss related work in \Cref{sec:relwork} and conclude in \Cref{sec:conclusion}.

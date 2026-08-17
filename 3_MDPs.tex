@@ -1,2 +1,31 @@
-\section{Sec 3}
-\label{sec:3}
+\section{Background: AST on Control-Flow Graphs}
+\label{sec:background}
+
+Our rule is derived from the pCFG characterization of Majumdar and Sathiyanarayana~\cite{DBLP:journals/pacmpl/MajumdarS25}. We recall only the ingredients needed to state the connection.
+
+A probabilistic control-flow graph has configurations $(\ell,\sigma)$ consisting of a location and program state. Assignment and guard locations have a deterministic enabled successor; probabilistic locations choose a successor according to fixed edge probabilities. A terminal location $\ell_{\mathsf{out}}$ is absorbing. An inductive invariant $\mathit{Inv}$ contains the initial configurations and is closed under positive-probability transitions.
+
+The pCFG rule asks for two certificates on $\mathit{Inv}$. A non-negative function $V$ is zero exactly at terminal configurations and is a supermartingale: it does not increase along deterministic transitions and does not increase in expectation at probabilistic locations. A natural-valued function $U$ is also zero exactly at termination. It strictly decreases along deterministic transitions; at probabilistic locations inside every sublevel set
+\[
+ V_{\le r}=\{(\ell,\sigma)\in\mathit{Inv}\mid V(\ell,\sigma)\le r\},
+\]
+there is a lower bound $\varepsilon_r>0$ on the probability of moving to a smaller $U$-value. Finally, $U$ is bounded on every $V_{\le r}$.
+
+\begin{theorem}[pCFG AST rule, adapted from~\cite{DBLP:journals/pacmpl/MajumdarS25}]
+\label{thm:pcfg-rule}
+If a pCFG admits an inductive invariant and certificates $V,U$ satisfying the conditions above, then it reaches $\ell_{\mathsf{out}}$ almost surely. The rule is relatively complete with respect to the first-order theory used to express the certificates.
+\end{theorem}
+
+The soundness intuition has two layers. Inside a fixed sublevel set, $U$ ranges over a finite interval. Since every step offers a uniformly positive chance of descent, termination occurs almost surely unless the run leaves that set. The supermartingale $V$ makes indefinite escape through ever larger sublevel sets a probability-zero event. This accommodates null-recurrent examples such as the symmetric random walk.
+
+The rule is semantically powerful but syntactically fine-grained. Suppose one source-level loop iteration consists of a guard, two assignments, a fair choice, and another conditional. A pCFG proof must assign $U$ and $V$ at each intermediate location. Constants and scaling factors are introduced merely to enforce descent across those internal edges. Our rule retains the same two-layer argument while contracting each finite execution of a loop-free body into one distribution-transformer step.
+
+\paragraph{Translation assumption.}
+The standard structural translation $\mathcal{T}[C]$ maps program syntax to a pCFG: assignments become update edges, conditionals become guarded edges, and probabilistic choice becomes a probabilistic location. Sequential composition connects exit and entry locations; a while-loop connects the body exit back to its guard. For a loop-free $B$, paths from its entry to exit correspond exactly to outcomes of $\post{B}(\dirac{\sigma})$:
+\[
+ \post{B}(\dirac{\sigma})(\sigma')
+ = \Pr\bigl(\text{paths in }\mathcal{T}[B]
+       \text{ from }(\ell_{\mathsf{in}},\sigma)
+       \text{ to }(\ell_{\mathsf{out}},\sigma')\bigr).
+\]
+Consequently, $C$ is AST on $M$ exactly when $\mathcal{T}[C]$ reaches its exit almost surely from every state in $\supp(M)$. A full structural proof of this standard correspondence is summarized in \Cref{app:translation}; it is the bridge used in \Cref{sec:metatheory}.
