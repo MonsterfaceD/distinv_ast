@@ -1,31 +1,198 @@
-\section{Background: AST on Control-Flow Graphs}
+\section{AST Certificates for Probabilistic Control-Flow Graphs}
 \label{sec:background}
 
-Our rule is derived from the pCFG characterization of Majumdar and Sathiyanarayana~\cite{DBLP:journals/pacmpl/MajumdarS25}. We recall only the ingredients needed to state the connection.
+Our program-level rule builds on the sound and relatively complete
+pCFG rule of Majumdar and Sathiyanarayana%
+~\cite{DBLP:journals/pacmpl/MajumdarS25}. We state their rule in full
+before relating its location-dependent certificates to our
+distribution-transformer formulation.
 
-A probabilistic control-flow graph has configurations $(\ell,\sigma)$ consisting of a location and program state. Assignment and guard locations have a deterministic enabled successor; probabilistic locations choose a successor according to fixed edge probabilities. A terminal location $\ell_{\mathsf{out}}$ is absorbing. An inductive invariant $\mathit{Inv}$ contains the initial configurations and is closed under positive-probability transitions.
+A probabilistic control-flow graph (pCFG) has configurations
+$(\ell,\sigma)$ consisting of a control location $\ell$ and a program
+state $\sigma$. Its locations are partitioned into assignment locations
+$L_{\mathsf A}$, conditional locations $L_{\mathsf C}$, and
+probabilistic locations $L_{\mathsf P}$. Assignment and conditional
+configurations have a unique enabled successor. At a probabilistic
+location, an outgoing edge is selected according to its fixed
+probability. The distinguished terminal location
+$\ell_{\mathsf{out}}$ is absorbing.
 
-The pCFG rule asks for two certificates on $\mathit{Inv}$. A non-negative function $V$ is zero exactly at terminal configurations and is a supermartingale: it does not increase along deterministic transitions and does not increase in expectation at probabilistic locations. A natural-valued function $U$ is also zero exactly at termination. It strictly decreases along deterministic transitions; at probabilistic locations inside every sublevel set
+For a configuration $\gamma=(\ell,\sigma)$, let
+$\Succ(\gamma)$ denote the set of its successor configurations. If
+$\ell\in L_{\mathsf P}$, let
+$\Pr(\gamma,\gamma')$ denote the probability of moving from $\gamma$
+to $\gamma'\in\Succ(\gamma)$. An invariant
+$\mathit{Inv}$ is \emph{inductive} for a set $E$ of initial states if
 \[
- V_{\le r}=\{(\ell,\sigma)\in\mathit{Inv}\mid V(\ell,\sigma)\le r\},
+ \{(\ell_{\mathsf{init}},\sigma)\mid \sigma\in E\}
+ \subseteq \mathit{Inv}
 \]
-there is a lower bound $\varepsilon_r>0$ on the probability of moving to a smaller $U$-value. Finally, $U$ is bounded on every $V_{\le r}$.
+and $\mathit{Inv}$ is closed under all positive-probability
+transitions.
 
-\begin{theorem}[pCFG AST rule, adapted from~\cite{DBLP:journals/pacmpl/MajumdarS25}]
-\label{thm:pcfg-rule}
-If a pCFG admits an inductive invariant and certificates $V,U$ satisfying the conditions above, then it reaches $\ell_{\mathsf{out}}$ almost surely. The rule is relatively complete with respect to the first-order theory used to express the certificates.
+The rule uses two certificates. A non-negative supermartingale $V$
+controls the probability of reaching configurations arbitrarily far
+from termination. A natural-valued variant $U$ provides local
+progress towards termination. For $r\in\mathbb{R}_{\geq 0}$, define
+the $V$-sublevel set
+\[
+ V_{\leq r}
+ =
+ \bigl\{\gamma\in\mathit{Inv}\mid V(\gamma)\leq r\bigr\}.
+\]
+
+\begin{theorem}
+  [pCFG AST rule, adapted from%
+  ~\cite{DBLP:journals/pacmpl/MajumdarS25}]
+ \label{thm:pcfg-rule}
+Let $\mathcal{G}$ be a pCFG with initial location
+$\ell_{\mathsf{init}}$ and terminal location
+$\ell_{\mathsf{out}}$, and let $E$ be a set of initial states.
+The pCFG $\mathcal{G}$ is almost-surely terminating from $E$ if there
+exist the following objects:
+\begin{enumerate}
+ \item An inductive invariant $\mathit{Inv}$ containing
+ \[
+  (\ell_{\mathsf{init}},\sigma)
+  \qquad\text{for every }\sigma\in E.
+ \]
+
+ \item A function
+ \[
+  V\colon\mathit{Inv}\to\mathbb{R}_{\geq 0}
+ \]
+ satisfying:
+ \begin{enumerate}
+  \item
+  \[
+   V(\ell,\sigma)=0
+   \quad\Longleftrightarrow\quad
+   \ell=\ell_{\mathsf{out}}.
+  \]
+
+  \item For every
+  $\gamma=(\ell,\sigma)\in\mathit{Inv}$ with
+  $\ell\in L_{\mathsf A}\cup L_{\mathsf C}$ and unique successor
+  $\gamma'\in\Succ(\gamma)$,
+  \[
+   V(\gamma')\leq V(\gamma).
+  \]
+
+  \item For every
+  $\gamma=(\ell,\sigma)\in\mathit{Inv}$ with
+  $\ell\in L_{\mathsf P}$,
+  \[
+   \sum_{\gamma'\in\Succ(\gamma)}
+   \Pr(\gamma,\gamma')\,V(\gamma')
+   \leq V(\gamma).
+  \]
+ \end{enumerate}
+
+ \item A function
+ \[
+  U\colon\mathit{Inv}\to\mathbb{N}
+ \]
+ satisfying:
+ \begin{enumerate}
+  \item
+  \[
+   U(\ell,\sigma)=0
+   \quad\Longleftrightarrow\quad
+   \ell=\ell_{\mathsf{out}}.
+  \]
+
+  \item For every
+  $\gamma=(\ell,\sigma)\in\mathit{Inv}$ with
+  $\ell\in L_{\mathsf A}\cup L_{\mathsf C}$ and unique successor
+  $\gamma'\in\Succ(\gamma)$,
+  \[
+   U(\gamma')<U(\gamma).
+  \]
+
+  \item For every $r\in\mathbb{R}_{\geq 0}$:
+  \begin{enumerate}
+   \item the set
+   \[
+    \{U(\gamma)\mid \gamma\in V_{\leq r}\}
+   \]
+   is bounded; and
+
+   \item there exists $\varepsilon_r>0$ such that, for every
+   $\gamma=(\ell,\sigma)\in V_{\leq r}$ with
+   $\ell\in L_{\mathsf P}$,
+   \[
+    \sum_{\substack{\gamma'\in\Succ(\gamma)\\
+                    U(\gamma')<U(\gamma)}}
+    \Pr(\gamma,\gamma')
+    \geq \varepsilon_r.
+   \]
+  \end{enumerate}
+ \end{enumerate}
+\end{enumerate}
+Moreover, the rule is relatively complete with respect to the
+underlying first-order theory used to express the invariant and the
+certificates.
 \end{theorem}
+The soundness argument has two complementary layers. Fix a sublevel
+set $V_{\leq r}$. Since $U$ is natural-valued and bounded on this set,
+it ranges over a finite interval. At deterministic locations it
+strictly decreases, while at probabilistic locations it decreases
+with probability at least $\varepsilon_r$. Consequently, a run that
+remains inside $V_{\leq r}$ cannot avoid termination with positive
+probability.
 
-The soundness intuition has two layers. Inside a fixed sublevel set, $U$ ranges over a finite interval. Since every step offers a uniformly positive chance of descent, termination occurs almost surely unless the run leaves that set. The supermartingale $V$ makes indefinite escape through ever larger sublevel sets a probability-zero event. This accommodates null-recurrent examples such as the symmetric random walk.
+It remains to account for runs that leave every fixed sublevel set.
+The supermartingale conditions ensure that $V$ does not increase in
+expectation. Standard supermartingale arguments therefore make
+indefinite escape through increasingly large sublevel sets a
+probability-zero event. Combining both layers yields almost-sure
+termination. Unlike proof rules based on a globally bounded variant,
+the sublevel-set formulation also handles null-recurrent programs,
+such as the symmetric one-dimensional random walk.
 
-The rule is semantically powerful but syntactically fine-grained. Suppose one source-level loop iteration consists of a guard, two assignments, a fair choice, and another conditional. A pCFG proof must assign $U$ and $V$ at each intermediate location. Constants and scaling factors are introduced merely to enforce descent across those internal edges. Our rule retains the same two-layer argument while contracting each finite execution of a loop-free body into one distribution-transformer step.
+Although semantically powerful, the pCFG rule is syntactically
+fine-grained. Suppose that one source-level loop iteration consists
+of a guard, two assignments, a probabilistic choice, and a
+conditional. Its pCFG translation introduces a separate control
+location for each of these operations. A proof must therefore define
+$U$ and $V$ at every intermediate location. Location-dependent
+constants, scaling factors, and offsets may be needed solely to
+ensure the required inequalities along the internal transitions of
+one source-level iteration.
+
+Our rule retains the same two-layer termination argument but moves it
+to program level. Instead of assigning certificates to intermediate
+control locations, it contracts each complete execution of a
+loop-free body into one distribution-transformer step. The
+certificates can therefore express progress over complete loop
+iterations, matching the abstraction at which sampling algorithms
+are naturally understood.
 
 \paragraph{Translation assumption.}
-The standard structural translation $\mathcal{T}[C]$ maps program syntax to a pCFG: assignments become update edges, conditionals become guarded edges, and probabilistic choice becomes a probabilistic location. Sequential composition connects exit and entry locations; a while-loop connects the body exit back to its guard. For a loop-free $B$, paths from its entry to exit correspond exactly to outcomes of $\post{B}(\dirac{\sigma})$:
+The standard structural translation $\mathcal{T}[C]$ maps program
+syntax to a pCFG. Assignments become update edges, conditionals become
+guarded edges, and probabilistic choices become probabilistic
+locations. Sequential composition connects the exit of one component
+to the entry of the next, while a while-loop connects the body exit
+back to the guard.
+
+For a loop-free body $B$, paths through $\mathcal{T}[B]$ from its
+entry location $\ell_{\mathsf{in}}^B$ to its exit location
+$\ell_{\mathsf{out}}^B$ correspond exactly to the outcomes of its
+distribution-transformer semantics:
 \[
  \post{B}(\dirac{\sigma})(\sigma')
- = \Pr\bigl(\text{paths in }\mathcal{T}[B]
-       \text{ from }(\ell_{\mathsf{in}},\sigma)
-       \text{ to }(\ell_{\mathsf{out}},\sigma')\bigr).
+ =
+ \Pr\bigl(
+   \text{paths in }\mathcal{T}[B]
+   \text{ from }(\ell_{\mathsf{in}}^B,\sigma)
+   \text{ to }(\ell_{\mathsf{out}}^B,\sigma')
+ \bigr).
 \]
-Consequently, $C$ is AST on $M$ exactly when $\mathcal{T}[C]$ reaches its exit almost surely from every state in $\supp(M)$. A full structural proof of this standard correspondence is summarized in \Cref{app:translation}; it is the bridge used in \Cref{sec:metatheory}.
+Consequently, a program $C$ is AST on a set $M$ of initial
+subdistributions exactly when $\mathcal{T}[C]$ reaches its terminal
+location almost surely from every state in $\supp(M)$. A structural
+proof of this correspondence is summarized in
+\Cref{app:translation}. This correspondence provides the bridge used
+in \Cref{sec:metatheory} to transfer soundness and relative
+completeness between the pCFG rule and our program-level rule.

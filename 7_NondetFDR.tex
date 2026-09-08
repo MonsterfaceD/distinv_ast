@@ -107,223 +107,131 @@ The reused distributional invariants establish that the terminating FDR output i
 
 
 
-\subsection{Han-Hoshi Sampling}
+\subsection{Han--Hoshi Sampling: dyadic refinement without tail bounds}
 \label{sec:HanHoshi}
-\begin{align*}
- &\progAnno{
- \Mhh=
- \{\dirac{v\mapsto 1,c\mapsto 0,r\mapsto 0}\}
- }\\
- &\WHILE{r=0}\\
- &\qquad \ass{v}{2v}\SEMICLN\\
- &\qquad
- \pchoice{\ass{c}{2c}}{\nicefrac 1 2}
- {\ass{c}{2c+1}}
- \SEMICLN\\
- &\qquad \ass{r}{\idx(c,v)}\\[-3pt]
- &\prbracecl
-\end{align*}
-Where
+
+The Han--Hoshi sampler draws from a discrete distribution with positive
+integer weights $a_1,\ldots,a_n$ and total weight
+$m=\sum_{i=1}^n a_i$.  Write $S_i=\sum_{j=1}^i a_j$, with $S_0=0$.
+The algorithm repeatedly refines a dyadic interval until it lies entirely
+inside one of the target intervals
+\[
+ I_i=\left[\frac{S_{i-1}}m,\frac{S_i}m\right),
+ \qquad 1\le i\le n.
+\]
+Its sampling loop is:
+\begin{lstlisting}[basicstyle=\ttfamily\small,mathescape=true,frame=single]
+$v := 1;\ c := 0;\ r := 0;$
+while ($r=0$) do
+  $v := 2v;$
+  $c := 2c$ [1/2] $c := 2c+1;$
+  $r := \idx(c,v)$
+end
+\end{lstlisting}
+Here
 \[
  \idx(c,v)
  \coloneqq
  \begin{cases}
  i,
- & \text{if }S_{i-1}v \leq cm
- \text{ and }(c+1)m\leq S_i v
- \text{ for some }i\in\{1,\ldots,n\},\\
- 0,
- & \text{if no such }i\text{ exists}.
+ & \text{if }S_{i-1}v\le cm\text{ and }(c+1)m\le S_iv
+   \text{ for some }i\in\{1,\ldots,n\},\\
+ 0,&\text{if no such }i\text{ exists}.
  \end{cases}
 \]
+The pair $(c,v)$ represents the interval
+\[
+ J(c,v)=\left[\frac cv,\frac{c+1}v\right).
+\]
+At loop heads the reachable states satisfy
+\begin{equation}
+ v>0,\qquad 0\le c<v,\qquad 0\le r\le n.
+ \label{eq:han-hoshi-support}
+\end{equation}
+Moreover, after an iteration, $r=0$ exactly when the selected child
+interval is not contained in a target interval.  As in the preceding case
+studies, a stronger distributional invariant used for output correctness
+may be retained; only the support information above is needed for AST.
 
-\begin{lemma}[Almost-sure termination of Han--Hoshi]
-    \label{lem:han-hoshi-ast}
-    Let $T$ denote the number of loop iterations executed by
-    $\proghh$ from the initial state
-    \[
-        v = 1,
-        \qquad
-        c = 0,
-        \qquad
-        r = 0.
-    \]
-    Then, for every $t \in \mathbb{N}$,
-    \[
-        \Pr(T > t)
-        \leq
-        \min\left\{
-            1,
-            \frac{n-1}{2^t}
-        \right\}.
-    \]
-    Consequently,
-    \[
-        \Pr(T < \infty) = 1,
-    \]
-    i.e., $\proghh$ is almost surely terminating.
-\end{lemma}
+Let $B_{\mathrm{HH}}$ denote the loop body.  For $b\in\{0,1\}$, set
+\[
+ c_b=2c+b,\qquad v'=2v,\qquad r_b=\idx(c_b,v').
+\]
+For a Dirac input $\dirac{\sigma}$,
+\begin{equation}
+ \post{B_{\mathrm{HH}}}(\dirac{\sigma})
+ =\tfrac12\dirac{\sigma[v/v',c/c_0,r/r_0]}
+ +\tfrac12\dirac{\sigma[v/v',c/c_1,r/r_1]}.
+ \label{eq:han-hoshi-post}
+\end{equation}
+Thus one complete program-level step is precisely a fair choice between
+the left and right halves of $J(c,v)$.
 
+\begin{theorem}[AST of Han--Hoshi]
+ \label{thm:han-hoshi}
+For every finite vector of positive integer weights, the Han--Hoshi
+sampling loop terminates almost surely.
+\end{theorem}
 \begin{proof}
-    After exactly $t$ iterations, provided that the sampled path is
-    conceptually continued even if the program would have terminated
-    earlier, we have
-    \[
-        v = 2^t
-    \]
-    and $c$ is uniformly distributed on
-    \[
-        \{0,\ldots,2^t-1\}.
-    \]
-    The pair $(c,v)$ represents the dyadic interval
-    \[
-        J_{t,c}
-        \coloneqq
-        \left[
-            \frac{c}{2^t},
-            \frac{c+1}{2^t}
-        \right).
-    \]
-    Thus, each depth-$t$ interval $J_{t,c}$ is selected with
-    probability $2^{-t}$.
+For a reachable state $\sigma$, let
+\[
+ N(\sigma)
+ =\left|\left\{i\in\{1,\ldots,n-1\}\,\middle|\,
+ \frac cv<\frac{S_i}{m}<\frac{c+1}{v}\right\}\right|
+\]
+be the number of internal target boundaries lying strictly inside
+$J(c,v)$.  Define the two certificates
+\[
+ \mathsf V(\sigma)=\mathsf U(\sigma)=
+ \begin{cases}
+ 0,&r\ne0,\\
+ \max\{1,N(\sigma)\},&r=0.
+ \end{cases}
+\]
+They vanish exactly on terminal states, and $\mathsf U$ is
+natural-valued.
 
-    Recall that the target distribution induces the partition
-    \[
-        I_i
-        \coloneqq
-        \left[
-            \frac{S_{i-1}}{m},
-            \frac{S_i}{m}
-        \right),
-        \qquad
-        1 \leq i \leq n,
-    \]
-    of $[0,1)$.
+Consider an enabled state and write $q=N(\sigma)$.  Splitting $J(c,v)$
+into its two children cannot create an internal target boundary.  Every
+boundary counted in a child is counted in the parent, while a boundary at
+the common endpoint of the children is counted in neither.  If $N_b$
+denotes the number of boundaries strictly inside child $b$, then
+\begin{equation}
+ N_0+N_1\le q.
+ \label{eq:han-hoshi-boundary-split}
+\end{equation}
+A child remains enabled exactly when it contains an internal boundary in
+its interior; hence its post-state certificate is $N_b$ if $N_b>0$ and
+zero otherwise.  Using \eqref{eq:han-hoshi-post} and
+\eqref{eq:han-hoshi-boundary-split}, for $q>0$ we obtain
+\[
+ \mathbb E_\sigma[\mathsf V']
+ =\tfrac12(N_0+N_1)
+ \le\tfrac q2
+ \le \mathsf V(\sigma).
+\]
+If $q=0$, both children are terminal and the expectation is zero.  This
+proves the supermartingale obligation of \Cref{thm:program-rule}.
 
-    If the program has not terminated after $t$ iterations, then the
-    selected interval $J_{t,c}$ is not completely contained in any
-    target interval $I_i$. Since the intervals
-    $I_1,\ldots,I_n$ partition $[0,1)$, the interval $J_{t,c}$ must
-    contain at least one internal partition boundary
-    \[
-        q_i
-        \coloneqq
-        \frac{S_i}{m},
-        \qquad
-        1 \leq i < n,
-    \]
-    in its interior.
+For the decrease obligation, if $q>0$, at least one of $N_0,N_1$ is
+strictly smaller than $q$: otherwise their sum would be at least $2q$,
+contradicting \eqref{eq:han-hoshi-boundary-split}.  The corresponding
+post-state therefore has strictly smaller $\mathsf U$.  It is selected
+with probability $1/2$, so the decrease condition holds with
+$\varepsilon=1/2$.  If $q=0$, both children terminate and decrease
+$\mathsf U$ from $1$ to $0$, so the same bound applies.
 
-    For every fixed boundary $q_i$, at most one of the pairwise
-    disjoint depth-$t$ dyadic intervals can contain $q_i$ in its
-    interior. There are exactly $n-1$ internal partition boundaries.
-    Hence, at most $n-1$ of the $2^t$ possible intervals can still be
-    nonterminal.
-
-    Since every depth-$t$ interval is selected with probability
-    $2^{-t}$, it follows that
-    \[
-        \Pr(T>t)
-        \leq
-        (n-1)2^{-t}
-        =
-        \frac{n-1}{2^t}.
-    \]
-    Together with the trivial upper bound $\Pr(T>t)\leq 1$, this yields
-    \[
-        \Pr(T>t)
-        \leq
-        \min\left\{
-            1,
-            \frac{n-1}{2^t}
-        \right\}.
-    \]
-
-    Finally,
-    \[
-        \Pr(T=\infty)
-        =
-        \lim_{t\to\infty}\Pr(T>t)
-        \leq
-        \lim_{t\to\infty}\frac{n-1}{2^t}
-        =
-        0.
-    \]
-    Therefore, $\Pr(T<\infty)=1$, and $\proghh$ is almost surely
-    terminating.
+Finally, $\mathsf U=\mathsf V$ on every reachable state.  Consequently,
+on each sublevel set $\mathsf V_{\le R}$ we have
+$\mathsf U\le R$.  All obligations of \Cref{thm:program-rule} hold, and
+the loop is AST.
 \end{proof}
 
-
-\begin{lemma}[Uniform AST bound for Han--Hoshi]
-    \label{lem:han-hoshi-uniform-ast}
-    Let $\sigma$ be a program state satisfying
-    \[
-        \sigma(r)=0,
-        \qquad
-        \sigma(v)>0,
-        \qquad
-        0\leq \sigma(c)<\sigma(v).
-    \]
-    Let $T_\sigma$ denote the number of further loop iterations of
-    $\proghh$ from $\sigma$. Then, for every $t\in\mathbb{N}$,
-    \[
-        \Pr_\sigma(T_\sigma>t)
-        \leq
-        \min\left\{
-            1,
-            \frac{n-1}{2^t}
-        \right\}.
-    \]
-    Hence, $\proghh$ is AST from every such state and from every
-    distribution whose support consists only of such states.
-\end{lemma}
-
-\begin{proof}
-    Write
-    \[
-        c_0=\sigma(c)
-        \qquad\text{and}\qquad
-        v_0=\sigma(v).
-    \]
-    The current interval is
-    \[
-        J_0
-        =
-        \left[
-            \frac{c_0}{v_0},
-            \frac{c_0+1}{v_0}
-        \right).
-    \]
-    After conceptually exposing the next $t$ random bits, $J_0$ is
-    partitioned into the $2^t$ equally likely descendant intervals
-    \[
-        J_{t,d}
-        =
-        \left[
-            \frac{2^t c_0+d}{2^t v_0},
-            \frac{2^t c_0+d+1}{2^t v_0}
-        \right),
-        \qquad
-        0\leq d<2^t.
-    \]
-    Each descendant is selected with probability $2^{-t}$.
-
-    If the program remains active after these $t$ iterations, then the
-    selected descendant is not contained in any target interval
-    $I_i$. It must therefore contain one of the $n-1$ internal
-    boundaries $S_i/m$ in its interior. For each boundary, at most one
-    descendant interval has this property. Consequently, at most
-    $n-1$ descendants remain active, and thus
-    \[
-        \Pr_\sigma(T_\sigma>t)
-        \leq
-        \frac{n-1}{2^t}.
-    \]
-    Taking $t\to\infty$ proves almost-sure termination.
-
-    Since the bound is uniform in $\sigma$, averaging it over any
-    initial distribution supported on such states preserves the same
-    bound. Therefore, the program is AST with respect to every such
-    distribution.
-\end{proof}
-
+The proof replaces the explicit depth-$t$ tail calculation by one
+iteration-level fact: bisecting an interval distributes its internal
+target boundaries over the two children, and at least one child contains
+strictly fewer.  The number of such boundaries serves simultaneously as
+the supermartingale and the natural-valued variant (with the value $1$
+for the enabled boundary-free initial case).  Hence Han--Hoshi exhibits
+the same proof pattern as FDR and FLDR and is established directly by the
+program-level rule of \Cref{thm:program-rule}.
