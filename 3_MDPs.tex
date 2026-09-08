@@ -51,16 +51,12 @@ $\ell_{\mathsf{out}}$, and let $E$ be a set of initial states.
 The pCFG $\mathcal{G}$ is almost-surely terminating from $E$ if there
 exist the following objects:
 \begin{enumerate}
- \item An inductive invariant $\mathit{Inv}$ containing
- \[
-  (\ell_{\mathsf{init}},\sigma)
-  \qquad\text{for every }\sigma\in E.
- \]
+ \item An inductive invariant $\mathit{Inv}$ containing $(\ell_{\mathsf{init}},\sigma) \text{for every }\sigma\in E.$
 
  \item A function
- \[
+$
   V\colon\mathit{Inv}\to\mathbb{R}_{\geq 0}
- \]
+$
  satisfying:
  \begin{enumerate}
   \item
@@ -89,9 +85,9 @@ exist the following objects:
  \end{enumerate}
 
  \item A function
- \[
+$
   U\colon\mathit{Inv}\to\mathbb{N}
- \]
+$
  satisfying:
  \begin{enumerate}
   \item
@@ -112,9 +108,9 @@ exist the following objects:
   \item For every $r\in\mathbb{R}_{\geq 0}$:
   \begin{enumerate}
    \item the set
-   \[
+$
     \{U(\gamma)\mid \gamma\in V_{\leq r}\}
-   \]
+$
    is bounded; and
 
    \item there exists $\varepsilon_r>0$ such that, for every

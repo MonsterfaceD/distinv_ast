@@ -18,8 +18,8 @@ The loop $C$ is AST on $M$ if there exist:
    \end{enumerate}
  \item a function $u:\supp(I)\to\mathbb{N}$ such that
    \begin{enumerate}[label=(\alph*)]
-    \item $u(\sigma)=0$ for $\sigma\in\supp(I)\cap\llbracket\neg b\rrbracket$;
-    \item there exists $\varepsilon>0$ for which, for every enabled $\sigma$,
+    \item $u(\sigma)=0$ for every $\sigma\in\supp(I)\cap\llbracket\neg b\rrbracket$;
+    \item there exists $\varepsilon>0$ for which, for every enabled state $\sigma\in\supp(I)\cap\llbracket b\rrbracket$;
     \[
       \sum_{\sigma':u(\sigma')<u(\sigma)}
         \post{B}(\dirac{\sigma})(\sigma')\geq\varepsilon;
@@ -33,7 +33,7 @@ The loop $C$ is AST on $M$ if there exist:
 
 The conditions deliberately do not require $u$ to decrease in expectation. It may increase sharply on some outcomes, as happens when a rejection sampler restarts. The rule asks only for a fixed positive mass of outcomes that reduce $u$. Nor must $u$ be globally bounded. Its boundedness is local to sublevel sets of $v$, allowing null-recurrent computations.
 
-\paragraph{Proof intuition.}
+\paragraph{Soundness proof intuition.}
 Fix a sublevel set $v_{\le r}$ and let $K_r$ bound $u$ there. From every nonterminal state in this set, a complete loop iteration has probability at least $\varepsilon$ of decreasing $u$. Hence there is probability at least $\varepsilon^{K_r}$ of following enough decreasing iterations to reach zero, provided the run stays in the set. Repeating this argument rules out nontermination confined to $v_{\le r}$. Meanwhile, the supermartingale property bounds the probability of reaching arbitrarily large values of $v$; non-negative supermartingale convergence rules out escaping every finite sublevel set with positive probability. Thus all nonterminating behavior has measure zero.
 
 \paragraph{Iteration-level abstraction.}

@@ -13,14 +13,12 @@ while ($v<n$) do
   if ($c\ge n$) then $v:=v-n;\ c:=c-n$ else skip
 end
 \end{lstlisting}
-On termination, $c$ is the sampled outcome. Existing distributional-invariant reasoning proves that the terminating output is uniform~\cite{zilken2026verifyingsamplingalgorithmsdistributional}; AST completes total correctness.
-
-At the loop head, the reachable states satisfy
+On termination, $c$ is the sampled outcome. Existing distributional-invariant reasoning proves that the terminating output is uniform~\cite{zilken2026verifyingsamplingalgorithmsdistributional}; AST completes total correctness. The distributional invariant taken from ~\cite{zilken2026verifyingsamplingalgorithmsdistributional} states that at the loop head, the reachable states satisfy
 \begin{equation}
  0\le c<\min(v,n),\qquad 0<v<2n,\qquad n>0.
  \label{eq:fdr-support}
 \end{equation}
-We may reuse the stronger invariant from the partial-correctness proof, which additionally states that equal admissible $c$-values carry equal mass. Only \eqref{eq:fdr-support} is needed for termination.
+The distributional invariant additionally states that equal admissible $c$-values carry equal mass, however only \eqref{eq:fdr-support} is needed for our termination proof.
 
 Let $B_{\mathrm{FDR}}$ denote the body. For a Dirac input $\dirac{\sigma}$, its post-distribution is
 \begin{align}
@@ -55,15 +53,310 @@ The supermartingale obligation is immediate: $n$ is unchanged and every successo
 For a sublevel set with $r<n$, only terminal states occur. If $r\ge n$, the invariant bounds $n\le r$, $0<v<2n$, and $0\le c<v$, so $v-c\ge1$ and $u\le\lceil\log_2 r\rceil$. All obligations of \Cref{thm:program-rule} hold.
 \end{proof}
 
-\paragraph{Comparison with the pCFG proof.}
-The pCFG route is applicable and proves the same theorem. It first translates the program into a graph with separate locations for initialization, guard evaluation, doubling $v$, the coin flip, the conditional, and both subtraction assignments. One then supplies an invariant for every location. The supermartingale must be specialized to those locations, and the variant uses location-dependent expressions and offsets to decrease across all deterministic transitions. In particular, an iteration-level observation about doubling $v-c$ must be distributed over the choice and assignment nodes.
+\begin{figure}[t]
+    \centering
+    \begin{tikzpicture}[
+        ->,
+        scale=0.95,
+        every node/.style={
+            font=\small,
+            transform shape
+        },
+        loc/.style={
+            draw,
+            circle,
+            minimum size=7mm,
+            inner sep=1pt
+        },
+        prob/.style={
+            loc,
+            fill=black!10
+        },
+        term/.style={
+            loc,
+            double,
+            double distance=1pt
+        },
+        lab/.style={
+            font=\scriptsize,
+            fill=white,
+            inner sep=1pt
+        }
+    ]
+        % Initialisation and loop head
+        \node[loc]  (init) at (-5.2, 0) {$\ell_{\mathsf{init}}$};
+        \node[loc]  (l1)   at (-3.7, 0) {$\ell_1$};
+        \node[loc]  (l2)   at (-2.1, 0) {$\ell_2$};
 
-The program proof has one support invariant, two state functions, and the calculation \eqref{eq:fdr-post}. It also imports the invariant already used for output correctness. Thus FDR shows a strict proof-engineering improvement while controlling for proving power: both rules work, but the new rule matches the algorithmic abstraction.
+        % Terminal location, moved to the upper left
+        \node[term] (out)  at (-3.0, 1.45) {$\ell_{\mathsf{out}}$};
+
+        % Main loop body
+        \node[loc]  (l3)   at (-0.45, 0) {$\ell_3$};
+        \node[prob] (l4)   at ( 1.10, 0) {$\ell_4$};
+
+        \node[loc]  (l5a)  at (2.65, 0.80) {$\ell_{5a}$};
+        \node[loc]  (l5b)  at (2.65,-0.80) {$\ell_{5b}$};
+
+        \node[loc]  (l6)   at (4.25, 0) {$\ell_6$};
+
+        % Rejection branch on a separate lower row
+        \node[loc]  (l7)   at (4.25,-1.95) {$\ell_7$};
+        \node[loc]  (l8)   at (1.75,-1.95) {$\ell_8$};
+
+        % Initialisation
+        \draw (init) --
+            node[lab,above] {$v:=1$}
+            (l1);
+
+        \draw (l1) --
+            node[lab,above] {$c:=0$}
+            (l2);
+
+        % Loop guard
+        \draw (l2) --
+            node[lab,above left,pos=.48] {$v\geq n$}
+            (out);
+
+        \draw (l2) --
+            node[lab,above] {$v<n$}
+            (l3);
+
+        % Deterministic update and probabilistic choice
+        \draw (l3) --
+            node[lab,above] {$v:=2v$}
+            (l4);
+
+        \draw (l4) --
+            node[lab,above left,pos=.48] {$\frac12$}
+            (l5a);
+
+        \draw (l4) --
+            node[lab,below left,pos=.48] {$\frac12$}
+            (l5b);
+
+        % Bit-dependent assignments
+        \draw (l5a) --
+            node[lab,above right,pos=.52] {$c:=2c$}
+            (l6);
+
+        \draw (l5b) --
+            node[lab,below right,pos=.52] {$c:=2c+1$}
+            (l6);
+
+        % Successful iteration: compact upper return
+        \draw (l6) to[
+            out=115,
+            in=25,
+            looseness=0.82
+        ]
+            node[lab,above,pos=.48] {$c<n$}
+            (l2);
+
+        % Rejection branch
+        \draw (l6) --
+            node[lab,right] {$c\geq n$}
+            (l7);
+
+        \draw (l7) --
+            node[lab,below] {$v:=v-n$}
+            (l8);
+
+        % Return after both subtraction assignments
+        \draw (l8) to[
+            out=180,
+            in=-65,
+            looseness=0.82
+        ]
+            node[lab,below,pos=.47] {$c:=c-n$}
+            (l2);
+    \end{tikzpicture}
+
+    \vspace{-1mm}
+    \caption{The pCFG obtained from FDR. The locations
+    $\ell_2,\ldots,\ell_8$ expose the loop guard, the update $v:=2v$, the
+    fair-bit choice, the bit-dependent updates of $c$, and the rejection
+    branch.}
+    \label{fig:fdr-pcfg}
+\end{figure}
+
+
+\paragraph{Comparison with the pCFG proof.}
+The pCFG rule of Majumdar and Sathiyanarayana is applicable to FDR and
+establishes the same AST statement as \Cref{thm:fdr}.  Unlike the
+program-level proof, however, it reasons about individual configurations
+$(\ell,\sigma)$ of the graph in \Cref{fig:fdr-pcfg}.  Thus, the initialisation,
+loop guard, doubling of $v$, fair-bit choice, conditional, and the two
+subtraction assignments all become separate proof obligations.
+
+For completeness, we spell out the corresponding pCFG certificate.  Write
+$\mathit{Inv}_\ell$ for the states admitted at location $\ell$.  The invariant
+is obtained by transporting the support information
+\eqref{eq:fdr-support} through the intermediate assignments:
+\begin{align*}
+ \mathit{Inv}_{\ell_{\mathsf{init}}}
+   &\coloneqq \{\sigma \mid \sigma(n)\in\mathbb{N}_{>0}\},\\
+ \mathit{Inv}_{\ell_1}
+   &\coloneqq \{\sigma \mid \sigma(n)\in\mathbb{N}_{>0}
+                    \land \sigma(v)=1\},\\
+ \mathit{Inv}_{\ell_2}
+   &\coloneqq \{\sigma \mid \sigma(n)\in\mathbb{N}_{>0}
+                    \land 1\leq\sigma(v)<2\sigma(n)
+                    \land 0\leq\sigma(c)<\min\{\sigma(v),\sigma(n)\}\},\\
+ \mathit{Inv}_{\ell_3}
+   &\coloneqq \{\sigma\in\mathit{Inv}_{\ell_2}\mid
+                    \sigma(v)<\sigma(n)\},\\
+ \mathit{Inv}_{\ell_4}
+   &\coloneqq \{\sigma \mid \sigma(n)\in\mathbb{N}_{>0}
+                    \land 2\leq\sigma(v)\leq2\sigma(n)-2
+                    \land 0\leq\sigma(c)<\tfrac{\sigma(v)}2\},\\
+ \mathit{Inv}_{\ell_{5a}}
+   &\coloneqq \mathit{Inv}_{\ell_4},
+ \qquad
+ \mathit{Inv}_{\ell_{5b}}
+   \coloneqq \mathit{Inv}_{\ell_4},\\
+ \mathit{Inv}_{\ell_6}
+   &\coloneqq \{\sigma \mid \sigma(n)\in\mathbb{N}_{>0}
+                    \land 2\leq\sigma(v)\leq2\sigma(n)-2
+                    \land 0\leq\sigma(c)<\sigma(v)\},\\
+ \mathit{Inv}_{\ell_7}
+   &\coloneqq \{\sigma\in\mathit{Inv}_{\ell_6}\mid
+                   \sigma(c)\geq\sigma(n)\},\\
+ \mathit{Inv}_{\ell_8}
+   &\coloneqq \{\sigma \mid \sigma(n)\in\mathbb{N}_{>0}
+                    \land 1\leq\sigma(v)\leq\sigma(n)-2
+                    \land \sigma(n)\leq\sigma(c)<\sigma(v)+\sigma(n)\},\\
+ \mathit{Inv}_{\ell_{\mathsf{out}}}
+   &\coloneqq \{\sigma\in\mathit{Inv}_{\ell_2}\mid
+                    \sigma(v)\geq\sigma(n)\}.
+\end{align*}
+Hence
+\[
+    \mathit{Inv}
+    \coloneqq
+    \bigcup_{\ell\in\{\ell_{\mathsf{init}},\ell_1,\ldots,\ell_8,
+                        \ell_{\mathsf{out}}\}}
+    \bigl(\{\ell\}\times\mathit{Inv}_{\ell}\bigr)
+\]
+is an inductive pCFG invariant.  The loop-head component
+$\mathit{Inv}_{\ell_2}$ is precisely the support part of the distributional
+invariant reused in the program-level proof; the other components are
+locationspecific consequences of it.
+
+The supermartingale is simple but already locationsensitive through the
+terminal location:
+\[
+    V(\ell,\sigma)
+    \coloneqq
+    \begin{cases}
+        0, & \ell=\ell_{\mathsf{out}},\\
+        \sigma(n), & \ell\neq\ell_{\mathsf{out}}.
+    \end{cases}
+\]
+Since $n$ is never modified, every nonterminal deterministic successor has
+the same $V$-value as its predecessor, while a transition to
+$\ell_{\mathsf{out}}$ decreases it to $0$.  At the sole probabilistic location
+$\ell_4$, both successors retain the value $\sigma(n)$.  Thus the
+supermartingale obligations are immediate.  Moreover, every sublevel set
+$V_{\leq r}$ fixes $n\leq r$; together with the bounds in
+$\mathit{Inv}$ this makes all non-initial parts of the sublevel set finite.
+
+The pCFG variant must instead account for the exact point within an iteration.
+One suitable choice is the following locationspecific refinement of the
+iteration-level distance
+$\left\lceil\log_2\!\bigl(n/(v-c)\bigr)\right\rceil$:
+\[
+U(\ell,\sigma)\coloneqq
+\begin{cases}
+  7\left\lceil\log_2(\sigma(n))\right\rceil+3,
+    & \ell=\ell_{\mathsf{init}},\\[2pt]
+  7\left\lceil\log_2(\sigma(n))\right\rceil+2,
+    & \ell=\ell_1,\\[2pt]
+  7\left\lceil
+      \log_2\!\left(\dfrac{\sigma(n)}{\sigma(v)-\sigma(c)}\right)
+    \right\rceil+1,
+    & \ell=\ell_2,\\[8pt]
+  7\left\lceil
+      \log_2\!\left(\dfrac{\sigma(n)}{\sigma(v)-\sigma(c)}\right)
+    \right\rceil,
+    & \ell=\ell_3,\\[8pt]
+  7\left\lceil
+      \log_2\!\left(
+        \dfrac{\sigma(n)}{\frac{\sigma(v)}2-\sigma(c)}
+      \right)
+    \right\rceil-1,
+    & \ell=\ell_4,\\[10pt]
+  7\left\lceil
+      \log_2\!\left(
+        \dfrac{\sigma(n)}{\sigma(v)-2\sigma(c)}
+      \right)
+    \right\rceil+5,
+    & \ell=\ell_{5a},\\[10pt]
+  7\left\lceil
+      \log_2\!\left(
+        \dfrac{\sigma(n)}{\sigma(v)-(2\sigma(c)+1)}
+      \right)
+    \right\rceil+5,
+    & \ell=\ell_{5b},\\[10pt]
+  7\left\lceil
+      \log_2\!\left(\dfrac{\sigma(n)}{\sigma(v)-\sigma(c)}\right)
+    \right\rceil+4,
+    & \ell=\ell_6,\\[10pt]
+  7\left\lceil
+      \log_2\!\left(\dfrac{\sigma(n)}{\sigma(v)-\sigma(c)}\right)
+    \right\rceil+3,
+    & \ell=\ell_7,\\[10pt]
+  7\left\lceil
+      \log_2\!\left(
+        \dfrac{\sigma(n)}{\sigma(v)+\sigma(n)-\sigma(c)}
+      \right)
+    \right\rceil+2,
+    & \ell=\ell_8,\\[10pt]
+  0,
+    & \ell=\ell_{\mathsf{out}}.
+\end{cases}
+\]
+
+The factor $7$ bounds the number of pCFG transitions needed for one source-level
+loop iteration.  The additive offsets ensure strict descent on transitions
+that merely change the control location.  The expressions at
+$\ell_4,\ell_{5a},\ell_{5b}$ additionally compensate for the fact that one of
+the two updates of the iteration has already been executed.  For example,
+at $\ell_4$ the current value of $v$ has already been doubled whereas $c$
+still has its old value, explaining the denominator
+$\sigma(v)/2-\sigma(c)$.  At $\ell_{5a}$ and $\ell_{5b}$, in contrast, the
+two possible updates of $c$ have already been performed.
+The deterministic decrease conditions can consequently be discharged by
+checking the edges of \Cref{fig:fdr-pcfg}; the guard edge to
+$\ell_{\mathsf{out}}$ decreases to $0$, and the offsets enforce strict
+decrease on the remaining deterministic edges.  At $\ell_4$, the
+$\ell_{5a}$ successor---corresponding to the fair-bit outcome $0$---has a
+strictly smaller variant.  This successor has probability $\frac12$.
+Semantically, this is the familiar iteration-level observation that choosing
+the zero bit doubles $v-c$; the rejection updates subtract $n$ from both
+variables and hence preserve that difference.  In the pCFG proof this single
+observation is distributed over the locations
+$\ell_4,\ell_{5a},\ell_6,\ell_7,\ell_8$.
+
+Finally, $U$ is bounded in every sublevel set $V_{\leq r}$.  Indeed,
+$V\leq r$ implies $\sigma(n)\leq r$, and the invariant bounds all relevant
+values of $v$ and $c$; the two initialization locations are harmless because
+their variant values depend only on $n$.  Thus the pCFG rule applies with
+$\varepsilon_r=\frac12$ for every $r$.
+
+In comparison, the program-level proof uses one support invariant, the two
+state functions displayed in \Cref{thm:fdr}, and the single body calculation
+\eqref{eq:fdr-post}.  It also directly reuses the invariant required for the
+uniform-output proof.  Both proof routes have the same proving power, but the
+program-level rule expresses the algorithmic fact---progress over a complete
+loop iteration---without introducing locations, offsets, and intermediate
+state expressions solely for control-flow bookkeeping.
+
 
 \subsection{Fast Loaded Dice Roller: rejection without graph bookkeeping}
 \label{sec:fldr}
 
-The Fast Loaded Dice Roller (FLDR) samples outcome $i$ with probability $a_i/m$, where $a_1,\ldots,a_n$ are positive integers and $m=\sum_i a_i$~\cite{DBLP:conf/aistats/SaadFRM20}. Let $k=\lceil\log_2 m\rceil$. Preprocessing adds a rejecting outcome $n+1$ of weight $2^k-m$ and builds a compact representation $(H,h)$ of a binary decision tree. Sampling traverses the tree using fair bits; reaching $n+1$ resets the traversal to the root.
+The Fast Loaded Dice Roller (FLDR) samples outcome $i$ with probability $a_i/m$, where $a_1,\ldots,a_n$ are positive integers and $m=\sum_{i=1}^n a_i$~\cite{DBLP:conf/aistats/SaadFRM20}. Let $k=\lceil\log_2 m\rceil$. Preprocessing adds a rejecting outcome $n+1$ of weight $2^k-m$ and builds a compact representation $(H,h)$ of a binary decision tree. Sampling traverses the tree using fair bits; reaching $n+1$ resets the traversal to the root.
 
 Abstracting the terminating preprocessing, the sampling loop is:
 \begin{lstlisting}[basicstyle=\ttfamily\small,mathescape=true,frame=single]
@@ -103,7 +396,7 @@ Finally, on $v_{\le r}$, either $r<m$ and only terminal states occur, or $m\le r
 This proof isolates the actual AST argument in three facts: $m$ is stable, tree height is logarithmically bounded by $m$, and at least one child avoids rejection. A direct pCFG treatment would additionally require values at the increment, choice, test, and reset locations, plus cases for both children. FLDR therefore illustrates the main contribution more strongly than FDR: the iteration-level rule turns a restart-heavy sampler into a short semantic proof.
 
 \paragraph{From AST to total correctness.}
-The reused distributional invariants establish that the terminating FDR output is uniform and that FLDR returns $i$ with probability $a_i/m$~\cite{zilken2026verifyingsamplingalgorithmsdistributional}. \Cref{thm:fdr,thm:fldr} show that the corresponding post-distributions have total mass one. Hence the partial-correctness distributions are proper output distributions, yielding total correctness for both algorithms.
+The reused distributional invariants establish that the terminating FDR output is uniform and that FLDR returns $i$ with probability $a_i/m$~\cite{zilken2026verifyingsamplingalgorithmsdistributional}. \Cref{thm:fdr,thm:fldr} show AST, i.e. that the corresponding post-distributions have total mass one. Hence the partial-correctness distributions are proper output distributions, yielding total correctness for both algorithms.
 
 
 

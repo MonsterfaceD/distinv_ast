@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (MiKTeX 25.4) (preloaded format=pdflatex 2025.5.5)  7 SEP 2026 12:34
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (MiKTeX 25.4) (preloaded format=pdflatex 2025.5.5)  8 SEP 2026 10:07
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -2020,65 +2020,12 @@ Package natbib Warning: Citation `DBLP:conf/aistats/SaadFRM20' on page 2 undefi
 ned on input line 25.
 
 
-LaTeX Warning: Reference `sec:rule' on page 1 undefined on input line 30.
-
-
-LaTeX Warning: Reference `sec:metatheory' on page 1 undefined on input line 31.
-
-
-
-LaTeX Warning: Reference `sec:walk' on page 1 undefined on input line 32.
-
-
 
 LaTeX Font Info:    Font shape `T1/LinuxBiolinumT-TLF/m/n' will be
 (Font)              scaled to size 8.0pt on input line 33.
 [2.2{C:/Users/dzilk/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/inconsolata/i
 4-t1-4.enc}{C:/Users/dzilk/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/libert
-ine/lbtn_edcawa.enc}]
-
-LaTeX Warning: Reference `sec:fdr' on page 1 undefined on input line 33.
-
-
-LaTeX Warning: Reference `sec:HanHoshi' on page 1 undefined on input line 34.
-
-
-LaTeX Warning: Reference `sec:fldr' on page 1 undefined on input line 34.
-
-
-LaTeX Warning: Reference `sec:prelims' on page 1 undefined on input line 41.
-
-
-LaTeX Warning: Reference `sec:background' on page 1 undefined on input line 41.
-
-
-
-LaTeX Warning: Reference `sec:rule' on page 1 undefined on input line 41.
-
-
-LaTeX Warning: Reference `sec:metatheory' on page 1 undefined on input line 41.
-
-
-
-LaTeX Warning: Reference `sec:walk' on page 1 undefined on input line 41.
-
-
-LaTeX Warning: Reference `sec:HanHoshi' on page 1 undefined on input line 41.
-
-
-LaTeX Warning: Reference `sec:fldr' on page 1 undefined on input line 41.
-
-
-LaTeX Warning: Reference `sec:fdr' on page 1 undefined on input line 41.
-
-
-LaTeX Warning: Reference `sec:relwork' on page 1 undefined on input line 41.
-
-
-LaTeX Warning: Reference `sec:conclusion' on page 1 undefined on input line 41.
-
-
-) (2_Preliminaries.tex
+ine/lbtn_edcawa.enc}]) (2_Preliminaries.tex
 LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/it' will be
 (Font)              scaled to size 10.0pt on input line 4.
 LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/it' will be
@@ -2121,9 +2068,9 @@ ndefined on input line 46.
 Package hyperref Info: bookmark level for unknown theorem defaults to 0 on inpu
 t line 46.
 LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/m/it' will be
-(Font)              scaled to size 7.3pt on input line 57.
+(Font)              scaled to size 7.3pt on input line 54.
 LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/m/it' will be
-(Font)              scaled to size 5.5pt on input line 57.
+(Font)              scaled to size 5.5pt on input line 54.
 
 
 
@@ -2134,16 +2081,7 @@ Package fancyhdr Warning: \headheight is too small (13.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-5.48402pt}.
 
 [5.5{C:/Users/dzilk/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/libertine/lbt
-n_ncsllp.enc}]
-
-LaTeX Warning: Reference `app:translation' on page 1 undefined on input line 19
-6.
-
-
-LaTeX Warning: Reference `sec:metatheory' on page 1 undefined on input line 197
-.
-
-) (4_Nondet.tex
+n_ncsllp.enc}]) (4_Nondet.tex
 pdfTeX warning (ext4): destination with the same identifier (name{theorem.1}) h
 as been already used, duplicate ignored
 <to be read again> 
@@ -2151,18 +2089,7 @@ as been already used, duplicate ignored
 l.6 \begin{theorem}[Program-level AST rule]
                                            
 
-[6.6]
-
-LaTeX Warning: Reference `thm:pcfg-rule' on page 1 undefined on input line 40.
-
-) (5_SP.tex
-
-LaTeX Warning: Reference `thm:program-rule' on page 1 undefined on input line 4
-.
-
-
-LaTeX Warning: Reference `sec:background' on page 1 undefined on input line 4.
-
+[6.6]) (5_SP.tex
 Package hyperref Info: bookmark level for unknown lemma defaults to 0 on input 
 line 10.
 
@@ -2176,39 +2103,7 @@ Package fancyhdr Warning: \headheight is too small (13.0pt):
 
 [7.7]
 
-LaTeX Warning: Reference `thm:program-rule' on page 1 undefined on input line 3
-5.
-
-
-LaTeX Warning: Reference `lem:contract-v' on page 1 undefined on input line 40.
-
-
-
-LaTeX Warning: Reference `thm:pcfg-rule' on page 1 undefined on input line 47.
-
-
-LaTeX Warning: Reference `thm:pcfg-rule' on page 1 undefined on input line 57.
-
-
-LaTeX Warning: Reference `lem:contract-v' on page 1 undefined on input line 64.
-
-
-
-
-[8.8]
-
-LaTeX Warning: Reference `lem:contract-u' on page 1 undefined on input line 66.
-
-
-
-LaTeX Warning: Reference `thm:program-rule' on page 1 undefined on input line 6
-8.
-
-) (6_Nim.tex
-
-LaTeX Warning: Reference `thm:program-rule' on page 1 undefined on input line 2
-3.
-
+[8.8]) (6_Nim.tex
 
 Package natbib Warning: Citation `DBLP:series/mcs/McIverM05' on page 9 undefine
 d on input line 27.
@@ -2218,16 +2113,6 @@ d on input line 27.
 Package natbib Warning: Citation `DBLP:journals/corr/abs-1304-1916' on page 9 u
 ndefined on input line 7.
 
-
-
-
-Package fancyhdr Warning: \headheight is too small (13.0pt): 
-(fancyhdr)                Make it at least 18.48402pt, for example:
-(fancyhdr)                \setlength{\headheight}{18.48402pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-5.48402pt}.
-
-[9.9]
 LaTeX Font Info:    Font shape `T1/zi4/m/n' will be
 (Font)              scaled to size 9.0pt on input line 8.
 LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/n' will be
@@ -2272,12 +2157,17 @@ LaTeX Font Info:    Font shape `U/ntxexa/m/n' will be
 (Font)              scaled to size 6.6pt on input line 9.
 
 
+
+Package fancyhdr Warning: \headheight is too small (13.0pt): 
+(fancyhdr)                Make it at least 18.48402pt, for example:
+(fancyhdr)                \setlength{\headheight}{18.48402pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-5.48402pt}.
+
+[9.9]
+
 Package natbib Warning: Citation `zilken2026verifyingsamplingalgorithmsdistribu
 tional' on page 10 undefined on input line 16.
-
-
-LaTeX Warning: Reference `eq:fdr-support' on page 10 undefined on input line 23
-.
 
 
 pdfTeX warning (ext4): destination with the same identifier (name{theorem.1}) h
@@ -2287,36 +2177,15 @@ as been already used, duplicate ignored
 l.37 \begin{theorem}[AST of FDR]
                                 
 
-LaTeX Warning: Reference `thm:program-rule' on page 1 undefined on input line 5
-5.
-
-
-LaTeX Warning: Reference `eq:fdr-post' on page 10 undefined on input line 61.
+Package natbib Warning: Citation `DBLP:conf/aistats/SaadFRM20' on page 10 undef
+ined on input line 66.
 
 
 
 [10.10]
 
-Package natbib Warning: Citation `DBLP:conf/aistats/SaadFRM20' on page 11 undef
-ined on input line 66.
-
-
-LaTeX Warning: Reference `eq:fldr-support' on page 11 undefined on input line 1
-00.
-
-
-LaTeX Warning: Reference `thm:program-rule' on page 1 undefined on input line 1
-00.
-
-
 Package natbib Warning: Citation `zilken2026verifyingsamplingalgorithmsdistribu
 tional' on page 11 undefined on input line 106.
-
-
-LaTeX Warning: Reference `thm:fldr' on page 1 undefined on input line 106.
-
-
-LaTeX Warning: Reference `thm:fdr' on page 1 undefined on input line 106.
 
 
 
@@ -2338,32 +2207,7 @@ as been already used, duplicate ignored
 l.170 \begin{theorem}[AST of Han--Hoshi]
                                         
 
-[12.12]
-
-LaTeX Warning: Reference `eq:han-hoshi-post' on page 13 undefined on input line
- 205.
-
-
-LaTeX Warning: Reference `eq:han-hoshi-boundary-split' on page 13 undefined on 
-input line 206.
-
-
-LaTeX Warning: Reference `thm:program-rule' on page 1 undefined on input line 2
-14.
-
-
-LaTeX Warning: Reference `eq:han-hoshi-boundary-split' on page 13 undefined on 
-input line 218.
-
-
-LaTeX Warning: Reference `thm:program-rule' on page 1 undefined on input line 2
-26.
-
-
-LaTeX Warning: Reference `thm:program-rule' on page 1 undefined on input line 2
-37.
-
-) (8_RelatedWork.tex
+[12.12]) (8_RelatedWork.tex
 
 Package natbib Warning: Citation `DBLP:series/mcs/McIverM05' on page 13 undefin
 ed on input line 5.
@@ -2385,6 +2229,46 @@ Package natbib Warning: Citation `DBLP:journals/pacmpl/MajumdarS25' on page 13
 undefined on input line 5.
 
 
+Package natbib Warning: Citation `DBLP:books/wi/Puterman94' on page 13 undefine
+d on input line 8.
+
+
+Package natbib Warning: Citation `DBLP:books/sp/BaierK08' on page 13 undefined 
+on input line 8.
+
+
+Package natbib Warning: Citation `DBLP:journals/sttt/HenselJKQV22' on page 13 u
+ndefined on input line 8.
+
+
+Package natbib Warning: Citation `DBLP:conf/tacas/MertensKQW24' on page 13 unde
+fined on input line 8.
+
+
+Package natbib Warning: Citation `DBLP:journals/jcss/JungesK0W21' on page 13 un
+defined on input line 8.
+
+
+Package natbib Warning: Citation `DBLP:journals/corr/abs-2406-15087' on page 13
+ undefined on input line 8.
+
+
+Package natbib Warning: Citation `DBLP:conf/birthday/AghamovBKNOPV25' on page 1
+3 undefined on input line 8.
+
+
+Package natbib Warning: Citation `DBLP:conf/cav/AkshayCMZ23' on page 13 undefin
+ed on input line 8.
+
+
+Package natbib Warning: Citation `DBLP:conf/ijcai/0001CMZ24' on page 13 undefin
+ed on input line 8.
+
+
+Package natbib Warning: Citation `DBLP:conf/lics/AkshayGV18' on page 13 undefin
+ed on input line 8.
+
+
 
 
 Package fancyhdr Warning: \headheight is too small (13.0pt): 
@@ -2394,46 +2278,6 @@ Package fancyhdr Warning: \headheight is too small (13.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-5.48402pt}.
 
 [13.13]
-
-Package natbib Warning: Citation `DBLP:books/wi/Puterman94' on page 14 undefine
-d on input line 8.
-
-
-Package natbib Warning: Citation `DBLP:books/sp/BaierK08' on page 14 undefined 
-on input line 8.
-
-
-Package natbib Warning: Citation `DBLP:journals/sttt/HenselJKQV22' on page 14 u
-ndefined on input line 8.
-
-
-Package natbib Warning: Citation `DBLP:conf/tacas/MertensKQW24' on page 14 unde
-fined on input line 8.
-
-
-Package natbib Warning: Citation `DBLP:journals/jcss/JungesK0W21' on page 14 un
-defined on input line 8.
-
-
-Package natbib Warning: Citation `DBLP:journals/corr/abs-2406-15087' on page 14
- undefined on input line 8.
-
-
-Package natbib Warning: Citation `DBLP:conf/birthday/AghamovBKNOPV25' on page 1
-4 undefined on input line 8.
-
-
-Package natbib Warning: Citation `DBLP:conf/cav/AkshayCMZ23' on page 14 undefin
-ed on input line 8.
-
-
-Package natbib Warning: Citation `DBLP:conf/ijcai/0001CMZ24' on page 14 undefin
-ed on input line 8.
-
-
-Package natbib Warning: Citation `DBLP:conf/lics/AkshayGV18' on page 14 undefin
-ed on input line 8.
-
 
 Package natbib Warning: Citation `DBLP:conf/focs/Kozen79' on page 14 undefined 
 on input line 11.
@@ -2595,9 +2439,12 @@ Package natbib Warning: Citation `10.1145/3158121' on page 15 undefined on inpu
 t line 11.
 
 ) (appendixA.tex
-Underfull \vbox (badness 7397) has occurred while \output is active []
-
-
+pdfTeX warning (ext4): destination with the same identifier (name{lemma.1}) has
+ been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.6 \begin{lemma}[Loop-free correspondence]
+                                           
 
 
 Package fancyhdr Warning: \headheight is too small (13.0pt): 
@@ -2606,30 +2453,20 @@ Package fancyhdr Warning: \headheight is too small (13.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-5.48402pt}.
 
-[15.15]
-pdfTeX warning (ext4): destination with the same identifier (name{lemma.1}) has
- been already used, duplicate ignored
-<to be read again> 
-                   \relax 
-l.6 \begin{lemma}[Loop-free correspondence]
-                                           ) (appendixB.tex
-
-LaTeX Warning: Reference `eq:fdr-post' on page 1 undefined on input line 5.
-
-) (appendixC.tex
+[15.15]) (appendixB.tex) (appendixC.tex
 Overfull \hbox (39.87656pt too wide) in paragraph at lines 7--18
  [] 
  []
 
-) (appendixD.tex
-
-[16.16])
+) (appendixD.tex)
 No file main_popl.bbl.
 
 Package natbib Warning: There were undefined citations.
 
 
 
+[16.16]
+
 
 Package fancyhdr Warning: \headheight is too small (13.0pt): 
 (fancyhdr)                Make it at least 18.48402pt, for example:
@@ -2637,14 +2474,14 @@ Package fancyhdr Warning: \headheight is too small (13.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-5.48402pt}.
 
-[17.17]
+
 (C:\Users\dzilk\AppData\Local\Programs\MiKTeX\tex/generic/stringenc\se-pdfdoc.d
 ef
 File: se-pdfdoc.def 2019/11/29 v1.12 stringenc: PDFDocEncoding
 )
 (C:\Users\dzilk\AppData\Local\Programs\MiKTeX\tex/generic/stringenc\se-utf8.def
 File: se-utf8.def 2019/11/29 v1.12 stringenc: UTF-8
-) [18.17] (main_popl.aux)
+) [17.17] (main_popl.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-04-14>
@@ -2654,32 +2491,17 @@ L3 programming layer <2025-04-14>
 LaTeX Font Warning: Size substitutions with differences
 (Font)              up to 0.5pt have occurred.
 
-
-LaTeX Warning: There were undefined references.
-
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
-
-LaTeX Warning: Temporary extra page added at the end. Rerun to get it removed.
-
-
-Package rerunfilecheck Warning: File `main_popl.out' has changed.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `main_popl.out':
-(rerunfilecheck)             Before: D41D8CD98F00B204E9800998ECF8427E;0
-(rerunfilecheck)             After:  1CB5D3BB398026BBB96650252E789086;5475.
+Package rerunfilecheck Info: File `main_popl.out' has not changed.
+(rerunfilecheck)             Checksum: FF6E8B83938B65752191D21440A65CF2;5427.
  ) 
 Here is how much of TeX's memory you used:
- 46315 strings out of 469941
- 924095 string characters out of 5469431
- 1329643 words of memory out of 5000000
- 71374 multiletter control sequences out of 15000+600000
+ 46339 strings out of 469941
+ 924406 string characters out of 5469431
+ 1327643 words of memory out of 5000000
+ 71398 multiletter control sequences out of 15000+600000
  838536 words of font info for 516 fonts, out of 8000000 for 9000
  1302 hyphenation exceptions out of 8191
- 90i,17n,131p,2127b,1598s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 90i,17n,131p,2127b,2716s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <C:/Users/dzilk/AppData/Local/Programs/MiKTeX/fonts/type1/public/inconsolata/
 Inconsolata-zi4r.pfb><C:/Users/dzilk/AppData/Local/Programs/MiKTeX/fonts/type1/
 public/newtx/LibertineMathMI.pfb><C:/Users/dzilk/AppData/Local/Programs/MiKTeX/
@@ -2701,9 +2523,9 @@ aX.pfb><C:/Users/dzilk/AppData/Local/Programs/MiKTeX/fonts/type1/public/txfonts
 /txsyc.pfb><C:/Users/dzilk/AppData/Local/Programs/MiKTeX/fonts/type1/public/new
 tx/txsym.pfb><C:/Users/dzilk/AppData/Local/Programs/MiKTeX/fonts/type1/public/n
 ewtx/txsys.pfb>
-Output written on main_popl.pdf (18 pages, 571055 bytes).
+Output written on main_popl.pdf (17 pages, 582716 bytes).
 PDF statistics:
- 349 PDF objects out of 1000 (max. 8388607)
+ 458 PDF objects out of 1000 (max. 8388607)
  141 named destinations out of 1000 (max. 500000)
- 109085 words of extra memory for PDF output out of 128383 (max. 10000000)
+ 109269 words of extra memory for PDF output out of 128383 (max. 10000000)
 
