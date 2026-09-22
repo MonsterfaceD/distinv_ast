@@ -241,9 +241,9 @@ Hence
 is an inductive pCFG invariant.  The loop-head component
 $\mathit{Inv}_{\ell_2}$ is precisely the support part of the distributional
 invariant reused in the program-level proof; the other components are
-locationspecific consequences of it.
+location-specific consequences of it.
 
-The supermartingale is simple but already locationsensitive through the
+The supermartingale is simple but already location-dependent through the
 terminal location:
 \[
     V(\ell,\sigma)
@@ -262,7 +262,7 @@ $V_{\leq r}$ fixes $n\leq r$; together with the bounds in
 $\mathit{Inv}$ this makes all non-initial parts of the sublevel set finite.
 
 The pCFG variant must instead account for the exact point within an iteration.
-One suitable choice is the following locationspecific refinement of the
+One suitable choice is the following location-specific refinement of the
 iteration-level distance
 $\left\lceil\log_2\!\bigl(n/(v-c)\bigr)\right\rceil$:
 \[
@@ -324,8 +324,8 @@ $\ell_4,\ell_{5a},\ell_{5b}$ additionally compensate for the fact that one of
 the two updates of the iteration has already been executed.  For example,
 at $\ell_4$ the current value of $v$ has already been doubled whereas $c$
 still has its old value, explaining the denominator
-$\sigma(v)/2-\sigma(c)$.  At $\ell_{5a}$ and $\ell_{5b}$, in contrast, the
-two possible updates of $c$ have already been performed.
+$\sigma(v)/2-\sigma(c)$.  At $\ell_{5a}$ and $\ell_{5b}$, the expressions anticipate the
+respective updates of $c$, which are executed on the outgoing edges.
 The deterministic decrease conditions can consequently be discharged by
 checking the edges of \Cref{fig:fdr-pcfg}; the guard edge to
 $\ell_{\mathsf{out}}$ decreases to $0$, and the offsets enforce strict
@@ -393,7 +393,7 @@ Consider an enabled node. Each fair-bit outcome first increments $c$. If it is n
 Finally, on $v_{\le r}$, either $r<m$ and only terminal states occur, or $m\le r$. In the latter case $k=\lceil\log_2m\rceil\le\lceil\log_2r\rceil$, while \eqref{eq:fldr-support} gives $0\le u=k-c\le k$. Thus $u$ is bounded in every sublevel set, and \Cref{thm:program-rule} applies.
 \end{proof}
 
-This proof isolates the actual AST argument in three facts: $m$ is stable, tree height is logarithmically bounded by $m$, and at least one child avoids rejection. A direct pCFG treatment would additionally require values at the increment, choice, test, and reset locations, plus cases for both children. FLDR therefore illustrates the main contribution more strongly than FDR: the iteration-level rule turns a restart-heavy sampler into a short semantic proof.
+This proof isolates the actual AST argument in three facts: $m$ is stable, tree height is logarithmically bounded by $m$, and at least one child avoids rejection. A direct pCFG treatment would additionally require values at the increment, choice, test, and reset locations, plus cases for both children. FLDR complements the FDR comparison by showing how the program-level rule accommodates rejection and restart through the post-distribution of one iteration.
 
 \paragraph{From AST to total correctness.}
 The reused distributional invariants establish that the terminating FDR output is uniform and that FLDR returns $i$ with probability $a_i/m$~\cite{zilken2026verifyingsamplingalgorithmsdistributional}. \Cref{thm:fdr,thm:fldr} show AST, i.e. that the corresponding post-distributions have total mass one. Hence the partial-correctness distributions are proper output distributions, yielding total correctness for both algorithms.
@@ -403,7 +403,7 @@ The reused distributional invariants establish that the terminating FDR output i
 \subsection{Han--Hoshi Sampling: dyadic refinement without tail bounds}
 \label{sec:HanHoshi}
 
-The Han--Hoshi sampler draws from a discrete distribution with positive
+The Han--Hoshi sampler~\cite{HanHoshi1997} draws from a discrete distribution with positive
 integer weights $a_1,\ldots,a_n$ and total weight
 $m=\sum_{i=1}^n a_i$.  Write $S_i=\sum_{j=1}^i a_j$, with $S_0=0$.
 The algorithm repeatedly refines a dyadic interval until it lies entirely
@@ -525,6 +525,7 @@ iteration-level fact: bisecting an interval distributes its internal
 target boundaries over the two children, and at least one child contains
 strictly fewer.  The number of such boundaries serves simultaneously as
 the supermartingale and the natural-valued variant (with the value $1$
-for the enabled boundary-free initial case).  Hence Han--Hoshi exhibits
-the same proof pattern as FDR and FLDR and is established directly by the
-program-level rule of \Cref{thm:program-rule}.
+for the enabled boundary-free initial case).  Hence Han--Hoshi supplies a further application of the
+program-level rule of \Cref{thm:program-rule}, with a certificate based on
+interval refinement rather than the progress-and-restart structure of
+FDR and FLDR.

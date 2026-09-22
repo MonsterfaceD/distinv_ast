@@ -1,20 +1,20 @@
 \section{Proof-Obligation Comparison}
 \label{app:comparison}
 
-The comparison below counts categories of obligations rather than lines of prose.
+The comparison below summarizes the forms of proof obligations used in the two FDR proofs. It is a qualitative comparison of their representation, not a measurement of proof-development or solver runtime.
 
 \begin{center}
-\begin{tabular}{@{}lll@{}}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.25\linewidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
 \toprule
  & pCFG level & program level\\
 \midrule
-Invariant & one predicate per location & one distributional invariant\\
+Invariant & location-indexed state predicate & one distributional invariant\\
 Supermartingale & edge/choice obligations & one expected body-step inequality\\
-Variant & edge-wise strict/probabilistic descent & one post-distribution inequality\\
+Variant & edge-wise strict\slash probabilistic descent & one post-distribution inequality\\
 Control-flow constants & scaling and location offsets & none\\
 Reuse from partial correctness & requires projection/lifting & direct\\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{center}
 
-For FDR, both columns are feasible and prove the same AST fact. This makes FDR a controlled comparison of proof style. For FLDR, rejection resets create additional pCFG locations and certificate cases, while the program proof depends only on the probability mass of non-reset outcomes.
+For FDR, both columns are feasible and prove the same AST fact. This makes FDR a controlled comparison of proof style. The program-level proofs of FLDR and Han--Hoshi further demonstrate how progress is expressed using non-reset outcomes and interval boundaries, respectively; they are not additional comparisons against explicitly constructed pCFG certificates.

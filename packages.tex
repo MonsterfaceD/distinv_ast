@@ -1,12 +1,14 @@
-% acmart already loads xcolor with the required color-name support.
+% Explicit dependencies formerly supplied by acmart.
+\usepackage[dvipsnames]{xcolor}
 \usepackage{amsmath}
-%\usepackage{amssymb}
+\usepackage{amssymb}
 \usepackage{stmaryrd}
 %\usepackage{amsthm}
 \usepackage{mathtools}
 \DeclarePairedDelimiter\abs{\lvert}{\rvert}
 \usepackage{mdframed}
 \usepackage{booktabs}
+\usepackage{tabularx}
 \usepackage{tikz}
 \usepackage{csquotes}
 \usetikzlibrary{patterns,shapes,positioning,automata}
@@ -20,17 +22,21 @@
 \usepackage{siunitx}
 \usepackage{colortbl}
 \usepackage{listings}
-\usepackage{cleveref}
 \usepackage{thmtools}
 \usepackage{thm-restate}
+% LNCS proof environments do not insert an end-of-proof symbol automatically.
+\usepackage{etoolbox}
+\AtEndEnvironment{proof}{\qed}
 \usepackage{bussproofs}
 \usepackage{xspace}
 \usepackage{pifont}
-%,disable
-\usepackage[textsize=scriptsize,bordercolor=white]{todonotes}
+% Suppress author-identifying draft comments in the anonymous submission.
+% Remove "disable" only for an internal working copy.
+\usepackage[disable,textsize=scriptsize,bordercolor=white]{todonotes}
 \usepackage{setspace}
-\setlength{\marginparwidth}{40mm} % make todo notes wider
-%\setlength{\marginparsep}{2pt} % decrease space between margin notes and main text
+\usepackage[hidelinks]{hyperref}
+\hypersetup{pdfauthor={}}
+\usepackage{cleveref}
 
 \newcommand{\genericcomment}[3]{\todo[color=#1,fancyline]{\begin{spacing}{0.7}\textbf{#2:} #3\end{spacing}}}
 \newcommand{\genericcommentinline}[3]{\todo[inline,color=#1,,author=#2]{#3}\xspace}

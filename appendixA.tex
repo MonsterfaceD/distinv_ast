@@ -1,7 +1,19 @@
 \section{Translation and AST Preservation}
 \label{app:translation}
 
-This appendix records the correspondence used by the metatheory. The structural translation $\mathcal{T}$ introduces entry and exit locations for every command. Assignment edges update the valuation, guarded edges encode conditionals and loop tests, and a probabilistic-choice location has outgoing probabilities $p$ and $1-p$. Sequential composition identifies the first command's exit with the second command's entry.
+\paragraph{Well-defined loop semantics.}
+The transformer domain $\mathcal{H}$ from \Cref{sec:prelims} has pointwise suprema of increasing $\omega$-chains: these preserve $\omega$-continuity and the mass bound by monotone convergence. Its least element is $\bot=\lambda\eta.0$. By structural induction, the body transformer $\post{B}$ is $\omega$-continuous and does not increase mass. For $f\in\mathcal{H}$ and $\eta\in\subdists$,
+\[
+ \weight{\Phi_{b,B}(f)(\eta)}
+ =\weight{[\neg b]\eta}
+   +\weight{f\bigl(\post{B}([b]\eta)\bigr)}
+ \leq\weight{[\neg b]\eta}+\weight{[b]\eta}
+ =\weight{\eta}.
+\]
+Composition and addition preserve $\omega$-continuity here, so $\Phi_{b,B}(f)\in\mathcal{H}$. Moreover, for every increasing chain $(f_n)_n$ in $\mathcal{H}$, pointwise evaluation gives $\Phi_{b,B}(\sup_n f_n)=\sup_n\Phi_{b,B}(f_n)$. Kleene's theorem therefore yields \Cref{eq:while-transformer-fixpoint}. Structural induction also establishes linearity on sums that are subdistributions: in the loop case, every approximant is linear, and its pointwise supremum remains linear. The countable-sum property follows from $\omega$-continuity.
+
+\paragraph{Operational correspondence.}
+The structural translation $\mathcal{T}$ introduces entry and exit locations for every command. Assignment edges update the valuation, guarded edges encode conditionals and loop tests, and a probabilistic-choice location has outgoing probabilities $p$ and $1-p$. Sequential composition identifies the first command's exit with the second command's entry.
 
 \begin{lemma}[Loop-free correspondence]
 For loop-free $B$ and states $\sigma,\sigma'$,
@@ -14,4 +26,4 @@ For loop-free $B$ and states $\sigma,\sigma'$,
 By structural induction on $B$. Skip and assignment have one path. Sequential composition uses convolution over intermediate states. Conditional paths are partitioned by the guard. Probabilistic choice multiplies branch-path probabilities by $p$ and $1-p$, matching linearity of the post-transformer.
 \end{proof}
 
-For a loop, the $j$th Kleene approximant of its characteristic functional equals the probability distribution of pCFG runs that exit within at most $j$ visits to the guard. Taking suprema gives equality between post-distribution weight and pCFG reachability probability. Therefore $\weight{\post{C}(\dirac{\sigma})}=1$ iff the translated graph reaches its exit almost surely from $(\ell_{\rm in},\sigma)$. Linearity extends the equivalence to arbitrary initial subdistributions.
+For a loop $C=\while{b}{B}$ with loop-free body, induction on $j$ shows that $\Phi_{b,B}^{j}(\bot)(\mu)$ is the subdistribution of pCFG runs that exit within at most $j$ visits to the outer loop guard. The zeroth approximant is zero; for $j\geq1$, this means termination after at most $j-1$ completed body iterations. The induction step partitions runs into those that exit at the first guard test and those that execute $B$ and then terminate within the remaining guard visits. Taking pointwise suprema gives equality between post-distribution weight and pCFG reachability probability. Therefore $\weight{\post{C}(\dirac{\sigma})}=1$ iff the translated graph reaches its exit almost surely from $(\ell_{\rm in},\sigma)$. Linearity and $\omega$-continuity extend the equivalence to arbitrary initial subdistributions.

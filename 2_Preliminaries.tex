@@ -10,13 +10,13 @@ We consider the probabilistic guarded-command language
  C ::= \ski \mid \ass{x}{a} \mid \comp{C}{C} \mid \pchoice{C}{p}{C}
       \mid \ifelse{b}{C}{C} \mid \while{b}{C},
 \]
-where $p\in[0,1]\cap\mathbb{Q}$. A \emph{subdistribution} is a function $\mu:\Sigma\to\mathbb{R}_{\geq0}$ of weight $\weight{\mu}=\sum_{\sigma}\mu(\sigma)\leq1$. We write $\subdists$ for all subdistributions, $\supp(\mu)=\{\sigma\mid\mu(\sigma)>0\}$ for the support, and $\dirac{\sigma}$ for the Dirac distribution at $\sigma$. Missing mass represents nontermination.
+where $p\in[0,1]\cap\mathbb{Q}$. The language includes probabilistic choice but excludes nondeterministic choice. A \emph{subdistribution} is a function $\mu:\Sigma\to\mathbb{R}_{\geq0}$ of weight $\weight{\mu}=\sum_{\sigma}\mu(\sigma)\leq1$. We write $\subdists$ for all subdistributions, $\supp(\mu)=\{\sigma\mid\mu(\sigma)>0\}$ for the support, and $\dirac{\sigma}$ for the Dirac distribution at $\sigma$. Missing mass represents nontermination.
 
-Programs denote linear post-distribution transformers $\post{C}$. The clauses needed below are
+Programs denote linear, $\omega$-continuous post-distribution transformers $\post{C}:\subdists\to\subdists$ that do not increase mass. This is the forward denotational semantics of the probabilistic language: each input subdistribution has one output subdistribution, in the tradition of Kozen~\cite{DBLP:conf/focs/Kozen79,DBLP:conf/stoc/Kozen83}. The clauses needed below are
 \begin{align*}
  \post{\ski}(\mu) &= \mu,\\
  \post{\ass{x}{a}}(\mu)(\sigma)
-   &= \sum_{\sigma'=\sigma[x/a(\sigma')]}\mu(\sigma'),\\
+   &= \sum_{\sigma':\,\sigma'[x/a(\sigma')]=\sigma}\mu(\sigma'),\\
  \post{\pchoice{C_1}{p}{C_2}}(\mu)
    &= \post{C_1}(p\mu)+\post{C_2}((1-p)\mu),\\
  \post{\comp{C_1}{C_2}}(\mu)
@@ -24,12 +24,21 @@ Programs denote linear post-distribution transformers $\post{C}$. The clauses ne
  \post{\ifelse{b}{C_1}{C_2}}(\mu)
    &= \post{C_1}([b]\mu)+\post{C_2}([\neg b]\mu).
 \end{align*}
-For a loop $C=\while{b}{B}$, let $F_\mu(e)=\mu+\post{B}([b]e)$. Its semantics is
-\[
-  \post{C}(\mu)=[\neg b]\cdot \lfp F_\mu.
-\]
-Equivalently, the Kleene approximants collect executions that leave the loop after finitely many iterations. Linearity gives
-$\post{C}(\sum_i p_i\dirac{\sigma_i})=\sum_i p_i\post{C}(\dirac{\sigma_i})$, which lets us reduce one-iteration obligations to Dirac inputs.
+For a loop $C=\while{b}{B}$, we take a least fixed point over transformers, as in~\cite{zilken2026verifyingsamplingalgorithmsdistributional}. We order subdistributions and transformers pointwise. Let $\mathcal{H}$ be the pointed $\omega$-cpo of $\omega$-continuous transformers $f:\subdists\to\subdists$ satisfying $\weight{f(\eta)}\leq\weight{\eta}$ for every $\eta\in\subdists$, with bottom $\bot=\lambda\eta.0$. Define
+\begin{equation}
+\label{eq:while-transformer-fixpoint}
+ \begin{aligned}
+  \Phi_{b,B}(f)(\eta)
+    &= [\neg b]\eta+f\bigl(\post{B}([b]\eta)\bigr),\\
+  \post{C}(\mu)
+    &= (\lfp\Phi_{b,B})(\mu)
+     = \sup_{j\in\mathbb{N}}\Phi_{b,B}^{j}(\bot)(\mu).
+ \end{aligned}
+\end{equation}
+The functional $\Phi_{b,B}:\mathcal{H}\to\mathcal{H}$ is $\omega$-continuous, and every approximant has mass at most $\weight{\mu}$ (see \Cref{app:translation}). For $j\geq1$, $\Phi_{b,B}^{j}(\bot)(\mu)$ collects the terminating executions with fewer than $j$ completed body iterations. Thus the fixed point ranges over transformers, while all their inputs and outputs remain subdistributions.
+
+Linearity and $\omega$-continuity give
+$\post{C}(\sum_i p_i\dirac{\sigma_i})=\sum_i p_i\post{C}(\dirac{\sigma_i})$ for any finite or countable family with $p_i\geq0$ and $\sum_i p_i\leq1$, which lets us reduce one-iteration obligations to Dirac inputs.
 
 \begin{definition}[Almost-sure termination]
 A program $C$ is \emph{almost-surely terminating} on $M\subseteq\subdists$ if

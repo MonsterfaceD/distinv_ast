@@ -3,9 +3,12 @@
 
 Our program-level rule builds on the sound and relatively complete
 pCFG rule of Majumdar and Sathiyanarayana%
-~\cite{DBLP:journals/pacmpl/MajumdarS25}. We state their rule in full
-before relating its location-dependent certificates to our
-distribution-transformer formulation.
+~\cite{DBLP:journals/pacmpl/MajumdarS25}. Their framework includes
+bounded demonic nondeterminism and requires AST under every scheduler.
+We state the specialization to pCFGs without nondeterministic choice,
+matching the language of \Cref{sec:prelims}, before relating its
+location-dependent certificates to our distribution-transformer
+formulation.
 
 A probabilistic control-flow graph (pCFG) has configurations
 $(\ell,\sigma)$ consisting of a control location $\ell$ and a program

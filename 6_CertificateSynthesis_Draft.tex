@@ -1,0 +1,164 @@
+% Candidate section to place after Soundness and Relative Completeness.
+% Requires the paper's LNCS setup, amsmath/amssymb and cleveref.
+% References the existing label thm:program-rule.
+% This draft states only the restricted method exercised by the two examples.
+\section{Template-Based Certificate Synthesis}
+\label{sec:certificate-synthesis}
+
+We instantiate the program-level rule with an SMT-based search for two
+certificates over loop-head states. The current prototype takes a supplied
+inductive state predicate and a manually encoded one-iteration semantics.
+It synthesizes the coefficients of the certificates; invariant generation and
+automatic translation of source programs are outside its current scope.
+
+\subsection{Guarded Affine Templates and Constraints}
+\label{sec:synthesis-constraints}
+
+Consider a loop with guard $b$ over integer-valued variables
+$\mathbf{x}=(x_1,\ldots,x_d)$. Let $S$ be a supplied predicate containing
+the initial states and preserved by every enabled body execution. For the
+presented examples, the body has two equiprobable outcomes represented by
+total, piecewise affine updates $T_0,T_1$. Both updates describe an entire
+body execution, including its deterministic branches.
+
+We use independent templates
+\[
+ V_{\mathbf a}(\mathbf{x})=
+ \begin{cases}a_0+\sum_{i=1}^d a_i x_i,&b(\mathbf{x}),\\0,&\neg b(\mathbf{x}),\end{cases}
+ \qquad
+ U_{\mathbf c}(\mathbf{x})=
+ \begin{cases}c_0+\sum_{i=1}^d c_i x_i,&b(\mathbf{x}),\\0,&\neg b(\mathbf{x}).\end{cases}
+\]
+Both functions have integer coefficients between $-2$ and $2$.
+The prototype prefers a small sum of absolute coefficient values.
+This preference guides the search and has no role in certificate validity.
+
+For every $\mathbf{x}$ satisfying $S\land b$, we impose
+\begin{align}
+ V(\mathbf{x})&\geq 1,& U(\mathbf{x})&\geq 1,
+ \label{eq:syn-positive}\\
+ V(T_0(\mathbf{x}))+V(T_1(\mathbf{x}))&\leq 2V(\mathbf{x}),
+ \label{eq:syn-supermartingale}\\
+ U(T_0(\mathbf{x}))\leq U(\mathbf{x})-1
+ &\quad\lor\quad U(T_1(\mathbf{x}))\leq U(\mathbf{x})-1,
+ \label{eq:syn-progress}\\
+ U(\mathbf{x})&\leq V(\mathbf{x}).
+ \label{eq:syn-domination}
+\end{align}
+The last condition ensures that $U$ is bounded on sublevel sets of $V$.
+It is stronger than the corresponding premise of the original rule.
+Likewise, integer coefficients and
+$V\geq1$ restrict the search space beyond the requirements of that rule.
+
+\begin{proposition}[Soundness of the synthesis constraints]
+Assume that $S$ contains the initial states and is preserved by both body
+outcomes. Every template instantiation satisfying
+\eqref{eq:syn-positive}--\eqref{eq:syn-domination} for all states in
+$S\land b$ is an AST certificate with progress bound $\varepsilon=1/2$.
+\end{proposition}
+\begin{proof}
+The templates vanish off the guard. On enabled states, $V$ is positive and
+$U$ is a positive integer. Equation~\eqref{eq:syn-supermartingale} is the
+one-iteration supermartingale inequality. Equation~\eqref{eq:syn-progress}
+ensures a strict decrease of $U$ on an outcome of probability $1/2$.
+Finally, $U\leq V$ on $S$, including terminal states, implies that
+$U\leq\lfloor r\rfloor$ whenever $V\leq r$.
+The set of subdistributions supported in $S$ is a distributional invariant
+for the loop and the allowed inputs. Hence \Cref{thm:program-rule} applies.
+\end{proof}
+
+\subsection{Counterexample-Guided Search}
+\label{sec:synthesis-cegis}
+
+The learner instantiates the constraints on a finite set of enabled states
+and selects candidate coefficients. The verifier fixes these coefficients
+and asks whether there exists any integer state satisfying $S\land b$
+that violates a constraint. A satisfying state is added to the learner's
+sample set; an unsatisfiable query establishes all constraints throughout
+the invariant domain. Unknown results and resource limits are treated as
+inconclusive.
+
+With the states fixed, the learner's constraints are linear in the
+coefficients. With the coefficients fixed, the verifier's constraints are
+Boolean combinations of linear arithmetic over states. Thus the procedure
+avoids solving the original existential-universal formula directly.
+The final verification places no bound on the program variables.
+Initialization and preservation of $S$ are checked independently.
+
+For a fixed finite coefficient domain, every counterexample excludes the
+current candidate. In the absence of resource limits and with terminating
+exact solvers, this gives a terminating search that is complete only for
+the chosen finite template space. It does not establish completeness for
+affine certificates with unrestricted coefficients or for AST programs.
+
+\subsection{Two Worked Synthesis Examples}
+\label{sec:synthesis-examples}
+
+\paragraph{Unbounded symmetric random walk.}
+Consider the loop
+\[
+ \mathtt{while}\ (x>0)\ \{x:=x-1\ [1/2]\ x:=x+1\}
+\]
+over integers with $S\equiv x\geq0$. The templates are $V(x)=ax+b$ and
+$U(x)=cx+d$ on enabled states, and zero at $x=0$.
+In the recorded run, the learner starts from $x=1$ and first proposes
+$V=U=1$ on enabled states. The verifier returns $x=2$: both successors
+remain enabled and keep $U=1$, violating progress.
+The next candidate is $V(x)=U(x)=x$, which is verified for every $x>0$:
+\[
+ \tfrac12 V(x-1)+\tfrac12 V(x+1)=x=V(x),
+ \qquad U(x-1)=U(x)-1,
+ \qquad U=V.
+\]
+Both functions are nonnegative on $S$ and vanish at zero. The invariant
+is preserved because $x\geq1$ before either update. This proves AST from
+every nonnegative integer initial state.
+
+This example separates AST synthesis from finite-expected-runtime
+arguments. For $0<x<N$, the expected time to hit either $0$ or $N$ is
+$x(N-x)$, which lower-bounds the expected time to hit $0$. Letting
+$N$ grow shows that the latter expectation is infinite for $x>0$.
+The synthesized $V$ is a martingale, not a certificate of uniform expected
+decrease. The separate probabilistic progress condition still holds.
+
+\paragraph{Fast Dice Roller with symbolic range.}
+Use the FDR loop of the case study, with initial values $v=1,c=0$ and
+symbolic integer parameter $n\geq1$. Its invariant domain is
+\[
+ S\equiv n\geq1\ \land\ 1\leq v<2n\ \land\ 0\leq c<v\ \land\ c<n.
+\]
+For bit $\beta\in\{0,1\}$, the complete body update is
+\[
+ T_\beta(n,v,c)=
+ \begin{cases}
+ (n,2v-n,2c+\beta-n),&2c+\beta\geq n,\\
+ (n,2v,2c+\beta),&2c+\beta<n.
+ \end{cases}
+\]
+Independent affine templates over $(n,v,c)$ yield the verified pair
+\[
+ V(n,v,c)=\begin{cases}n,&v<n,\\0,&v\geq n,\end{cases}
+ \qquad
+ U(n,v,c)=\begin{cases}n-v+c,&v<n,\\0,&v\geq n.\end{cases}
+\]
+The shared engine finds this pair after four candidates in the recorded
+run. Both certificates are verified for all integer states in $S$, with
+no fixed upper bound on $n$.
+
+At an enabled state, let $d=v-c$. Then $1\leq d\leq n-1$, so
+$1\leq U=n-d\leq n-1<V$. Since $n$ is unchanged, either successor
+has $V$ equal to $n$ or zero, proving the supermartingale condition.
+On the zero-bit outcome, the difference becomes $d'=2d$: subtracting
+$n$ from both variables leaves their difference unchanged. If the
+successor remains enabled, $U'=n-2d\leq U-1$; otherwise $U'=0<U$.
+Thus progress holds with probability at least $1/2$, and $U\leq V$
+establishes sublevel boundedness.
+
+The affine variant therefore suffices for qualitative termination; the
+logarithmic variant used in the manual proof is not required for this
+purpose. FDR is nevertheless a baseline: on the one-bit outcome,
+$d'=2d-1\geq d$, or execution terminates, so $U'\leq U$.
+Consequently $\mathbb{E}[U']\leq U-1/2$, and this particular $U$ is
+itself a ranking supermartingale. Together, the two examples demonstrate
+symbolic-parameter synthesis and AST with infinite expected runtime;
+they do not yet establish an advantage over existing synthesis tools.

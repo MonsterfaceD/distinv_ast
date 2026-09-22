@@ -1,0 +1,260 @@
+{
+  "z3_version": "5.1.0",
+  "method": "CEGIS with guarded affine integer templates and U <= V",
+  "examples": [
+    {
+      "name": "random_walk",
+      "status": "verified",
+      "state_order": [
+        "x"
+      ],
+      "coefficient_order": [
+        "x",
+        "constant"
+      ],
+      "coefficient_bound": 2,
+      "V_coefficients": [
+        1,
+        0
+      ],
+      "U_coefficients": [
+        1,
+        0
+      ],
+      "epsilon": "1/2",
+      "samples": [
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "trace": [
+        {
+          "iteration": 1,
+          "V_coefficients": [
+            0,
+            1
+          ],
+          "U_coefficients": [
+            0,
+            1
+          ],
+          "result": "counterexample",
+          "state": [
+            2
+          ],
+          "violations": [
+            "progress"
+          ]
+        },
+        {
+          "iteration": 2,
+          "V_coefficients": [
+            1,
+            0
+          ],
+          "U_coefficients": [
+            1,
+            0
+          ],
+          "result": "verified"
+        }
+      ],
+      "support_checks": {
+        "initialization": "unsat",
+        "support_preservation_outcome_0": "unsat",
+        "support_preservation_outcome_1": "unsat"
+      },
+      "certificate_checks": {
+        "V_positive": "unsat",
+        "U_positive": "unsat",
+        "sublevel_bound_U_le_V": "unsat",
+        "supermartingale": "unsat",
+        "progress": "unsat"
+      },
+      "domain": "all integer states satisfying the supplied support and loop guard"
+    },
+    {
+      "name": "fdr",
+      "status": "verified",
+      "state_order": [
+        "n",
+        "v",
+        "c"
+      ],
+      "coefficient_order": [
+        "n",
+        "v",
+        "c",
+        "constant"
+      ],
+      "coefficient_bound": 2,
+      "V_coefficients": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "U_coefficients": [
+        1,
+        -1,
+        1,
+        0
+      ],
+      "epsilon": "1/2",
+      "samples": [
+        [
+          2,
+          1,
+          0
+        ],
+        [
+          3,
+          1,
+          0
+        ],
+        [
+          4,
+          2,
+          1
+        ],
+        [
+          4,
+          3,
+          2
+        ]
+      ],
+      "trace": [
+        {
+          "iteration": 1,
+          "V_coefficients": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "U_coefficients": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "result": "counterexample",
+          "state": [
+            3,
+            1,
+            0
+          ],
+          "violations": [
+            "progress"
+          ]
+        },
+        {
+          "iteration": 2,
+          "V_coefficients": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "U_coefficients": [
+            0,
+            0,
+            -1,
+            1
+          ],
+          "result": "counterexample",
+          "state": [
+            4,
+            2,
+            1
+          ],
+          "violations": [
+            "U_positive",
+            "progress"
+          ]
+        },
+        {
+          "iteration": 3,
+          "V_coefficients": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "U_coefficients": [
+            1,
+            0,
+            -1,
+            0
+          ],
+          "result": "counterexample",
+          "state": [
+            4,
+            3,
+            2
+          ],
+          "violations": [
+            "progress"
+          ]
+        },
+        {
+          "iteration": 4,
+          "V_coefficients": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "U_coefficients": [
+            1,
+            -1,
+            1,
+            0
+          ],
+          "result": "verified"
+        }
+      ],
+      "support_checks": {
+        "initialization": "unsat",
+        "support_preservation_outcome_0": "unsat",
+        "support_preservation_outcome_1": "unsat"
+      },
+      "certificate_checks": {
+        "V_positive": "unsat",
+        "U_positive": "unsat",
+        "sublevel_bound_U_le_V": "unsat",
+        "supermartingale": "unsat",
+        "progress": "unsat"
+      },
+      "domain": "all integer states satisfying the supplied support and loop guard"
+    }
+  ],
+  "sanity_checks": {
+    "constant_variant_refuted": true,
+    "positive_drift_refuted": true
+  },
+  "additional_diagnostics": {
+    "fdr_ranking_supermartingale": {
+      "E_U_next_le_U_minus_half_counterexample_query": "unsat"
+    }
+  },
+  "presented_certificates": {
+    "random_walk_V_x_U_x": {
+      "V_positive": "unsat",
+      "U_positive": "unsat",
+      "sublevel_bound_U_le_V": "unsat",
+      "supermartingale": "unsat",
+      "progress": "unsat"
+    },
+    "fdr_V_n_U_n_minus_v_plus_c": {
+      "V_positive": "unsat",
+      "U_positive": "unsat",
+      "sublevel_bound_U_le_V": "unsat",
+      "supermartingale": "unsat",
+      "progress": "unsat"
+    }
+  }
+}

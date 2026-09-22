@@ -1,9 +1,16 @@
-# Paper draft
+# ESOP 2027 paper draft
 
 Main file: `main_popl.tex`
 
-- Venue-independent ACM review layout retained from the supplied template.
-- Main text: program-level AST rule, metatheory, random walk, FDR comparison, FLDR case study.
+- Anonymous Springer LNCS layout using the supplied, unmodified `llncs.cls`.
+- Standard fonts, type size, margins, and spacing; no ACM review line numbers.
+- Bibliography style: `splncs04.bst` (included).
+- Target: about 25 pages excluding references. ESOP 2027 research submissions
+  have no fixed page limit; the final LNCS paper is limited to 25 pages
+  excluding references. See https://etaps.org/2027/conferences/esop/.
 - Appendices are enabled by default; set `\appendixversionfalse` in `main_popl.tex` for main-text only.
-- The anonymous author block should be replaced after a venue is selected.
-- A precompiled `main_popl.pdf` is included. It was built with Tectonic using ACM's fallback fonts because the container lacked Libertinus Math; this does not alter the delivered `acmart.cls`.
+- Keep the anonymous author block and disabled author comments for submission.
+  Add author names, affiliations, and acknowledgments only for the final version.
+- Build with `latexmk -pdf main_popl.tex` (pdfLaTeX and BibTeX).
+- Recompile after applying the format update; the PDF and auxiliary files in
+  the original archive were generated with the previous ACM layout.
