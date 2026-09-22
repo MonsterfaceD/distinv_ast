@@ -3,7 +3,7 @@
 
 We connect \Cref{thm:program-rule} to the pCFG rule through the translation outlined in \Cref{sec:background}. The proofs also explain why contracting a loop body preserves the two certificates.
 
-\subsection{From edge-level to iteration-level reasoning}
+\subsection{From Edge-Level to Iteration-Level Reasoning}
 
 Let $B$ be loop-free and let $\mathcal{T}[B]$ have entry $\ell_{\mathsf{in}}$ and exit $\ell_{\mathsf{out}}$. Because $B$ is loop-free, every path from entry to exit is finite and there is a maximum path length $L_B$.
 
@@ -47,7 +47,7 @@ The source-level decrease condition says that, with probability at least $\varep
 Finally, if $v(\sigma)\le r$, source-level boundedness bounds $u(\sigma)$; multiplication by $L_B$ and addition of at most $L_B$ internal steps preserves boundedness of $U$. The lifted certificates satisfy \Cref{thm:pcfg-rule}, so $G$ reaches its exit almost surely. AST preservation by the translation yields $\weight{\post{C}(\mu)}=\weight{\mu}$ for every $\mu\in M$.
 \end{proof}
 
-\subsection{Relative completeness}
+\subsection{Relative Completeness}
 
 \begin{theorem}[Relative completeness]
 \label{thm:complete}

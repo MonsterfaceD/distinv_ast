@@ -1,12 +1,12 @@
-% Candidate section to place after Soundness and Relative Completeness.
-% Requires the paper's LNCS setup, amsmath/amssymb and cleveref.
-% References the existing label thm:program-rule.
-% This draft states only the restricted method exercised by the two examples.
+% Section 6: method and synthesis results, after the manual sampler proofs.
+% The method is restricted to the supplied invariants, body semantics,
+% and finite coefficient domain stated below.
 \section{Template-Based Certificate Synthesis}
 \label{sec:certificate-synthesis}
 
-We instantiate the program-level rule with an SMT-based search for two
-certificates over loop-head states. The current prototype takes a supplied
+Having applied the rule manually in \Cref{sec:walk,sec:case-studies}, we now
+instantiate it with an SMT-based search for two certificates over loop-head
+states. The current prototype takes a supplied
 inductive state predicate and a manually encoded one-iteration semantics.
 It synthesizes the coefficients of the certificates; invariant generation and
 automatic translation of source programs are outside its current scope.
@@ -91,28 +91,21 @@ exact solvers, this gives a terminating search that is complete only for
 the chosen finite template space. It does not establish completeness for
 affine certificates with unrestricted coefficients or for AST programs.
 
-\subsection{Two Worked Synthesis Examples}
+\subsection{Worked Synthesis Examples}
 \label{sec:synthesis-examples}
 
 \paragraph{Unbounded symmetric random walk.}
-Consider the loop
-\[
- \mathtt{while}\ (x>0)\ \{x:=x-1\ [1/2]\ x:=x+1\}
-\]
-over integers with $S\equiv x\geq0$. The templates are $V(x)=ax+b$ and
+We return to the integer-valued random walk of \Cref{sec:walk}, with
+$S\equiv x\geq0$. The templates are $V(x)=ax+b$ and
 $U(x)=cx+d$ on enabled states, and zero at $x=0$.
 In the recorded run, the learner starts from $x=1$ and first proposes
 $V=U=1$ on enabled states. The verifier returns $x=2$: both successors
 remain enabled and keep $U=1$, violating progress.
-The next candidate is $V(x)=U(x)=x$, which is verified for every $x>0$:
-\[
- \tfrac12 V(x-1)+\tfrac12 V(x+1)=x=V(x),
- \qquad U(x-1)=U(x)-1,
- \qquad U=V.
-\]
-Both functions are nonnegative on $S$ and vanish at zero. The invariant
-is preserved because $x\geq1$ before either update. This proves AST from
-every nonnegative integer initial state.
+The next candidate is $V(x)=U(x)=x$, recovering the certificates from
+\Cref{sec:walk}. The verifier establishes all constraints for every
+integer $x>0$, and initialization and invariant preservation are checked
+independently. Thus the procedure discovers and validates the earlier
+manual proof over the unbounded state space.
 
 This example separates AST synthesis from finite-expected-runtime
 arguments. For $0<x<N$, the expected time to hit either $0$ or $N$ is
@@ -122,7 +115,7 @@ The synthesized $V$ is a martingale, not a certificate of uniform expected
 decrease. The separate probabilistic progress condition still holds.
 
 \paragraph{Fast Dice Roller with symbolic range.}
-Use the FDR loop of the case study, with initial values $v=1,c=0$ and
+Use the FDR loop of \Cref{sec:fdr}, with initial values $v=1,c=0$ and
 symbolic integer parameter $n\geq1$. Its invariant domain is
 \[
  S\equiv n\geq1\ \land\ 1\leq v<2n\ \land\ 0\leq c<v\ \land\ c<n.
@@ -155,7 +148,7 @@ Thus progress holds with probability at least $1/2$, and $U\leq V$
 establishes sublevel boundedness.
 
 The affine variant therefore suffices for qualitative termination; the
-logarithmic variant used in the manual proof is not required for this
+logarithmic variant used in \Cref{thm:fdr} is not required for this
 purpose. FDR is nevertheless a baseline: on the one-bit outcome,
 $d'=2d-1\geq d$, or execution terminates, so $U'\leq U$.
 Consequently $\mathbb{E}[U']\leq U-1/2$, and this particular $U$ is

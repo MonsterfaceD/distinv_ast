@@ -7,6 +7,9 @@
 \input{packages}
 \input{macros}
 
+% Include sections and subsections in the PDF navigation without printing a TOC.
+\setcounter{tocdepth}{2}
+
 \newif\ifappendixversion
 \appendixversiontrue
 
@@ -24,28 +27,27 @@
 \begin{abstract}
 Almost-sure termination (AST) is essential to the total correctness of probabilistic sampling algorithms. Majumdar and Sathiyanarayana provide a sound and relatively complete AST rule for probabilistic control-flow graphs (pCFGs), whose application to source programs requires a graph translation and certificates over control locations and valuations. We lift their two-certificate approach to a rule stated directly over the distribution-transformer semantics of probabilistic while-loops with loop-free bodies. A non-negative supermartingale controls escape to unbounded regions, while a natural-valued variant decreases with uniformly positive probability and is bounded on each supermartingale sublevel set. Both obligations concern complete loop iterations, so users supply certificates over source states without intermediate control-location annotations. We establish soundness and relative completeness for this program class through certificate translations between the two levels.
 
-We illustrate the rule on the one-dimensional random walk, then give both pCFG-level and program-level AST proofs of the Fast Dice Roller. This comparison makes explicit the location-dependent cases and offsets eliminated by reasoning over complete iterations. Further program-level proofs cover rejection and restart in the Fast Loaded Dice Roller and dyadic refinement in the Han--Hoshi sampler. For FDR and FLDR, existing distributional invariants can be reused to integrate these termination arguments with output-correctness proofs. The case studies demonstrate how the rule exposes the probabilistic progress argument while reducing control-flow bookkeeping.
+We illustrate the rule on the one-dimensional random walk, then give both pCFG-level and program-level AST proofs of the Fast Dice Roller. This comparison makes explicit the location-dependent cases and offsets eliminated by reasoning over complete iterations. Further program-level proofs cover rejection and restart in the Fast Loaded Dice Roller and dyadic refinement in the Han--Hoshi sampler. For FDR and FLDR, existing distributional invariants can be reused to integrate these termination arguments with output-correctness proofs. The case studies demonstrate how the rule exposes the probabilistic progress argument while reducing control-flow bookkeeping. We also give a restricted template-based synthesis procedure with sound constraints and a prototype that synthesizes certificates for the random walk and FDR from supplied invariants and one-iteration semantics.
 
 \keywords{almost-sure termination \and probabilistic programs \and sampling algorithms \and distribution transformers \and loop invariants \and supermartingales \and Fast Dice Roller}
 \end{abstract}
 
+% Main text: eight sections, in reading order.
 \input{1_Introduction}
-\input{2_Preliminaries}
-\input{3_MDPs}
-\input{4_Nondet}
-\input{5_SP}
-\input{6_CertificateSynthesis_Draft}
-\input{6_Nim}
-\input{7_NondetFDR}
-\input{8_RelatedWork}
-\input{9_Conclusion}
+\input{2_Preliminaries_and_Background}
+\input{3_Program_Level_AST_Rule}
+\input{4_Soundness_and_Completeness}
+\input{5_Sampling_Algorithms}
+\input{6_Certificate_Synthesis}
+\input{7_Related_Work}
+\input{8_Conclusion}
 
 \ifappendixversion
 \appendix
-\input{appendixA}
-\input{appendixB}
-\input{appendixC}
-\input{appendixD}
+\input{appendices/A_Translation_and_AST_Preservation}
+\input{appendices/B_One_Iteration_Calculations}
+\input{appendices/C_Proof_Obligation_Comparison}
+\input{appendices/D_Artifact_and_Proof_Notes}
 \fi
 
 \bibliographystyle{splncs04}

@@ -1,8 +1,10 @@
-\section{Case Studies: Exact Sampling from Fair Bits}
+\section{Almost-Sure Termination of Sampling Algorithms}
 \label{sec:case-studies}
 
-\subsection{Fast Dice Roller: the same proof at two levels}
+\subsection{Fast Dice Roller: The Same Proof at Two Levels}
 \label{sec:fdr}
+
+\subsubsection{Program and Invariant.}
 
 The Fast Dice Roller (FDR) samples uniformly from $\{0,\ldots,n-1\}$ using fair coin flips~\cite{DBLP:journals/corr/abs-1304-1916}. We use the following program-level presentation:
 \begin{lstlisting}[basicstyle=\ttfamily\small,mathescape=true,frame=single]
@@ -20,6 +22,7 @@ On termination, $c$ is the sampled outcome. Existing distributional-invariant re
 \end{equation}
 The distributional invariant additionally states that equal admissible $c$-values carry equal mass, however only \eqref{eq:fdr-support} is needed for our termination proof.
 
+\subsubsection{Program-Level AST Proof.}
 Let $B_{\mathrm{FDR}}$ denote the body. For a Dirac input $\dirac{\sigma}$, its post-distribution is
 \begin{align}
 \post{B_{\mathrm{FDR}}}(\dirac{\sigma})
@@ -181,7 +184,7 @@ For a sublevel set with $r<n$, only terminal states occur. If $r\ge n$, the inva
 \end{figure}
 
 
-\paragraph{Comparison with the pCFG proof.}
+\subsubsection{pCFG-Level Proof and Comparison.}
 The pCFG rule of Majumdar and Sathiyanarayana is applicable to FDR and
 establishes the same AST statement as \Cref{thm:fdr}.  Unlike the
 program-level proof, however, it reasons about individual configurations
@@ -353,7 +356,7 @@ loop iteration---without introducing locations, offsets, and intermediate
 state expressions solely for control-flow bookkeeping.
 
 
-\subsection{Fast Loaded Dice Roller: rejection without graph bookkeeping}
+\subsection{Fast Loaded Dice Roller: Rejection and Restart}
 \label{sec:fldr}
 
 The Fast Loaded Dice Roller (FLDR) samples outcome $i$ with probability $a_i/m$, where $a_1,\ldots,a_n$ are positive integers and $m=\sum_{i=1}^n a_i$~\cite{DBLP:conf/aistats/SaadFRM20}. Let $k=\lceil\log_2 m\rceil$. Preprocessing adds a rejecting outcome $n+1$ of weight $2^k-m$ and builds a compact representation $(H,h)$ of a binary decision tree. Sampling traverses the tree using fair bits; reaching $n+1$ resets the traversal to the root.
@@ -400,7 +403,7 @@ The reused distributional invariants establish that the terminating FDR output i
 
 
 
-\subsection{Han--Hoshi Sampling: dyadic refinement without tail bounds}
+\subsection{Han--Hoshi Sampling: Dyadic Refinement}
 \label{sec:HanHoshi}
 
 The Han--Hoshi sampler~\cite{HanHoshi1997} draws from a discrete distribution with positive

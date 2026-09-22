@@ -1,0 +1,10 @@
+\section{Artifact and Proof-Development Notes}
+\label{app:artifact}
+
+The current manuscript is an anonymous ESOP draft in Springer LNCS format, with \texttt{main\_esop.tex} as its entry point. Before submission, the following items should be completed: (i) mechanize or fully expand the translation-correctness proof; (ii) state the preprocessing properties of FLDR as explicit lemmas and connect them to its reference implementation; (iii) decide whether the generalized $\varepsilon_r$ version belongs in the main theorem; and (iv) evaluate proof size using a stable metric, for example number of certificate cases and generated verification conditions. The anonymous author block should be retained for anonymous review.
+
+The \texttt{synthesis/} directory contains the shared CEGIS prototype, its pinned solver requirement, recorded results, and explanatory notes. From that directory, install \texttt{requirements.txt} and run:
+\begin{lstlisting}[basicstyle=\ttfamily\small]
+python3 synthesis_examples.py --output results.json
+\end{lstlisting}
+The recorded results support the two synthesis examples in \Cref{sec:certificate-synthesis}; they are not a broad performance evaluation.

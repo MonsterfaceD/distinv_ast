@@ -3,6 +3,8 @@
 
 Consider a program $C=\while{b}{B}$ whose body $B$ is loop-free. Let $M$ be a set of initial subdistributions. We now state the main contribution.
 
+\subsection{The Proof Rule}
+
 \begin{theorem}[Program-level AST rule]
 \label{thm:program-rule}
 The loop $C$ is AST on $M$ if there exist:
@@ -35,6 +37,38 @@ The conditions deliberately do not require $u$ to decrease in expectation. It ma
 
 \paragraph{Soundness proof intuition.}
 Fix a sublevel set $v_{\le r}$ and let $K_r$ bound $u$ there. From every nonterminal state in this set, a complete loop iteration has probability at least $\varepsilon$ of decreasing $u$. Hence there is probability at least $\varepsilon^{K_r}$ of following enough decreasing iterations to reach zero, provided the run stays in the set. Repeating this argument rules out nontermination confined to $v_{\le r}$. Meanwhile, the supermartingale property bounds the probability of reaching arbitrarily large values of $v$; non-negative supermartingale convergence rules out escaping every finite sublevel set with positive probability. Thus all nonterminating behavior has measure zero.
+
+\subsection{Illustration: The Symmetric Random Walk}
+\label{sec:walk}
+
+Consider the symmetric random walk
+\[
+ \ass{x}{k};\quad
+ \while{x>0}{\pchoice{\ass{x}{x-1}}{1/2}{\ass{x}{x+1}}},
+ \qquad k\in\mathbb{N}_{>0}.
+\]
+This loop terminates almost surely at $x=0$, although its expected termination time is infinite. It is therefore a compact illustration of why the supermartingale and variant play different roles.
+
+Let $M=\{\dirac{\sigma}\mid\sigma(x)=k,\ k>0\}$ and
+$I=\{\mu\in\subdists\mid\supp(\mu)\subseteq\{\sigma\mid\sigma(x)\in\mathbb{N}\}\}$.
+The set $I$ is distributionally inductive. Choose
+\[
+ v(\sigma)=u(\sigma)=\sigma(x).
+\]
+For every enabled state,
+\[
+ \sum_{\sigma'}\post{B}(\dirac{\sigma})(\sigma')v(\sigma')
+ =\tfrac12(x-1)+\tfrac12(x+1)=x=v(\sigma),
+\]
+so $v$ is in fact a martingale. With probability $1/2$, the left branch is taken and $u$ decreases by one; hence the decrease obligation holds with $\varepsilon=1/2$. Finally, on $v_{\le r}$ we have $u\le r$. \Cref{thm:program-rule} proves AST.
+
+At pCFG level, the same argument requires location-dependent values for the guard, probabilistic choice, and assignments. The program-level rule expresses it using the two state functions above and one body-step expectation. We make this representational comparison explicit for FDR in \Cref{sec:fdr}.
+
+A walled walk with $0\le x\le W$ admits an even older bounded-variant argument~\cite{DBLP:series/mcs/McIverM05}. Removing the wall destroys global boundedness but not AST. Sublevel-set boundedness is precisely what recovers the unbounded example and previews the sampler proofs below.
+
+\Cref{sec:synthesis-examples} returns to this example and synthesizes the two functions automatically within the chosen template space.
+
+\subsection{Iteration-Level Reasoning and Modularity}
 
 \paragraph{Iteration-level abstraction.}
 The essential difference to \Cref{thm:pcfg-rule} is the granularity of the decrease condition. For a body containing $m$ internal control-flow steps, the pCFG rule needs a value at each intermediate location and a descent-compatible branch at each probabilistic node. The new rule evaluates the final post-distribution once. Assignments, guards, and choices internal to $B$ are hidden behind $\post{B}$. This has three practical consequences:
