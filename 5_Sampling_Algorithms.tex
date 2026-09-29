@@ -20,7 +20,10 @@ On termination, $c$ is the sampled outcome. Existing distributional-invariant re
  0\le c<\min(v,n),\qquad 0<v<2n,\qquad n>0.
  \label{eq:fdr-support}
 \end{equation}
-The distributional invariant additionally states that equal admissible $c$-values carry equal mass, however only \eqref{eq:fdr-support} is needed for our termination proof.
+Here $n,v,c$ are integers, as ensured by initialization and preserved by the
+body. The distributional invariant additionally states that equal admissible
+$c$-values carry equal mass; only its support information
+\eqref{eq:fdr-support} and integrality are needed for our termination proof.
 
 \subsubsection{Program-Level AST Proof.}
 Let $B_{\mathrm{FDR}}$ denote the body. For a Dirac input $\dirac{\sigma}$, its post-distribution is
@@ -34,6 +37,93 @@ Let $B_{\mathrm{FDR}}$ denote the body. For a Dirac input $\dirac{\sigma}$, its 
 \label{eq:fdr-post}
 \end{align}
 where brackets are evaluated after the corresponding updates. This compact expression is the only operational calculation required by the program-level proof.
+
+\paragraph{Motivation: shortest paths to termination.}
+Consider the iteration-level Markov chain: its states are loop-head states,
+and each transition from an enabled state summarizes one complete execution
+of $B_{\mathrm{FDR}}$, including possible recycling. States with $v\geq n$
+are terminal. Let $d_{\min}(\sigma)$ be the length of a shortest
+positive-probability path from $\sigma$ to a terminal state, measured in
+\emph{complete loop iterations}; terminal states have distance zero.
+
+To obtain a simple bound on this distance, write $\Delta=v-c$. In an
+enabled state, \eqref{eq:fdr-support} gives $1\leq\Delta\leq n-1$.
+Choosing bit zero doubles $\Delta$, and subtracting $n$ from both variables
+preserves their difference. Consequently, after
+\[
+ k=\left\lceil\log_2\!\left(\frac{n}{v-c}\right)\right\rceil
+\]
+consecutive zero bits, either the loop has already terminated or its
+difference would be $2^k\Delta\geq n$, which is impossible at an enabled
+loop head. Such a bit sequence has positive probability. Thus every
+enabled state has a finite shortest distance satisfying
+\begin{equation}
+ d_{\min}(\sigma)\leq
+ \left\lceil\log_2\!\left(\frac{n}{v-c}\right)\right\rceil.
+ \label{eq:fdr-shortest-distance-bound}
+\end{equation}
+This shortest-path view motivates our logarithmic variant below. The bound
+need not be exact: for $n=6$ and $(v,c)=(4,2)$ it equals $2$, although both
+successors, $(8,4)$ and $(8,5)$, are terminal, so $d_{\min}=1$.
+\Cref{fig:fdr-iteration-variants} contrasts the two functions.
+
+% The iteration-level presentation is inspired by Figure 5.2 of
+% Jonas Seidel's Master's thesis (2026), DOI: 10.18154/RWTH-2026-04488.
+% This new drawing contracts all recycling updates and shows actual
+% shortest distances alongside the terminal-normalized logarithmic variant.
+\begin{figure}[t]
+ \centering
+ \begin{tikzpicture}[
+   x=1.4cm,y=1cm,>=stealth,
+   fdrstate/.style={draw,rounded corners=2pt,minimum width=10.5mm,
+     minimum height=8mm,inner sep=2pt,align=center,font=\scriptsize},
+   fdrterminal/.style={fdrstate,fill=black!7,double,double distance=0.5pt},
+   fdrrecycled/.style={fdrstate,dashed,fill=blue!4},
+   fdrbit/.style={font=\scriptsize,fill=white,inner sep=1pt},
+   fdredge/.style={->,semithick}
+ ]
+ % Each node displays (v,c), then u | d_min.
+ \node[fdrstate] (s10) at (3.5,4.5)
+   {$(1,0)$\\$\textcolor{red!75!black}{3}\mid\textcolor{blue!75!black}{3}$};
+ \node[fdrstate] (s20) at (1.5,3)
+   {$(2,0)$\\$\textcolor{red!75!black}{2}\mid\textcolor{blue!75!black}{2}$};
+ \node[fdrstate] (s21) at (5.5,3)
+   {$(2,1)$\\$\textcolor{red!75!black}{3}\mid\textcolor{blue!75!black}{2}$};
+ \node[fdrstate] (s40) at (0.5,1.5)
+   {$(4,0)$\\$\textcolor{red!75!black}{1}\mid\textcolor{blue!75!black}{1}$};
+ \node[fdrstate] (s41) at (2.5,1.5)
+   {$(4,1)$\\$\textcolor{red!75!black}{1}\mid\textcolor{blue!75!black}{1}$};
+ \node[fdrstate] (s42) at (4.5,1.5)
+   {$(4,2)$\\$\textcolor{red!75!black}{2}\mid\textcolor{blue!75!black}{1}$};
+ \node[fdrstate] (s43) at (6.5,1.5)
+   {$(4,3)$\\$\textcolor{red!75!black}{3}\mid\textcolor{blue!75!black}{3}$};
+ \foreach \j in {0,...,5} {
+   \node[fdrterminal] (t\j) at (\j,0)
+     {$(8,\j)$\\$\textcolor{red!75!black}{0}\mid\textcolor{blue!75!black}{0}$};
+ }
+ \node[fdrrecycled] (r20) at (6,0)
+   {$(2,0)$\\$\textcolor{red!75!black}{2}\mid\textcolor{blue!75!black}{2}$};
+ \node[fdrrecycled] (r21) at (7,0)
+   {$(2,1)$\\$\textcolor{red!75!black}{3}\mid\textcolor{blue!75!black}{2}$};
+ \foreach \from/\to/\bit in {
+   s10/s20/0,s10/s21/1,
+   s20/s40/0,s20/s41/1,s21/s42/0,s21/s43/1,
+   s40/t0/0,s40/t1/1,s41/t2/0,s41/t3/1,
+   s42/t4/0,s42/t5/1,s43/r20/0,s43/r21/1} {
+   \draw[fdredge] (\from) -- node[fdrbit,pos=0.48] {$\bit$} (\to);
+ }
+ \node[font=\scriptsize,align=center] at (3.5,-0.85)
+   {$\textcolor{red!75!black}{u}\mid\textcolor{blue!75!black}{d_{\min}}$
+    \quad Every edge has probability $1/2$.};
+ \end{tikzpicture}
+ \caption{Three-iteration unfolding of FDR for $n=6$. Each node gives
+ $(v,c)$ and, below it, the logarithmic variant $u$ (red, left) and the
+ shortest distance $d_{\min}$ (blue, right). Edge labels are sampled bits.
+ Double borders mark terminal states, where both functions are zero.
+ Dashed leaves repeat earlier states after recycling; they are not
+ terminal. Each edge includes all updates of one loop iteration.}
+ \label{fig:fdr-iteration-variants}
+\end{figure}
 
 \begin{theorem}[AST of FDR]
 \label{thm:fdr}
@@ -51,10 +141,58 @@ Use the existing distributional invariant and define
  \left\lceil\log_2\!\left(\dfrac{n}{v-c}\right)\right\rceil&v<n.
  \end{cases}
 \]
-The supermartingale obligation is immediate: $n$ is unchanged and every successor is assigned either $n$ or $0$. For progress, inspect the outcome generated by the left fair branch. Before possible subtraction of $n$, both $v$ and $c$ are doubled; after subtraction their difference remains $2(v-c)$. Hence in either case the denominator of $n/(v-c)$ doubles, so $u$ strictly decreases. The left bit has probability $1/2$, giving $\varepsilon=1/2$.
+On enabled states, $1\leq v-c\leq n-1$, so $u$ is a positive integer.
+The supermartingale obligation is immediate: $n$ is unchanged and every
+successor is assigned either $n$ or $0$.
+For progress, inspect the outcome generated by the left fair branch.
+Its final difference is $2(v-c)$, irrespective of recycling. If the
+successor remains enabled, then
+\[
+ u(\sigma')=
+ \left\lceil\log_2\!\left(\frac{n}{2(v-c)}\right)\right\rceil
+ =u(\sigma)-1.
+\]
+If it is terminal, $u(\sigma')=0<u(\sigma)$ instead. The left bit has
+probability $1/2$, giving $\varepsilon=1/2$.
 
-For a sublevel set with $r<n$, only terminal states occur. If $r\ge n$, the invariant bounds $n\le r$, $0<v<2n$, and $0\le c<v$, so $v-c\ge1$ and $u\le\lceil\log_2 r\rceil$. All obligations of \Cref{thm:program-rule} hold.
+For every $r\geq0$, an enabled state in the sublevel set of the
+supermartingale satisfies $n\leq r$. Hence, for $r\geq1$,
+$u\leq\lceil\log_2 n\rceil\leq\lceil\log_2 r\rceil$ there.
+For $r<1$ the sublevel set contains only terminal states, with $u=0$.
+Thus $u$ is bounded on every sublevel set, also when $n$ ranges over all
+positive integers. All obligations of \Cref{thm:program-rule} hold.
 \end{proof}
+
+\paragraph{Alternative variants.}
+The exact shortest distance $d_{\min}$ is itself a valid variant for the
+same supermartingale. From each enabled state, the first edge of a shortest
+path leads to a successor with distance $d_{\min}-1$ and has probability
+at least $1/2$. Moreover, \eqref{eq:fdr-shortest-distance-bound}, together
+with the terminal value zero, gives $d_{\min}\leq u$, so the sublevel
+bound just proved also applies to $d_{\min}$. We retain $u$ because it has
+a simple explicit expression whose descent can be checked directly.
+
+An even simpler algebraic alternative is the guarded affine function
+\[
+ \widetilde u(\sigma)=
+ \begin{cases}
+   n-v+c,&v<n,\\
+   0,&v\geq n.
+ \end{cases}
+\]
+On enabled states $1\leq\widetilde u\leq n-1$. A continuing zero-bit
+successor has
+$\widetilde u(\sigma')=\widetilde u(\sigma)-(v-c)
+\leq\widetilde u(\sigma)-1$; a terminal successor has value zero.
+Thus it also gives progress probability $1/2$, and
+$\widetilde u\leq v(\sigma)$ gives sublevel boundedness.
+Its active-state expression is affine in $(n,v,c)$, making it directly
+accessible to an affine-template synthesis algorithm, whereas the
+logarithmic expression requires a richer template language.
+Indeed, the synthesis procedure in \Cref{sec:synthesis-examples} finds
+this affine alternative for symbolic $n$. We keep the logarithmic
+variant here to preserve its direct connection to the shortest-path
+motivation and the pCFG comparison below.
 
 \begin{figure}[t]
     \centering
@@ -266,7 +404,7 @@ $\mathit{Inv}$ this makes all non-initial parts of the sublevel set finite.
 
 The pCFG variant must instead account for the exact point within an iteration.
 One suitable choice is the following location-specific refinement of the
-iteration-level distance
+iteration-level distance bound
 $\left\lceil\log_2\!\bigl(n/(v-c)\bigr)\right\rceil$:
 \[
 U(\ell,\sigma)\coloneqq
@@ -354,7 +492,6 @@ uniform-output proof.  Both proof routes have the same proving power, but the
 program-level rule expresses the algorithmic fact---progress over a complete
 loop iteration---without introducing locations, offsets, and intermediate
 state expressions solely for control-flow bookkeeping.
-
 
 \subsection{Fast Loaded Dice Roller: Rejection and Restart}
 \label{sec:fldr}
@@ -524,6 +661,101 @@ on each sublevel set $\mathsf V_{\le R}$ we have
 $\mathsf U\le R$.  All obligations of \Cref{thm:program-rule} hold, and
 the loop is AST.
 \end{proof}
+
+\paragraph{Illustrating the two certificate roles.}
+For weights $(a_1,a_2)=(1,2)$, the only internal target boundary is
+$1/3$.  Hence every enabled state has $\mathsf V=\mathsf U=1$.
+\Cref{fig:han-hoshi-certificates} shows the first two refinements.
+Exactly one child still straddles $1/3$ and retains value $1$; the
+other is contained in a target interval and has value $0$.
+Thus, at either enabled state shown,
+\[
+ \underbrace{\mathbb E_\sigma[\mathsf V']
+ =\tfrac12\cdot1+\tfrac12\cdot0
+ =\tfrac12\le\mathsf V(\sigma)}_{\text{supermartingale obligation}},
+ \qquad
+ \underbrace{\Pr\nolimits_\sigma\!\left(\mathsf U'<\mathsf U(\sigma)\right)
+ =\tfrac12}_{\text{variant decrease}}.
+\]
+The continuing branch need not decrease the variant, and the decreasing
+bit changes between the two refinements.  The same function therefore
+meets two different obligations: non-increase in expectation and strict
+decrease with uniformly positive probability.  Sublevel-set boundedness
+is immediate from $\mathsf U=\mathsf V$.
+
+\begin{figure}[tbp]
+ \centering
+ % Uses only TikZ and xcolor, already loaded in packages.tex.
+ % Horizontal positions are fractions of the unit interval.
+ \begin{tikzpicture}[
+   x=8.8cm,y=1cm,
+   every node/.style={font=\small},
+   active/.style={draw=black!75,fill=black!5,line width=.7pt},
+   first/.style={draw=blue!65!black,fill=blue!9,line width=.5pt},
+   second/.style={draw=orange!70!black,fill=orange!14,line width=.5pt},
+   bit/.style={font=\scriptsize,fill=white,inner sep=1.5pt},
+   rowlabel/.style={anchor=east,font=\scriptsize,align=right}
+ ]
+  % The target distribution, with its unique internal boundary.
+  \path[first]  (0,0) rectangle (1/3,.48);
+  \path[second] (1/3,0) rectangle (1,.48);
+  \node at (1/6,.24) {$I_1$};
+  \node at (2/3,.24) {$I_2$};
+  \node[rowlabel] at (-.025,.24) {target\ intervals};
+  \node[above,font=\scriptsize] at (0,.48) {$0$};
+  \node[above,font=\scriptsize] at (1/3,.48) {$\tfrac13$};
+  \node[above,font=\scriptsize] at (1,.48) {$1$};
+
+  % Put the guide behind the arrows and their probability labels.
+  \draw[densely dashed,black!55] (1/3,0) -- (1/3,-.55);
+  \draw[densely dashed,black!55] (1/3,-1.15) -- (1/3,-1.90);
+  \draw[densely dashed,black!55] (1/3,-2.60) -- (1/3,-3.35);
+
+  % The initial interval J(0,1).
+  \path[active] (0,-1.15) rectangle (1,-.55);
+  \node at (.5,-.85) {$\mathsf V=\mathsf U=1$};
+  \node[rowlabel] at (-.025,-.85) {initial};
+
+  % First fair bit: left child continues, right child returns outcome 2.
+  \path[active] (0,-2.60) rectangle (.5,-1.90);
+  \path[second] (.5,-2.60) rectangle (1,-1.90);
+  \node at (.25,-2.25) {$\mathsf V=\mathsf U=1$};
+  \node[align=center] at (.75,-2.25)
+    {$\mathsf V=\mathsf U=0$\\[-1pt]\scriptsize return $2$};
+  \node[rowlabel] at (-.025,-2.25) {first\ bit};
+  \draw[->] (.5,-1.15) -- node[bit,above left] {$\tfrac12$} (.25,-1.90);
+  \draw[->] (.5,-1.15) -- node[bit,above right] {$\tfrac12$} (.75,-1.90);
+  \node[below,font=\scriptsize,inner sep=2pt] at (.5,-2.60) {$\tfrac12$};
+
+  % Refine only the still-enabled left child.
+  \path[first]  (0,-4.05) rectangle (.25,-3.35);
+  \path[active] (.25,-4.05) rectangle (.5,-3.35);
+  \node[align=center] at (.125,-3.70)
+    {$\mathsf V=\mathsf U=0$\\[-1pt]\scriptsize return $1$};
+  \node at (.375,-3.70) {$\mathsf V=\mathsf U=1$};
+  \node[rowlabel] at (-.025,-3.70) {second\ bit};
+  \draw[->] (.25,-2.60) -- node[bit,above left] {$\tfrac12$} (.125,-3.35);
+  \draw[->] (.25,-2.60) -- node[bit,above right] {$\tfrac12$} (.375,-3.35);
+  \node[below,font=\scriptsize,inner sep=2pt] at (0,-4.05) {$0$};
+  \node[below,font=\scriptsize,inner sep=2pt] at (.25,-4.05) {$\tfrac14$};
+  \node[below,font=\scriptsize,inner sep=2pt] at (.5,-4.05) {$\tfrac12$};
+
+  % Short boundary ticks at the top of each enabled interval.
+  \draw[black!65,line width=.6pt] (1/3,-.55) -- (1/3,-.67);
+  \draw[black!65,line width=.6pt] (1/3,-1.90) -- (1/3,-2.02);
+  \draw[black!65,line width=.6pt] (1/3,-3.35) -- (1/3,-3.47);
+  \node[align=center,font=\scriptsize,text=black!70] at (.77,-3.70)
+    {Gray: enabled interval\\Color: terminal interval};
+ \end{tikzpicture}
+ \caption{Han--Hoshi for weights $(1,2)$.  Bars represent half-open
+ intervals at their actual horizontal positions; the dashed guide marks
+ the target boundary $1/3$.  A gray interval straddles this boundary and
+ has $\mathsf V=\mathsf U=1$; a colored interval is contained in $I_1$ or
+ $I_2$ and has value $0$.  Arrows show conditional probabilities for one
+ complete loop iteration.  Only the enabled child is refined further.}
+ \label{fig:han-hoshi-certificates}
+\end{figure}
+
 
 The proof replaces the explicit depth-$t$ tail calculation by one
 iteration-level fact: bisecting an interval distributes its internal

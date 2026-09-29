@@ -11,6 +11,8 @@ results, and explanatory notes. From that directory, run:
 python3 -m pip install -r requirements.txt
 python3 synthesis_examples.py --output results.json
 python3 diagnostics.py
+python3 piecewise_examples.py
+python3 piecewise_diagnostics.py
 \end{lstlisting}
 The default coefficient schedule is $1,2,4,8,16$, with ten seconds per solver
 call and 500 candidates per input. All four recorded inputs finish with
@@ -20,6 +22,21 @@ queries. \texttt{diagnostics.json} records rejection of selected invalid
 certificates, rejection of a vacuous transition contract, and a direct
 integer/rational audit of the concrete FLDR certificate. Exact model choices
 and candidate counts can depend on solver tie-breaking.
+
+The optional piecewise extension is implemented in the same kernel.
+The runner \texttt{piecewise\_\allowbreak examples.py} reruns the four original inputs, excludes
+single-affine candidates for the two-sided walk up to the configured bound,
+and synthesizes certificates for that walk and three sampler inputs using
+supplied partitions. \texttt{piecewise\_\allowbreak results.json} records these runs
+separately from the original affine experiment. The two-sided walk's
+template-wide impossibility argument is analytic, as explained in
+\Cref{sec:synthesis-examples}; finite search alone does not establish it.
+\texttt{piecewise\_\allowbreak diagnostics.json} additionally records rejection of
+overlapping and incomplete active-state partitions and of predicates using
+undeclared symbols or transition descriptors. A signed countdown checks
+active-to-active region crossings in both directions. The final certificates
+are reverified over the unbounded input domains, supplemented by an exact
+arithmetic check on selected states.
 
 The concrete and abstract FLDR inputs answer different questions. The former
 uses the exact tree for weights $(4,5)$ and automatically includes both loop

@@ -121,6 +121,38 @@ when an infeasible range is enlarged. Unknown results, timeouts, and the
 candidate limit are inconclusive. The finite schedule does not establish
 completeness for unrestricted affine certificates or for AST programs.
 
+\subsection{User-Supplied Piecewise Affine Templates}
+\label{sec:synthesis-piecewise}
+
+The same kernel optionally accepts a finite partition of active invariant
+states by fixed predicates $P_1,\ldots,P_q$. Each predicate is a Boolean
+combination of linear arithmetic over declared state components; transition
+descriptors cannot occur in it. The kernel checks coverage and pairwise
+disjointness on $S\land b$. It then assigns an independent full affine
+coefficient block to each region and each certificate, for example
+\[
+ V(\sigma)=[b](\sigma)\sum_{j=1}^{q}[P_j](\sigma)
+   \left(a_{j,0}+\sum_{i=1}^{d}a_{j,i}x_i(\sigma)\right),
+\]
+and analogously for $U$ with independent coefficients. With one region
+$P_1=\mathit{true}$, this is the original affine template.
+
+A threshold split supplies $P_1\equiv e<r$ and $P_2\equiv e\geq r$.
+The user fixes the expressions $e,r$; a threshold may be a numeral or a
+linear expression in symbolic parameters. For example, $r=k-1$ is a supplied
+formula, not a synthesized threshold. Region selection is evaluated anew
+at each successor, so the verification conditions include transitions
+between regions. Continuity across region boundaries is not required.
+
+The constraints remain \eqref{eq:syn-positive}--\eqref{eq:syn-domination}.
+The proof of \Cref{prop:synthesis-soundness} therefore applies verbatim.
+With a fixed partition and fixed coefficient bound, the
+candidate set remains finite. The learner and verifier queries remain
+Boolean combinations of linear arithmetic under the preceding input
+restrictions. Thus the same finite-template termination argument applies.
+The partition itself is not synthesized, and additional regions can make
+the search more expensive.
+
 \subsection{Synthesis Results}
 \label{sec:synthesis-examples}
 
@@ -244,10 +276,41 @@ found $c-2d+2$ shows that this obstruction disappears when $d$ is allowed.
 The result therefore concerns a specified template class, not an intrinsic
 need for distinct functions in FLDR.
 
+\paragraph{A piecewise certificate on both sides of zero.}
+As an additional expressiveness check, consider the symmetric random walk
+on all of $\mathbb Z$, with guard $x\neq0$ and invariant $\mathit{true}$.
+Any affine variant $U(x)=ax+b$ positive on every active state must have
+$a=0$, since both tails are unbounded. Such a constant variant cannot
+decrease at $x=2$, whose two successors remain active. Hence no single-affine
+pair satisfies our constraints, irrespective of the coefficient bound.
+This analytic obstruction is separate from the bounded synthesis failures.
+
+With the supplied split $x<0$ versus $x\geq0$, the same kernel finds
+$V=U=|x|$ at $B=1$. The expectation is unchanged on active states and one
+of the two successors decreases the certificate by one. Verification is
+over all integer states. This demonstrates additional expressiveness for
+a single template over the supplied invariant; manually splitting the
+proof into its two sign-invariant domains would also suffice.
+
+\paragraph{Optional sampler partitions.}
+No extra partition is needed for the FDR and FLDR results in
+\Cref{tab:synthesis-results}. As regression checks, the extended artifact
+also supplies the semantically motivated splits $2v<n$ versus $2v\geq n$
+for FDR, and $c<k-1$ versus $c\geq k-1$ for FLDR. The former separates
+states in which the next doubling cannot yet accept from states in which
+acceptance or recycling is possible. The latter isolates the last active
+depth, where a child must accept or reset. On the fixed input $(4,5)$,
+the threshold is $k-1=3$. All three partitioned sampler inputs synthesize
+verified certificates with the original successful bounds, respectively
+$1,2,1$. In the recorded FDR run the two regions receive identical
+expressions. These are feasibility checks, not evidence that the additional
+partitions are necessary or optimal.
+
 The synthesis contribution is a reproducible feasibility demonstration
 for the program-level obligations. Supplied invariants and body semantics,
-the abstract FLDR contract, the affine hypothesis class, and $U\leq V$
+the abstract FLDR contract, the affine or fixed-piecewise-affine hypothesis
+class, and $U\leq V$
 remain substantive assumptions. The experiments neither establish
 synthesis completeness for AST programs nor demonstrate superiority to
-existing synthesis tools. Automatic extraction of body semantics, richer
-templates, and broader comparisons remain future work.
+existing synthesis tools. Automatic extraction of body semantics, automatic
+partition selection, richer templates, and broader comparisons remain future work.
