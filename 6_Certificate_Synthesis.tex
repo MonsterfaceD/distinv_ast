@@ -1,50 +1,41 @@
 \section{Template-Based Certificate Synthesis}
 \label{sec:certificate-synthesis}
 
-The iteration-level obligations of \Cref{thm:program-rule} also support
-certificate synthesis. We instantiate them with a common
-counterexample-guided inductive synthesis (CEGIS) kernel for the random
-walk, FDR, and FLDR. The input consists of declared state variables and
-parameters, an initial-state predicate, an inductive state predicate, and
-an exact or soundly overapproximated one-iteration semantics. The kernel
-constructs affine templates automatically and searches for their
-coefficients. The experiments establish feasibility of this restricted
-instantiation of the rule; they do not introduce a new general-purpose
-synthesis technique.
+The iteration-level obligations of \Cref{thm:program-rule} admit a direct
+constraint-based instantiation. We implement a shared counterexample-guided
+inductive synthesis (CEGIS) kernel for the random walk, FDR, and FLDR.
+It searches for two independent certificates using guarded affine templates,
+optionally refined by a supplied finite partition. The contribution is a
+reproducible feasibility demonstration for these obligations, rather than a
+new general-purpose synthesis method.
 
-\subsection{Automatic Affine Templates and Sound Constraints}
+\subsection{Templates and Verification Conditions}
 \label{sec:synthesis-constraints}
 
-For this section, numerical state variables and symbolic parameters are
-integer-valued. Write $\mathbf{x}(\sigma)=(x_1(\sigma),\ldots,x_d(\sigma))$
-for all declared integer state components, including immutable symbolic
-parameters. Boolean flags may occur in the guard $b$ but are not numerical
-features. Given a supplied predicate $S$ containing the initial states and
-preserved by the body, the kernel constructs independent templates
+The input comprises integer state variables, immutable integer parameters,
+a guard $b$, an initial-state description, a supplied inductive predicate
+$S$, and a manually encoded complete body step. There is no program parser
+or invariant synthesis. Every declared integer component is included in the
+automatic feature vector $\mathbf{x}=(x_1,\ldots,x_d)$; Boolean flags may
+occur in the guard but are not numerical features. Fixed numerical inputs
+are substituted into the semantics. Symbolic parameters remain features.
+The two templates are
 \[
  V_{\mathbf a}(\sigma)=[b](\sigma)
-   \Bigl(a_0+\sum_{i=1}^{d}a_i x_i(\sigma)\Bigr),\qquad
+   \Bigl(a_0+\sum_{i=1}^d a_i x_i(\sigma)\Bigr),\qquad
  U_{\mathbf u}(\sigma)=[b](\sigma)
-   \Bigl(u_0+\sum_{i=1}^{d}u_i x_i(\sigma)\Bigr).
+   \Bigl(u_0+\sum_{i=1}^d u_i x_i(\sigma)\Bigr),
 \]
-All coefficients are unknown integers. Thus no example-specific feature
-subset or relationship between the two coefficient vectors is supplied.
-The fixed hypothesis class is nevertheless restricted: functions are
-affine on active states and zero outside the guard. A fixed numerical
-input is substituted into the semantics, whereas an input that should
-remain symbolic is declared as a parameter and included in the templates.
+with independent integer coefficients. The basis construction is automatic;
+the supplied state representation and affine hypothesis class are not.
 
-The presented examples use two equiprobable outcomes. For an exact input,
-$T_0,T_1$ describe complete body executions, including deterministic
-branches. An abstract input additionally supplies auxiliary descriptors
-$\xi$ and a relation $A(\sigma,\xi)$ selecting admissible outcome pairs
-$T_0(\sigma,\xi),T_1(\sigma,\xi)$. Every enabled state must admit a
-pair, and every concrete outcome pair must be represented. The latter is
-a required soundness argument for the supplied abstraction. Auxiliary
-descriptors are not program-state features. Below we suppress $\xi$;
-for abstract inputs, each condition is required for all admissible pairs.
-
-For every state satisfying $S\land b$, impose
+The paper inputs have two equiprobable complete outcomes $T_0,T_1$.
+For an abstract input, an additional relation $A(\sigma,\xi)$ describes
+admissible outcome pairs $T_0(\sigma,\xi),T_1(\sigma,\xi)$ using auxiliary
+descriptors $\xi$, which are excluded from the feature vector. Every enabled
+state must admit a pair, and every concrete outcome pair must be represented.
+The latter is a separate semantic justification of the abstraction.
+Suppressing $\xi$, we require on $S\land b$, for every admissible pair,
 \begin{align}
  V(\sigma)&\geq1,& U(\sigma)&\geq1,
  \label{eq:syn-positive}\\
@@ -56,115 +47,93 @@ For every state satisfying $S\land b$, impose
  U(\sigma)&\leq V(\sigma).
  \label{eq:syn-domination}
 \end{align}
-The domination condition is sufficient for sublevel boundedness and is
-stronger than the corresponding premise of \Cref{thm:program-rule}.
-Integer coefficients and $V\geq1$ further restrict the search space.
+Domination is sufficient for sublevel boundedness, but stronger than the
+premise of \Cref{thm:program-rule}; integer coefficients and $V\geq1$
+also restrict the search.
 
 \begin{proposition}[Soundness of the synthesis constraints]
 \label{prop:synthesis-soundness}
-Suppose $S$ contains the initial states and is preserved by every body
-outcome. If an abstract input is used, suppose it represents every
-concrete outcome pair. Any instantiation satisfying
-\eqref{eq:syn-positive}--\eqref{eq:syn-domination} on $S\land b$,
-for every admissible pair, supplies an AST certificate with
-$\varepsilon=1/2$.
+Suppose $S$ contains the initial states and is preserved by all represented
+outcomes. If an abstraction is used, suppose it represents every concrete
+outcome pair. Every instantiation satisfying
+\eqref{eq:syn-positive}--\eqref{eq:syn-domination} supplies an AST
+certificate with $\varepsilon=1/2$.
 \end{proposition}
 \begin{proof}
-The templates vanish on terminal states. On active states, $V$ is positive
-and $U$ is a positive integer. The expectation inequality holds for each
-concrete body distribution; for an abstract input this follows by selecting
-its represented concrete pair. At least one outcome decreases $U$ by at
-least one, giving progress probability at least $1/2$. On $V\leq r$, the
-domination condition bounds $U$ by $\lfloor r\rfloor$. Finally,
-subdistributions supported in $S$ form a distributional invariant for the
-allowed inputs. The premises of \Cref{thm:program-rule} follow.
+Both templates vanish on terminal states. On active states $V$ is positive
+and $U$ is a positive integer. The expectation inequality applies to each
+concrete body distribution, and at least one fair-bit outcome decreases
+$U$ by one. On $V\leq r$, domination bounds $U$ by $\lfloor r\rfloor$.
+Subdistributions supported in $S$ form a distributional invariant. These are
+precisely the required premises of \Cref{thm:program-rule}.
 \end{proof}
 
-\subsection{Counterexample-Guided Search and Coefficient Bounds}
+\subsection{Finite Search and Supplied Partitions}
 \label{sec:synthesis-cegis}
 
-For a fixed $B\in\mathbb{N}$, each coefficient ranges over
-$\{-B,\ldots,B\}$. An SMT query first selects an enabled sample
-automatically. The learner searches simultaneously for both coefficient
-vectors satisfying all obligations on the accumulated samples, minimizing
-$\sum_i|a_i|+\sum_i|u_i|$. This objective prefers small expressions but
-has no role in soundness; ties are left to the solver.
+For a fixed bound $B$, every coefficient ranges over $\{-B,\ldots,B\}$.
+An SMT query chooses an enabled initial sample automatically, including
+admissible descriptors when needed. The learner selects both coefficient
+vectors simultaneously, satisfying all obligations on accumulated samples
+and minimizing the sum of absolute coefficients. This objective favors
+small expressions; it has no soundness role, and solver ties remain open.
+The verifier fixes the coefficients and asks for any state in $S\land b$
+(and admissible descriptor) violating an obligation. A satisfying assignment
+is added to the samples. An unsatisfiable query verifies the candidate over
+the \emph{entire} invariant domain, including unbounded integer parameters.
+It is not a bounded-state test.
 
-For a candidate with fixed coefficients, the verifier asks for a state
-satisfying $S\land b$ that violates at least one obligation. For abstract
-inputs, it also chooses an admissible descriptor $\xi$. A satisfying
-assignment is added to the samples. An unsatisfiable counterexample query
-establishes the obligations over the entire invariant domain; it is not
-merely a bounded-state test. In contrast, an unsatisfiable learner query
-excludes certificates only within the current coefficient range and the
-chosen template class.
+With a sample fixed, learner constraints are linear in the unknown
+coefficients; with coefficients fixed, verifier constraints are linear in
+the unknown state and descriptor variables. The supplied examples use only
+Boolean combinations of linear arithmetic and piecewise affine updates.
+The implementation checks initialization and preservation of $S$ separately.
+For abstract inputs it also checks
+$S\land b\Rightarrow\exists\xi\,A(\sigma,\xi)$; this coverage query can
+contain quantification. Nonempty coverage prevents vacuous verification but
+does not prove correspondence with a concrete program.
 
-We restrict the supplied predicates and outcome descriptions to Boolean
-combinations of linear arithmetic and piecewise affine updates. With a
-sample fixed, the learner's constraints are linear in the coefficients;
-with the coefficients fixed, the verifier's constraints are linear in the
-state and auxiliary variables. The implementation therefore avoids a
-single existential-universal query with unknown products of coefficients
-and state variables. It checks initialization and preservation of $S$
-separately. For an abstract input it also checks coverage,
-$S\land b\Rightarrow\exists\xi\,A$; this input check may use
-quantification, unlike the CEGIS certificate queries. Coverage does not
-replace the mathematical argument that concrete FLDR transitions are
-represented by the abstraction.
+Every counterexample excludes at least the current candidate and no valid
+candidate. Consequently, with exact terminating solvers and no resource
+limits, the procedure terminates and is complete for a \emph{fixed finite}
+template and these sufficient constraints. The implementation tries
+$B=1,2,4,8,16$, retaining samples between bounds. Learner unsatisfiability
+excludes only the current bounded template. Unknown results, timeouts, and
+the 500-candidate limit are inconclusive. Neither the finite schedule nor
+relative completeness of the proof rule establishes synthesis completeness
+for AST programs.
 
-For fixed $B$, every counterexample permanently excludes at least the
-current candidate, while preserving all valid candidates. With exact,
-terminating solvers and no resource limits, the finite search therefore
-terminates and is complete for the bounded template and the imposed
-constraints. The implementation tries $B=1,2,4,8,16$, retaining samples
-when an infeasible range is enlarged. Unknown results, timeouts, and the
-candidate limit are inconclusive. The finite schedule does not establish
-completeness for unrestricted affine certificates or for AST programs.
-
-\subsection{User-Supplied Piecewise Affine Templates}
+\paragraph{Fixed piecewise affine templates.}
 \label{sec:synthesis-piecewise}
-
-The same kernel optionally accepts a finite partition of active invariant
-states by fixed predicates $P_1,\ldots,P_q$. Each predicate is a Boolean
-combination of linear arithmetic over declared state components; transition
-descriptors cannot occur in it. The kernel checks coverage and pairwise
-disjointness on $S\land b$. It then assigns an independent full affine
-coefficient block to each region and each certificate, for example
+The same kernel accepts a supplied partition $P_1,\ldots,P_q$ of active
+invariant states, checks coverage and pairwise disjointness, and assigns an
+independent full affine coefficient block to each region and each function:
 \[
  V(\sigma)=[b](\sigma)\sum_{j=1}^{q}[P_j](\sigma)
-   \left(a_{j,0}+\sum_{i=1}^{d}a_{j,i}x_i(\sigma)\right),
+ \left(a_{j,0}+\sum_{i=1}^{d}a_{j,i}x_i(\sigma)\right).
 \]
-and analogously for $U$ with independent coefficients. With one region
-$P_1=\mathit{true}$, this is the original affine template.
+The $U$-template is analogous. Predicates may use declared state components,
+but not auxiliary transition descriptors or undeclared symbols. Region
+selection is reevaluated at every successor, including cross-region
+transitions. The constraints and soundness argument are unchanged.
+A threshold split $e<r$ versus $e\geq r$ supplies both expressions;
+$r$ may be a numeral or a linear expression in symbolic parameters.
+Thresholds and partitions are not synthesized. Extra regions enlarge the
+finite search space; they are not assumed to improve performance.
 
-A threshold split supplies $P_1\equiv e<r$ and $P_2\equiv e\geq r$.
-The user fixes the expressions $e,r$; a threshold may be a numeral or a
-linear expression in symbolic parameters. For example, $r=k-1$ is a supplied
-formula, not a synthesized threshold. Region selection is evaluated anew
-at each successor, so the verification conditions include transitions
-between regions. Continuity across region boundaries is not required.
-
-The constraints remain \eqref{eq:syn-positive}--\eqref{eq:syn-domination}.
-The proof of \Cref{prop:synthesis-soundness} therefore applies verbatim.
-With a fixed partition and fixed coefficient bound, the
-candidate set remains finite. The learner and verifier queries remain
-Boolean combinations of linear arithmetic under the preceding input
-restrictions. Thus the same finite-template termination argument applies.
-The partition itself is not synthesized, and additional regions can make
-the search more expensive.
-
-\subsection{Synthesis Results}
+\subsection{Reproduced Results and Their Scope}
 \label{sec:synthesis-examples}
 
-\Cref{tab:synthesis-results} reports a run with Z3~5.1.0, using the same
-kernel, objective, and coefficient schedule throughout. Limits were ten
-seconds per solver call and 500 candidates per input. Each final obligation
-was checked separately. Candidate counts depend on solver tie-breaking;
-these runs are not a performance comparison with other tools.
+\Cref{tab:synthesis-results} reports the delivered artifact run with
+Z3~4.15.4 and ten seconds per solver call. The same engine, coefficient
+schedule, and objective are used throughout. All final obligations are
+rechecked separately. Recorded coefficient vectors, samples, counterexamples,
+bound attempts, and measured wall times accompany the code; candidate counts
+can vary with solver tie-breaking. These experiments are feasibility checks,
+not a performance comparison with other tools.
 
 \begin{table}[t]
-\centering
-\small
+\centering\small
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{@{}llllr@{}}
 \toprule
@@ -173,33 +142,28 @@ Input & $V$ & $U$ & $B$ & Candidates\\
 Random walk & $x$ & $x$ & 1 & 2\\
 FDR, symbolic $n$ & $n$ & $n-v+c$ & 1 & 3\\
 FLDR, weights $(4,5)$ & $c-2d+2$ & $c-2d+2$ & 2 & 4\\
-FLDR, abstract family & $k$ & $k-c$ & 1 & 4\\
+FLDR, abstract family & $m$ & $m-c$ & 1 & 4\\
+Two-sided walk, supplied split & $|x|$ & $|x|$ & 1 & 4\\
 \bottomrule
 \end{tabular}
-\caption{Synthesized expressions on active states; all terminal values are
-zero. $B$ is the successful coefficient bound. Counts include candidates
-from smaller bounds. The last row is conditional on the supplied
-structural abstraction of FLDR.}
+\caption{Synthesized expressions on active states, with terminal values zero.
+$B$ is the successful bound; candidate counts include earlier bounds.
+The abstract FLDR row is conditional on the structural contract below.}
 \label{tab:synthesis-results}
 \end{table}
 
 \paragraph{Unbounded symmetric random walk.}
-For the walk in \Cref{sec:walk}, $S\equiv x\geq0$ yields the automatic
-basis $(x,1)$. Starting from the automatically selected sample $x=1$,
-the recorded search first proposes $V=1$, $U=x$. The verifier returns
-$x=2$, violating $U\leq V$. The next candidate is $V=U=x$, verified
-for every integer $x>0$. The supermartingale is a martingale, while the
-left outcome decreases $U$ by one. This example establishes AST despite
-infinite expected runtime: for $0<x<N$, the expected time $x(N-x)$ to
-hit either $0$ or $N$ lower-bounds the time to hit $0$, and diverges as
-$N$ grows. Uniform negative expected drift is not required.
+For \Cref{sec:walk}, $S\equiv x\geq0$ yields features $(x,1)$ and the
+verified result $V=U=x$. The expectation is unchanged, while the left outcome
+decreases $U$ by one. This establishes AST despite infinite expected runtime:
+for $0<x<N$, the expected time $x(N-x)$ to hit $\{0,N\}$ lower-bounds
+the time to hit $0$, and diverges with $N$.
+A uniform negative expected drift is unnecessary.
 
 \paragraph{FDR with a symbolic range.}
-For the loop of \Cref{sec:fdr}, the input supplies
-\[
- S\equiv n\geq1\land1\leq v<2n\land0\leq c<v\land c<n
-\]
-and the complete updates, for $\beta\in\{0,1\}$,
+For the loop of \Cref{sec:fdr}, the supplied invariant is
+$S\equiv n\geq1\land1\leq v<2n\land0\leq c<v\land c<n$, and the
+complete bit-$\beta$ update is
 \[
  T_\beta(n,v,c)=
  \begin{cases}
@@ -207,110 +171,134 @@ and the complete updates, for $\beta\in\{0,1\}$,
  (n,2v,2c+\beta),&2c+\beta<n.
  \end{cases}
 \]
-The automatic basis is $(n,v,c,1)$, and the kernel finds $V=n$ and
-$U=n-v+c$ on $v<n$, uniformly for symbolic $n$. Writing
-$\Delta=v-c$, enabled states satisfy $1\leq\Delta\leq n-1$ and
-$U=n-\Delta$. On bit zero, a continuing successor has
-$\Delta'=2\Delta$, so $U'\leq U-1$; acceptance sets $U'=0$.
-Since $n$ is unchanged, $V'$ is either $n$ or zero, and $U\leq V$.
-The affine variant suffices for qualitative termination even though the
-manual proof uses a logarithmic one. This instance remains a baseline:
-on bit one, $\Delta'=2\Delta-1\geq\Delta$ when continuing, so
-$\mathbb{E}[U']\leq U-1/2$. Thus this particular $U$ is already a
-ranking supermartingale.
+The full basis $(n,v,c,1)$ yields $V=n$, $U=n-v+c$ on $v<n$,
+uniformly for symbolic $n$. Put $\Delta=v-c$. Enabled states satisfy
+$1\leq\Delta\leq n-1$ and $U=n-\Delta$. On bit zero a continuing
+successor has $\Delta'=2\Delta$, giving $U'\leq U-1$; acceptance
+sets $U'=0$. Since $n$ is unchanged, $V'$ is $n$ or zero, and $U\leq V$.
+Thus an affine variant suffices in place of the manual logarithmic one.
+FDR remains a baseline for the separation of certificate roles: on bit one,
+$\Delta'=2\Delta-1\geq\Delta$ when continuing, so in fact
+$\mathbb E[U']\leq U-1/2$. This additional inequality is independently
+SMT-verified; $U$ itself is a ranking supermartingale here.
 
 \paragraph{FLDR with fixed weights.}
-For weights $(4,5)$, preprocessing fixes $m=9$, $k=4$, $n=2$, and
-rejection weight $7$. The supplied iteration semantics describes the
-exact finite tree, and $S$ contains its valid nodes. Only $c,d$ remain
-integer state variables, giving the automatic basis $(c,d,1)$.
-After excluding $B=1$, the kernel finds $V=U=c-2d+2$ at $B=2$.
-An independent audit of all five enabled nodes confirms this certificate
-(\Cref{app:artifact}). At some nodes the expectation is unchanged, so the
-shared function is not a ranking supermartingale with uniform negative drift.
+For $(4,5)$, preprocessing gives $m=9$, $k=4$, and rejection weight $7$.
+The artifact constructs the exact finite tree from binary weight columns,
+placing internal nodes before leaves and leaf labels in descending order,
+as in \Cref{sec:fldr}. The supplied invariant is its set of loop-head nodes;
+the feature basis is $(c,d,1)$. After excluding $B=1$, the engine finds
+$V=U=c-2d+2$ at $B=2$. \Cref{fig:fldr-synthesis-tree} displays the
+five active nodes, acceptances, and resets. An independent rational-arithmetic
+audit checks all nodes and edges (\Cref{app:artifact}). At the root the
+expectation is unchanged, so this shared certificate has no uniform
+negative drift.
+\begin{figure}[tbp]
+ \centering
+ \begin{tikzpicture}[
+   x=1cm,y=1cm,>=stealth,
+   fldrnode/.style={draw=blue!55!black,fill=blue!5,rounded corners=2pt,
+     minimum width=13mm,minimum height=8mm,inner sep=3pt,
+     align=center,font=\small},
+   fldraccept/.style={draw=teal!70!black,fill=teal!7,
+     double,double distance=.5pt,rounded corners=2pt,
+     minimum width=16mm,inner sep=3pt,align=center,font=\small},
+   fldredge/.style={->,semithick,draw=black!75},
+   fldrreset/.style={->,semithick,dashed,draw=orange!80!black,
+     rounded corners=5pt},
+   fldrbit/.style={font=\scriptsize,fill=white,inner sep=1.5pt}
+ ]
+ \node[fldrnode] (root) at (0,0) {$(0,0)$\\$W=2$};
+ \node[fldrnode] (s10) at (0,-1.15) {$(1,0)$\\$W=3$};
+ \node[fldrnode] (s11) at (3.5,-1.15) {$(1,1)$\\$W=1$};
+ \node[fldrnode] (s20) at (0,-2.30) {$(2,0)$\\$W=4$};
+ \node[fldrnode] (s30) at (0,-3.45) {$(3,0)$\\$W=5$};
+ \node[fldraccept] (a22) at (2.5,-2.30)
+   {Accept $2$\\$W=0$};
+ \node[fldraccept] (a23) at (4.5,-2.30)
+   {Accept $1$\\$W=0$};
+ \node[fldraccept] (a41) at (1.25,-4.60)
+   {Accept $2$\\$W=0$};
 
-\paragraph{FLDR with symbolic parameters.}
-To handle arbitrary input trees, we supply a structural transition
-abstraction. All declared integer components $(m,k,n,c,d)$ enter the
-templates; a Boolean flag $\mathit{active}$ represents the concrete guard.
-The supplied invariant is
-\[
-\begin{gathered}
- m\geq1,\quad0\leq k\leq m,\quad1\leq n\leq m,\\
- 0\leq c\leq k,\quad d\geq0,\quad
- \mathit{active}\Rightarrow c<k.
-\end{gathered}
-\]
-Each bit outcome is classified as continuation, rejection, or acceptance.
-Continuation advances to $(c+1,2d+\beta)$ and remains active, requiring
-$c+1<k$. Rejection resets to $(0,0)$ and remains active. Acceptance
-advances to $(c+1,2d+\beta)$ and becomes terminal. Parameters are
-unchanged; both outcomes may not reject simultaneously. The verifier
-checks all admissible type pairs and retains the update of $d$.
+ % Each arrow includes every update of one loop-body execution.
+ \draw[fldredge] (root) -- node[fldrbit,left] {$0$} (s10);
+ \draw[fldredge] (root) -- node[fldrbit,above] {$1$} (s11);
+ \draw[fldredge] (s10) -- node[fldrbit,left] {$0$} (s20);
+ \draw[fldredge] (s11) -- node[fldrbit,pos=.58,left] {$0$} (a22);
+ \draw[fldredge] (s11) -- node[fldrbit,pos=.58,right] {$1$} (a23);
+ \draw[fldredge] (s20) -- node[fldrbit,left] {$0$} (s30);
+ \draw[fldredge] (s30) -- node[fldrbit,above right] {$1$} (a41);
 
-The FLDR preprocessing properties in \Cref{sec:fldr} justify this
-abstraction: the tree has height at most $k$, and each level contains at
-most one leaf of a given label, hence at most one rejecting leaf.
-This connection is supplied mathematically, not synthesized or
-universally machine-checked from the preprocessing code. The domain
-intentionally overapproximates $k=\lceil\log_2m\rceil$; no logarithmic
-arithmetic is passed to the solver. When $k=0$, the initial state is
-terminal.
+ % Reset events are contracted into their bit-labelled body transitions;
+ % raw rejecting leaves are not loop-head states and get no certificate value.
+ \draw[fldrreset] (s10.west) -- node[fldrbit,above] {$1$}
+   (-1.20,-1.15) -- (-1.20,0) -- (root.west);
+ \draw[fldrreset] (s20.west) -- node[fldrbit,above] {$1$}
+   (-1.80,-2.30) -- (-1.80,.35) -- (root.north west);
+ \draw[fldrreset] (s30.west) -- node[fldrbit,above] {$0$}
+   (-2.40,-3.45) -- (-2.40,.75) -- (0,.75) -- (root.north);
+ \node[font=\scriptsize,text=orange!80!black,rotate=90]
+   at (-2.66,-1.15) {reset to $(0,0)$};
 
-The full basis $(m,k,n,c,d,1)$ yields $V=k$, $U=k-c$ on active states.
-The solver sets the other coefficients to zero without a prescribed
-feature subset. Every successor has $V'$ equal to $k$ or zero. A
-non-rejecting outcome decreases $U$ by at least one, and $1\leq U\leq V$.
-Thus one pair is verified for unbounded parameters under the structural
-contract. Relative to the manual choice $V=m$, using $V=k$ also makes
-the sufficient domination condition immediate.
+ \node[align=left,font=\small,anchor=north west,inner sep=0pt]
+   at (2.65,-3.25)
+   {$W=V=U=[b](c-2d+2)$\\[5pt]
+    At the root:\\[2pt]
+    $\mathbb E[W']=\tfrac12(3+1)=2$\\[2pt]
+    $\Pr(W'<2)=\tfrac12$};
+ \end{tikzpicture}
+ \caption{A decision tree for FLDR with weights $(4,5)$ and rejection
+ weight $7$. Active nodes show $(c,d)$ and the shared certificate value
+ $W$; double-bordered leaves accept the indicated outcome and have value
+ zero. Every edge represents one complete iteration with probability
+ $1/2$; its label is the sampled bit. Dashed edges include rejection and
+ reset, returning to the root with $W=2$. The root calculation illustrates
+ progress despite zero expected decrease.}
+ \label{fig:fldr-synthesis-tree}
+\end{figure}
 
-\paragraph{Role of the two functions and limits of the evidence.}
-The depth variant $k-c$ can increase in expectation: for the fixed input
-$(4,5)$, node $(c,d)=(2,0)$ has successors $(3,0)$ and $(0,0)$,
-so $U=2$ but $\mathbb{E}[U']=5/2$. In the restricted basis $(k,c,1)$,
-no single function can meet both roles on this instance: at fixed $k=4$,
-write it as $W(c)=A+Dc$. Progress at the root requires $D<0$, whereas
-at $(2,0)$ its expected change is $-D/2>0$. However, the automatically
-found $c-2d+2$ shows that this obstruction disappears when $d$ is allowed.
-The result therefore concerns a specified template class, not an intrinsic
-need for distinct functions in FLDR.
+\paragraph{FLDR under a symbolic structural contract.}
+For arbitrary trees, the input retains all integer components $(m,k,n,c,d)$
+and uses a Boolean activity flag for the guard. Its support requires
+$m\geq1$, $0\leq k\leq m$, $1\leq n\leq m$, $0\leq c\leq k$,
+$d\geq0$, and $\mathit{active}\Rightarrow c<k$. Each bit outcome is
+classified as continuation, rejection, or acceptance. Continuation advances
+to $(c+1,2d+\beta)$ and requires $c+1<k$; rejection resets to $(0,0)$;
+acceptance advances to the child and disables the guard. Parameters are
+unchanged, and both outcomes may not reject simultaneously.
 
-\paragraph{A piecewise certificate on both sides of zero.}
-As an additional expressiveness check, consider the symmetric random walk
-on all of $\mathbb Z$, with guard $x\neq0$ and invariant $\mathit{true}$.
-Any affine variant $U(x)=ax+b$ positive on every active state must have
-$a=0$, since both tails are unbounded. Such a constant variant cannot
-decrease at $x=2$, whose two successors remain active. Hence no single-affine
-pair satisfies our constraints, irrespective of the coefficient bound.
-This analytic obstruction is separate from the bounded synthesis failures.
+Tree height at most $k$ and at most one rejecting leaf per level justify
+this contract (\Cref{sec:fldr}). The certificate solver does not derive these
+facts from preprocessing. The domain overapproximates
+$k=\lceil\log_2m\rceil$ and avoids logarithmic arithmetic.
+The full basis $(m,k,n,c,d,1)$ yields $V=m$, $U=m-c$ on active states;
+all irrelevant coefficients become zero without a prescribed feature subset.
+Every successor has $V'$ equal to $m$ or zero, a nonrejecting outcome
+decreases $U$ by at least one, and $1\leq U=m-c\leq m=V$.
+The alternative pair $V=k$, $U=k-c$ is also independently verified,
+but is not the candidate selected in the recorded affine run.
 
-With the supplied split $x<0$ versus $x\geq0$, the same kernel finds
-$V=U=|x|$ at $B=1$. The expectation is unchanged on active states and one
-of the two successors decreases the certificate by one. Verification is
-over all integer states. This demonstrates additional expressiveness for
-a single template over the supplied invariant; manually splitting the
-proof into its two sign-invariant domains would also suffice.
+The depth variant can grow in expectation: at $(c,d)=(2,0)$ in the fixed
+tree, $U=2$ but $\mathbb E[U']=5/2$. In the restricted basis $(k,c,1)$,
+a shared function at $k=4$ has the form $W(c)=A+Dc$. Progress at the root
+forces $D<0$, while its expected change at $(2,0)$ is then $-D/2>0$.
+However, the synthesized $c-2d+2$ removes this obstruction. This separation
+concerns a specified template class, not an intrinsic need for distinct
+functions in FLDR.
 
-\paragraph{Optional sampler partitions.}
-No extra partition is needed for the FDR and FLDR results in
-\Cref{tab:synthesis-results}. As regression checks, the extended artifact
-also supplies the semantically motivated splits $2v<n$ versus $2v\geq n$
-for FDR, and $c<k-1$ versus $c\geq k-1$ for FLDR. The former separates
-states in which the next doubling cannot yet accept from states in which
-acceptance or recycling is possible. The latter isolates the last active
-depth, where a child must accept or reset. On the fixed input $(4,5)$,
-the threshold is $k-1=3$. All three partitioned sampler inputs synthesize
-verified certificates with the original successful bounds, respectively
-$1,2,1$. In the recorded FDR run the two regions receive identical
-expressions. These are feasibility checks, not evidence that the additional
-partitions are necessary or optimal.
+\paragraph{What the supplied partition adds.}
+For the symmetric walk on all of $\mathbb Z$, take guard $x\neq0$ and
+support $\mathit{true}$. An affine variant $ax+b$ positive on both unbounded
+tails must have $a=0$, and a constant cannot decrease at $x=2$. Hence no
+single-affine pair satisfies the constraints, regardless of its coefficient
+bound. With the supplied split $x<0$ versus $x\geq0$, the same kernel
+synthesizes and universally verifies $V=U=|x|$. This is an expressiveness
+check for a single template over the full invariant; two manual proofs on
+sign-invariant domains would also suffice. Optional sampler partitions and
+checks of cross-region transitions are documented in \Cref{app:artifact}.
 
-The synthesis contribution is a reproducible feasibility demonstration
-for the program-level obligations. Supplied invariants and body semantics,
-the abstract FLDR contract, the affine or fixed-piecewise-affine hypothesis
-class, and $U\leq V$
-remain substantive assumptions. The experiments neither establish
-synthesis completeness for AST programs nor demonstrate superiority to
-existing synthesis tools. Automatic extraction of body semantics, automatic
-partition selection, richer templates, and broader comparisons remain future work.
+The experiments establish neither unrestricted synthesis completeness nor
+superiority to existing synthesis tools. Supplied invariants and semantics,
+the FLDR abstraction, fixed partitions, and $U\leq V$ remain substantive
+restrictions. Automatic extraction of semantics and partition selection are
+outside the implemented scope.

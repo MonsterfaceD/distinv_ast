@@ -1,279 +1,168 @@
 \section{Preliminaries and Background}
 \label{sec:prelims}
 
-We fix a finite set $\vars$ of program variables and a countable state space $\Sigma$; a state $\sigma\in\Sigma$ maps variables to rational values. Arithmetic and Boolean expressions are interpreted as functions on states. For a Boolean expression $b$, let $\llbracket b\rrbracket=\{\sigma\mid \sigma\models b\}$ and let $[b]$ denote its Iverson bracket. Updating $x$ in $\sigma$ to $a(\sigma)$ is written $\sigma[x/a(\sigma)]$.
+Fix a finite set $\vars$ of variables and the countable state space
+$\Sigma=\mathbb Q^{\vars}$. Expressions denote total functions on states;
+updates preserve $\Sigma$. For a Boolean expression $b$, write
+$\llbracket b\rrbracket=\{\sigma\mid\sigma\models b\}$ and $[b]$ for its
+Iverson bracket. The update of $x$ to $a(\sigma)$ is
+$\sigma[x/a(\sigma)]$. We use $\mathbb N=\{0,1,\ldots\}$.
 
-\subsection{Probabilistic Programs and Subdistributions}
+\subsection{Programs, Subdistributions, and AST}
 
-We consider the probabilistic guarded-command language
+Our probabilistic guarded-command language is
 \[
  \begin{aligned}
- C &::= \ski \mid \ass{x}{a} \mid \comp{C}{C} \mid \pchoice{C}{p}{C}\\
-   &\phantom{{}::={}}\mid \ifelse{b}{C}{C} \mid \while{b}{C},
+ C &::= \ski\mid\ass{x}{a}\mid\comp{C}{C}\mid\pchoice{C}{p}{C}\\
+   &\phantom{{}::={}}\mid\ifelse{b}{C}{C}\mid\while{b}{C}.
  \end{aligned}
 \]
-where $p\in[0,1]\cap\mathbb{Q}$. The language includes probabilistic choice but excludes nondeterministic choice. A \emph{subdistribution} is a function $\mu:\Sigma\to\mathbb{R}_{\geq0}$ of weight $\weight{\mu}=\sum_{\sigma}\mu(\sigma)\leq1$. We write $\subdists$ for all subdistributions, $\supp(\mu)=\{\sigma\mid\mu(\sigma)>0\}$ for the support, and $\dirac{\sigma}$ for the Dirac distribution at $\sigma$. Missing mass represents nontermination.
+where each $p\in[0,1]\cap\mathbb Q$ is constant. There is no
+nondeterministic choice. A \emph{subdistribution} is a function
+$\mu:\Sigma\to\mathbb R_{\geq0}$ with weight
+$\weight{\mu}=\sum_\sigma\mu(\sigma)\leq1$. Write $\subdists$ for their
+set, $\supp(\mu)=\{\sigma\mid\mu(\sigma)>0\}$, and $\dirac{\sigma}$
+for a Dirac distribution. For a set $M$ of subdistributions, put
+$\supp(M)=\bigcup_{\mu\in M}\supp(\mu)$.
 
-\subsection{Distribution-Transformer Semantics and AST}
-
-Programs denote linear, $\omega$-continuous post-distribution transformers $\post{C}:\subdists\to\subdists$ that do not increase mass. This is the forward denotational semantics of the probabilistic language: each input subdistribution has one output subdistribution, in the tradition of Kozen~\cite{DBLP:conf/focs/Kozen79,DBLP:conf/stoc/Kozen83}. The clauses needed below are
+A program denotes a transformer $\post{C}:\subdists\to\subdists$.
+It is linear, $\omega$-continuous, and does not increase mass. The clauses
+follow the forward semantics of Kozen~\cite{DBLP:conf/focs/Kozen79,DBLP:conf/stoc/Kozen83}:
 \begin{align*}
- \post{\ski}(\mu) &= \mu,\\
+ \post{\ski}(\mu)&=\mu,\\
  \post{\ass{x}{a}}(\mu)(\sigma)
-   &= \sum_{\sigma':\,\sigma'[x/a(\sigma')]=\sigma}\mu(\sigma'),\\
- \post{\pchoice{C_1}{p}{C_2}}(\mu)
-   &= \post{C_1}(p\mu)+\post{C_2}((1-p)\mu),\\
+   &=\sum_{\sigma':\,\sigma'[x/a(\sigma')]=\sigma}\mu(\sigma'),\\
  \post{\comp{C_1}{C_2}}(\mu)
-   &= \post{C_2}(\post{C_1}(\mu)),\\
+   &=\post{C_2}(\post{C_1}(\mu)),\\
+ \post{\pchoice{C_1}{p}{C_2}}(\mu)
+   &=p\post{C_1}(\mu)+(1-p)\post{C_2}(\mu),\\
  \post{\ifelse{b}{C_1}{C_2}}(\mu)
-   &= \post{C_1}([b]\mu)+\post{C_2}([\neg b]\mu).
+   &=\post{C_1}([b]\mu)+\post{C_2}([\neg b]\mu).
 \end{align*}
-For a loop $C=\while{b}{B}$, we take a least fixed point over transformers, as in~\cite{zilken2026verifyingsamplingalgorithmsdistributional}. We order subdistributions and transformers pointwise. Let $\mathcal{H}$ be the pointed $\omega$-cpo of $\omega$-continuous transformers $f:\subdists\to\subdists$ satisfying $\weight{f(\eta)}\leq\weight{\eta}$ for every $\eta\in\subdists$, with bottom $\bot=\lambda\eta.0$. Define
+For a loop, take a least fixed point over transformers, as
+in~\cite{zilken2026verifyingsamplingalgorithmsdistributional}. Let
+$\mathcal H$ be the pointed $\omega$-cpo of $\omega$-continuous,
+mass-nonincreasing maps $\subdists\to\subdists$, ordered pointwise, with
+bottom $\bot=\lambda\eta.0$. Define
 \begin{equation}
-\label{eq:while-transformer-fixpoint}
  \begin{aligned}
-  \Phi_{b,B}(f)(\eta)
-    &= [\neg b]\eta+f\bigl(\post{B}([b]\eta)\bigr),\\
-  \post{C}(\mu)
-    &= (\lfp\Phi_{b,B})(\mu)
-     = \sup_{j\in\mathbb{N}}\Phi_{b,B}^{j}(\bot)(\mu).
+ \Phi_{b,B}(f)(\eta)&=[\neg b]\eta+f\bigl(\post{B}([b]\eta)\bigr),\\
+ \post{\while{b}{B}}(\mu)
+   &=(\lfp\Phi_{b,B})(\mu)
+     =\sup_{j\in\mathbb N}\Phi_{b,B}^j(\bot)(\mu).
  \end{aligned}
+ \label{eq:while-transformer-fixpoint}
 \end{equation}
-The functional $\Phi_{b,B}:\mathcal{H}\to\mathcal{H}$ is $\omega$-continuous, and every approximant has mass at most $\weight{\mu}$ (see \Cref{app:translation}). For $j\geq1$, $\Phi_{b,B}^{j}(\bot)(\mu)$ collects the terminating executions with fewer than $j$ completed body iterations. Thus the fixed point ranges over transformers, while all their inputs and outputs remain subdistributions.
-
-Linearity and $\omega$-continuity give
-$\post{C}(\sum_i p_i\dirac{\sigma_i})=\sum_i p_i\post{C}(\dirac{\sigma_i})$ for any finite or countable family with $p_i\geq0$ and $\sum_i p_i\leq1$, which lets us reduce one-iteration obligations to Dirac inputs.
+The functional is $\omega$-continuous and preserves $\mathcal H$
+(\Cref{app:translation}). Its $j$th approximant collects executions
+terminating after fewer than $j$ body iterations. Thus missing mass
+records nontermination. Linearity and continuity imply
+\[
+ \post{C}\Bigl(\sum_i p_i\dirac{\sigma_i}\Bigr)
+   =\sum_i p_i\post{C}(\dirac{\sigma_i})
+ \qquad(p_i\geq0,\ \textstyle\sum_i p_i\leq1),
+\]
+including countably many summands. This permits reduction to Dirac inputs.
 
 \begin{definition}[Almost-sure termination]
-A program $C$ is \emph{almost-surely terminating} on $M\subseteq\subdists$ if
-$\weight{\post{C}(\mu)}=\weight{\mu}$ for every $\mu\in M$.
+A program $C$ is \emph{almost-surely terminating} on $M\subseteq\subdists$
+if $\weight{\post{C}(\mu)}=\weight{\mu}$ for every $\mu\in M$.
 \end{definition}
+AST does not require finite expected runtime.
 
-Thus AST means that execution loses no probability mass. We do not require positive AST: the expected runtime may be infinite.
-
-\subsection{Distributional Invariants}
-
-Our assertions are sets of distributions rather than predicates over individual states. This aligns the termination argument with existing partial-correctness proofs for sampling algorithms~\cite{zilken2026verifyingsamplingalgorithmsdistributional}.
+\subsection{Distributional Invariants and Certificates}
 
 \begin{definition}[Distributional invariant]
-Let $C=\while{b}{B}$ and $M\subseteq\subdists$. A set $I\subseteq\subdists$ is a \emph{distributional invariant} for $C$ and $M$ if
+For $C=\while{b}{B}$ and initial distributions $M$, a set
+$I\subseteq\subdists$ is a \emph{distributional invariant} if
 \[
  M\subseteq I
  \quad\text{and}\quad
- [\neg b]\mu+\post{B}([b]\mu)\in I
- \quad\text{for all }\mu\in I.
+ [\neg b]\mu+\post{B}([b]\mu)\in I\quad\text{for all }\mu\in I.
 \]
-We abbreviate $\supp(I)=\bigcup_{\mu\in I}\supp(\mu)$.
 \end{definition}
+The invariant retains mass that has already terminated and advances the
+enabled mass by one body execution. Besides state bounds it can express
+relations between probabilities, such as uniformity within a decision-tree
+row~\cite{zilken2026verifyingsamplingalgorithmsdistributional}.
+The AST rule uses its support $S=\supp(I)$; the stronger distributional
+information remains available for partial correctness.
 
-The invariant can simultaneously carry state-space bounds and genuinely distributional information such as equal probability of states in a row of a decision tree. The AST rule uses the support information, while retaining the stronger invariant permits direct composition with partial correctness.
+The rule employs two state functions. A nonnegative \emph{supermartingale}
+$v:S\to\mathbb R_{\geq0}$ does not increase in expectation over an enabled
+body execution. Its sublevel sets are
+$v_{\leq r}=\{\sigma\in S\mid v(\sigma)\leq r\}$.
+A \emph{variant} $u:S\to\mathbb N$ decreases with uniformly positive
+probability and is bounded on each such sublevel set. It need not decrease
+in expectation: a rejected sample may reset $u$ upwards. All certificate
+sums below range over positive-mass outcomes. Support closure, proved in
+\Cref{sec:metatheory}, ensures that the functions are defined there.
 
-\subsection{Supermartingales, Variants, and Sublevel Sets}
-
-A function $v:\supp(I)\to\mathbb{R}_{\geq0}$ is a one-iteration supermartingale for loop body $B$ if, for every enabled state $\sigma$,
-\[
-  \sum_{\sigma'\in\Sigma}\post{B}(\dirac{\sigma})(\sigma')v(\sigma')\leq v(\sigma).
-\]
-For $r\in\mathbb{R}_{\geq0}$, its sublevel set is
-$v_{\leq r}=\{\sigma\in\supp(I)\mid v(\sigma)\leq r\}$.
-A variant $u:\supp(I)\to\mathbb{N}$ need not decrease in expectation or on every outcome. We only require a uniformly positive chance to move to a smaller value. The role of $v$ is to ensure that executions cannot escape all regions in which $u$ has a finite upper bound.
-
-This division of labour matters for rejection samplers. A rejected run may reset $u$ to a larger value; AST follows because progress remains possible with nonzero probability while $v$ controls the size of the relevant search space.
-
-\subsection{AST Certificates for Probabilistic Control-Flow Graphs}
+\subsection{The pCFG Rule and Operational Correspondence}
 \label{sec:background}
 
-Our program-level rule builds on the sound and relatively complete
-pCFG rule of Majumdar and Sathiyanarayana%
-~\cite{DBLP:journals/pacmpl/MajumdarS25}. Their framework includes
-bounded demonic nondeterminism and requires AST under every scheduler.
-We state the specialization to pCFGs without nondeterministic choice,
-matching the language introduced above, before relating its
-location-dependent certificates to our distribution-transformer
-formulation.
+Majumdar and Sathiyanarayana~\cite{DBLP:journals/pacmpl/MajumdarS25}
+give a sound and relatively complete AST rule for probabilistic
+control-flow graphs (pCFGs), including bounded demonic nondeterminism.
+We use its purely probabilistic specialization with fixed probabilities.
+A configuration $\gamma=(\ell,\sigma)$ comprises a control location and
+a valuation. Assignment and conditional locations have one enabled
+successor; probabilistic locations choose among finitely many successors.
+The program exit $\ell_{\mathsf{out}}$ is absorbing. Write
+$\Succ(\gamma)$ for the positive-probability successors and
+$P(\gamma,\gamma')$ for their transition probabilities, with $P=1$ at
+deterministic steps. An invariant $\mathit{Inv}$ for initial valuations
+$E$ contains all $(\ell_{\mathsf{init}},\sigma)$ with $\sigma\in E$ and
+is closed under these transitions.
 
-A probabilistic control-flow graph (pCFG) has configurations
-$(\ell,\sigma)$ consisting of a control location $\ell$ and a program
-state $\sigma$. Its locations are partitioned into assignment locations
-$L_{\mathsf A}$, conditional locations $L_{\mathsf C}$, and
-probabilistic locations $L_{\mathsf P}$. Assignment and conditional
-configurations have a unique enabled successor. At a probabilistic
-location, an outgoing edge is selected according to its fixed
-probability. The distinguished terminal location
-$\ell_{\mathsf{out}}$ is absorbing.
-
-For a configuration $\gamma=(\ell,\sigma)$, let
-$\Succ(\gamma)$ denote the set of its successor configurations. If
-$\ell\in L_{\mathsf P}$, let
-$\Pr(\gamma,\gamma')$ denote the probability of moving from $\gamma$
-to $\gamma'\in\Succ(\gamma)$. An invariant
-$\mathit{Inv}$ is \emph{inductive} for a set $E$ of initial states if
-\[
- \{(\ell_{\mathsf{init}},\sigma)\mid \sigma\in E\}
- \subseteq \mathit{Inv}
-\]
-and $\mathit{Inv}$ is closed under all positive-probability
-transitions.
-
-The rule uses two certificates. A non-negative supermartingale $V$
-controls the probability of reaching configurations arbitrarily far
-from termination. A natural-valued variant $U$ provides local
-progress towards termination. For $r\in\mathbb{R}_{\geq 0}$, define
-the $V$-sublevel set
-\[
- V_{\leq r}
- =
- \bigl\{\gamma\in\mathit{Inv}\mid V(\gamma)\leq r\bigr\}.
-\]
-
-\begin{theorem}
-  [pCFG AST rule, adapted from%
-  ~\cite{DBLP:journals/pacmpl/MajumdarS25}]
- \label{thm:pcfg-rule}
-Let $\mathcal{G}$ be a pCFG with initial location
-$\ell_{\mathsf{init}}$ and terminal location
-$\ell_{\mathsf{out}}$, and let $E$ be a set of initial states.
-The pCFG $\mathcal{G}$ is almost-surely terminating from $E$ if there
-exist the following objects:
+\begin{theorem}[pCFG AST rule, adapted from~\cite{DBLP:journals/pacmpl/MajumdarS25}]
+\label{thm:pcfg-rule}
+A pCFG is AST from $E$ if an inductive invariant $\mathit{Inv}$ admits
+$V:\mathit{Inv}\to\mathbb R_{\geq0}$ and
+$U:\mathit{Inv}\to\mathbb N$ such that:
 \begin{enumerate}
- \item An inductive invariant $\mathit{Inv}$ containing $(\ell_{\mathsf{init}},\sigma) \text{for every }\sigma\in E.$
-
- \item A function
-$
-  V\colon\mathit{Inv}\to\mathbb{R}_{\geq 0}
-$
- satisfying:
- \begin{enumerate}
-  \item
-  \[
-   V(\ell,\sigma)=0
-   \quad\Longleftrightarrow\quad
-   \ell=\ell_{\mathsf{out}}.
-  \]
-
-  \item For every
-  $\gamma=(\ell,\sigma)\in\mathit{Inv}$ with
-  $\ell\in L_{\mathsf A}\cup L_{\mathsf C}$ and unique successor
-  $\gamma'\in\Succ(\gamma)$,
-  \[
-   V(\gamma')\leq V(\gamma).
-  \]
-
-  \item For every
-  $\gamma=(\ell,\sigma)\in\mathit{Inv}$ with
-  $\ell\in L_{\mathsf P}$,
-  \[
-   \sum_{\gamma'\in\Succ(\gamma)}
-   \Pr(\gamma,\gamma')\,V(\gamma')
-   \leq V(\gamma).
-  \]
- \end{enumerate}
-
- \item A function
-$
-  U\colon\mathit{Inv}\to\mathbb{N}
-$
- satisfying:
- \begin{enumerate}
-  \item
-  \[
-   U(\ell,\sigma)=0
-   \quad\Longleftrightarrow\quad
-   \ell=\ell_{\mathsf{out}}.
-  \]
-
-  \item For every
-  $\gamma=(\ell,\sigma)\in\mathit{Inv}$ with
-  $\ell\in L_{\mathsf A}\cup L_{\mathsf C}$ and unique successor
-  $\gamma'\in\Succ(\gamma)$,
-  \[
-   U(\gamma')<U(\gamma).
-  \]
-
-  \item For every $r\in\mathbb{R}_{\geq 0}$:
-  \begin{enumerate}
-   \item the set
-$
-    \{U(\gamma)\mid \gamma\in V_{\leq r}\}
-$
-   is bounded; and
-
-   \item there exists $\varepsilon_r>0$ such that, for every
-   $\gamma=(\ell,\sigma)\in V_{\leq r}$ with
-   $\ell\in L_{\mathsf P}$,
-   \[
-    \sum_{\substack{\gamma'\in\Succ(\gamma)\\
-                    U(\gamma')<U(\gamma)}}
-    \Pr(\gamma,\gamma')
-    \geq \varepsilon_r.
-   \]
-  \end{enumerate}
- \end{enumerate}
+ \item $V(\gamma)=U(\gamma)=0$ at terminal configurations, and
+       $V(\gamma)>0$ at every other configuration;
+ \item for every nonterminal $\gamma\in\mathit{Inv}$,
+ \[
+   \sum_{\gamma'\in\Succ(\gamma)}P(\gamma,\gamma')V(\gamma')
+   \leq V(\gamma);
+ \]
+ \item for every $r\geq0$, the values of $U$ on
+ $V_{\leq r}=\{\gamma\in\mathit{Inv}\mid V(\gamma)\leq r\}$ are
+ bounded, and some $\varepsilon_r>0$ satisfies
+ \[
+   \sum_{\substack{\gamma'\in\Succ(\gamma)\\U(\gamma')<U(\gamma)}}
+      P(\gamma,\gamma')\geq\varepsilon_r
+ \]
+ for every nonterminal $\gamma\in V_{\leq r}$.
 \end{enumerate}
-Moreover, the rule is relatively complete with respect to the
-underlying first-order theory used to express the invariant and the
-certificates.
+Conversely, AST from $E$ implies the existence of these certificates.
+Under the arithmetic assumptions of \Cref{sec:metatheory}, they are
+representable in the assertion language.
 \end{theorem}
-The soundness argument has two complementary layers. Fix a sublevel
-set $V_{\leq r}$. Since $U$ is natural-valued and bounded on this set,
-it ranges over a finite interval. At deterministic locations it
-strictly decreases, while at probabilistic locations it decreases
-with probability at least $\varepsilon_r$. Consequently, a run that
-remains inside $V_{\leq r}$ cannot avoid termination with positive
-probability.
+At a deterministic step the last condition forces strict descent of
+$U$, so this unified notation includes the usual separate condition for
+assignments and guards. It also forces $U>0$ away from the exit.
+Soundness combines bounded-variant reasoning within each sublevel set
+with the nonnegative supermartingale bound on escape. For completeness,
+\Cref{app:initial-sets} adapts the published construction from a fixed
+initial configuration to a common pair of certificates for arbitrary
+initial sets $E$.
 
-It remains to account for runs that leave every fixed sublevel set.
-The supermartingale conditions ensure that $V$ does not increase in
-expectation. Standard supermartingale arguments therefore make
-indefinite escape through increasingly large sublevel sets a
-probability-zero event. Combining both layers yields almost-sure
-termination. Unlike proof rules based on a globally bounded variant,
-the sublevel-set formulation also handles null-recurrent programs,
-such as the symmetric one-dimensional random walk.
-
-Although semantically powerful, the pCFG rule is syntactically
-fine-grained. Suppose that one source-level loop iteration consists
-of a guard, two assignments, a probabilistic choice, and a
-conditional. Its pCFG translation introduces a separate control
-location for each of these operations. A proof must therefore define
-$U$ and $V$ at every intermediate location. Location-dependent
-constants, scaling factors, and offsets may be needed solely to
-ensure the required inequalities along the internal transitions of
-one source-level iteration.
-
-Our rule retains the same two-layer termination argument but moves it
-to program level. Instead of assigning certificates to intermediate
-control locations, it contracts each complete execution of a
-loop-free body into one distribution-transformer step. The
-certificates can therefore express progress over complete loop
-iterations, matching the abstraction at which sampling algorithms
-are naturally understood.
-
-\paragraph{Translation assumption.}
-The standard structural translation $\mathcal{T}[C]$ maps program
-syntax to a pCFG. Assignments become update edges, conditionals become
-guarded edges, and probabilistic choices become probabilistic
-locations. Sequential composition connects the exit of one component
-to the entry of the next, while a while-loop connects the body exit
-back to the guard.
-
-For a loop-free body $B$, paths through $\mathcal{T}[B]$ from its
-entry location $\ell_{\mathsf{in}}^B$ to its exit location
-$\ell_{\mathsf{out}}^B$ correspond exactly to the outcomes of its
-distribution-transformer semantics:
+The structural translation $\mathcal T[C]$ turns assignments into update
+edges, choices into branching locations, and the loop guard into a
+conditional location whose true successor enters the body. Sequential
+composition identifies adjacent exits and entries, and the body exit is
+identified with the loop guard. For a loop-free body, structural induction
+shows that $\post{B}(\dirac{\sigma})(\sigma')$ equals the total probability
+of body paths from entry valuation $\sigma$ to exit valuation $\sigma'$.
+Loop unrolling then gives
 \[
- \post{B}(\dirac{\sigma})(\sigma')
- =
- \Pr\bigl(
-   \text{paths in }\mathcal{T}[B]
-   \text{ from }(\ell_{\mathsf{in}}^B,\sigma)
-   \text{ to }(\ell_{\mathsf{out}}^B,\sigma')
- \bigr).
+ C\text{ is AST on }M
+ \quad\Longleftrightarrow\quad
+ \mathcal T[C]\text{ is AST from }\supp(M).
 \]
-Consequently, a program $C$ is AST on a set $M$ of initial
-subdistributions exactly when $\mathcal{T}[C]$ reaches its terminal
-location almost surely from every state in $\supp(M)$. A structural
-proof of this correspondence is summarized in
-\Cref{app:translation}. This correspondence provides the bridge used
-in \Cref{sec:metatheory} to transfer soundness and relative
-completeness between the pCFG rule and our program-level rule.
+\Cref{app:translation} proves both facts. The program-level rule contracts
+these finite body paths into one semantic step; certificates need only
+annotate the valuations at loop entry.

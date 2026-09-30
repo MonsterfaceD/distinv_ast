@@ -1,31 +1,80 @@
 \section{Soundness and Relative Completeness}
 \label{sec:metatheory}
 
-We connect \Cref{thm:program-rule} to the pCFG rule through the translation outlined in \Cref{sec:background}. The proofs also explain why contracting a loop body preserves the two certificates.
+We prove soundness and relative completeness by translating certificates in
+both directions, following the approach of Seidel~\cite[Chapter~6]{seidel2026thesis}. The only
+control-flow parameter is a bound on the number of edges in one body
+execution; one backward recursion handles every internal location.
+All sums below range over the positive-mass outcomes of their distributions.
 
-\subsection{From Edge-Level to Iteration-Level Reasoning}
+\subsection{One Iteration and Its Support}
 
-Let $B$ be loop-free and let $\mathcal{T}[B]$ have entry $\ell_{\mathsf{in}}$ and exit $\ell_{\mathsf{out}}$. Because $B$ is loop-free, every path from entry to exit is finite and there is a maximum path length $L_B$.
+Fix $C=\while{b}{B}$ with loop-free $B$. Write $\ell_g$ for its guard,
+$\ell_{\rm in}$ for the body entry, and $\ell_{\rm exit}$ for the program
+exit. In $\mathcal T[C]$, the body exit is identified with $\ell_g$;
+there is no additional back edge. Skip is represented by one identity
+edge. Let $L_B\geq1$ bound the number of \emph{edges} in any complete body
+path. Every such path is finite, and from a fixed state there are only
+finitely many paths. The body therefore preserves mass.
 
-\begin{lemma}[Supermartingale contraction]
-\label{lem:contract-v}
-Let $V$ satisfy the pCFG supermartingale conditions on $\mathcal{T}[B]$. Then for every reachable $(\ell,\sigma)$,
+Let $p_*$ be the minimum of $1$ and all positive probabilistic edge
+probabilities in $\mathcal T[B]$. Zero-probability edges are discarded.
+Because the program has finitely many fixed choices, $p_*>0$, and every
+feasible body path has probability at least
+\begin{equation}
+ \varepsilon_B=p_*^{L_B}>0.
+ \label{eq:body-path-bound}
+\end{equation}
+This bound is independent of the valuation and of the certificates.
+
+\paragraph{Support closure.}
+If $I$ is a distributional invariant for $C$ and an initial set of distributions $M$, then $S=\supp(I)$ contains
+$\supp(M)$ and is closed under enabled body executions. Indeed, for
+$\sigma\in S\cap\llbracket b\rrbracket$, choose $\mu\in I$ with
+$\mu(\sigma)>0$. Whenever $\post{B}(\dirac{\sigma})(\sigma')>0$,
+linearity gives
 \[
- V(\ell,\sigma)\geq
- \sum_{\sigma'}\Pr(\ell,\sigma\leadsto\ell_{\mathsf{out}},\sigma')
- V(\ell_{\mathsf{out}},\sigma').
+ \bigl([\neg b]\mu+\post{B}([b]\mu)\bigr)(\sigma')
+ \geq\mu(\sigma)\post{B}(\dirac{\sigma})(\sigma')>0.
 \]
-\end{lemma}
-\begin{proof}
-Induct backwards over the acyclic control-flow structure of $B$. At an assignment or guard location, apply monotonicity along the unique enabled successor. At a probabilistic location, apply the local expectation inequality and the induction hypothesis to every successor. The path probabilities partition according to the first edge.
-\end{proof}
+The distribution on the left belongs to $I$, so $\sigma'\in S$.
+Conversely, if $S$ contains $\supp(M)$ and has this closure property,
+then $\{\mu\in\subdists\mid\supp(\mu)\subseteq S\}$ is a
+distributional invariant: each positive output mass comes from an input
+state in $S$, or from terminal mass retained unchanged.
 
-\begin{lemma}[Variant path]
+\begin{lemma}[Contracting an iteration]
+\label{lem:contract-v}
 \label{lem:contract-u}
-Let $U$ satisfy the pCFG variant conditions on $\mathcal{T}[B]$. From every reachable entry configuration there is a positive-probability path to an exit configuration with a smaller $U$-value.
+Suppose $\mathit{Inv},V,U$ satisfy the pCFG premises in
+\Cref{thm:pcfg-rule} for $\mathcal T[C]$. At every enabled guard
+configuration $(\ell_g,\sigma)\in\mathit{Inv}$,
+\begin{align}
+ \sum_{\sigma'}\post{B}(\dirac{\sigma})(\sigma')
+                V(\ell_g,\sigma')&\leq V(\ell_g,\sigma),
+ \label{eq:contract-v}\\
+ \sum_{\sigma':\,U(\ell_g,\sigma')<U(\ell_g,\sigma)}
+       \post{B}(\dirac{\sigma})(\sigma')&\geq\varepsilon_B.
+ \label{eq:contract-u}
+\end{align}
 \end{lemma}
 \begin{proof}
-At deterministic locations choose the unique successor, which lowers $U$. At probabilistic locations choose a positive-probability successor lowering $U$. Acyclicity ensures that this construction reaches the body exit after finitely many choices.
+Backward induction over the acyclic body composes the local expectation
+inequalities: a deterministic step substitutes its unique successor,
+and a probabilistic step takes their weighted sum. Including the enabled
+guard edge and using the operational correspondence from
+\Cref{app:translation} gives \eqref{eq:contract-v}.
+
+For $U$, the guard edge strictly decreases its value. At each subsequent
+nonterminal configuration choose a positive-probability successor with
+smaller $U$: the unique successor at a deterministic location, and a
+decreasing successor at a probabilistic location. Such a successor exists
+by the pCFG progress premise, applied with $r=V(\ell,\sigma)$ at the
+current configuration. Acyclicity brings this path back to the guard in
+at most $L_B$ body edges. Its endpoint has smaller $U$ than its starting
+guard configuration, and its probability is at least $\varepsilon_B$
+by \eqref{eq:body-path-bound}. This proves \eqref{eq:contract-u} without
+requiring the path to remain in any fixed sublevel set.
 \end{proof}
 
 \subsection{Soundness}
@@ -34,38 +83,170 @@ At deterministic locations choose the unique successor, which lowers $U$. At pro
 \label{thm:soundness}
 The program-level rule in \Cref{thm:program-rule} is sound.
 \end{theorem}
-\begin{proof}[Proof sketch]
-Assume certificates $I,v,u$ and translate $C$ to $G=\mathcal{T}[C]$. Let $\mathit{Inv}$ contain all configurations reachable from $\supp(M)$. Distributional inductiveness and the translation correspondence ensure that every state at the loop guard belongs to $\supp(I)$.
+\begin{proof}
+Assume certificates $I,v,u$. Let $\mathit{Inv}$ be the configurations
+reachable in $\mathcal T[C]$ from $(\ell_g,\sigma)$ with
+$\sigma\in\supp(M)$. Support closure ensures that every reachable
+guard valuation belongs to $\supp(I)$. Set $a=L_B+1$ and prescribe
+\[
+ \begin{array}{ll}
+ V(\ell_g,\sigma)=v(\sigma)+1,
+   &U(\ell_g,\sigma)=a\,u(\sigma)+1,\\
+ V(\ell_{\rm exit},\sigma)=0,
+   &U(\ell_{\rm exit},\sigma)=0.
+ \end{array}
+\]
+At internal body configurations $\gamma$, define both functions by
+backward recursion, stopping at the next guard visit:
+\begin{equation}
+ V(\gamma)=\sum_{\gamma'\in\Succ(\gamma)}
+                  P(\gamma,\gamma')V(\gamma'),
+ \qquad
+ U(\gamma)=1+\min_{\gamma'\in\Succ(\gamma)}U(\gamma').
+ \label{eq:lift-recursion}
+\end{equation}
+Here $P$ is the one-step transition probability, equal to $1$ for a
+unique deterministic successor; $\Succ$ contains only positive-probability
+successors. These are finite, well-defined recursions because the body
+is acyclic. All nonterminal $V$- and $U$-values are at least $1$, and
+$U$ is natural-valued.
 
-We lift $v$ to a pCFG supermartingale $V$. At the loop guard set $V(\ell_g,\sigma)=v(\sigma)+1$, and set $V=0$ at the program exit. At an internal body location, define $V$ as the expected value at the end of the remaining body execution. This satisfies equality at probabilistic locations and along all internal deterministic steps. At the back edge, the source-level supermartingale inequality establishes non-increase. \Cref{lem:contract-v} formalizes this construction.
+\paragraph{Local inequalities.}
+Inside the body, \eqref{eq:lift-recursion} gives the supermartingale
+inequality with equality. It also gives strict variant descent on every
+deterministic edge and on a successor of probability at least $p_*$ at
+every probabilistic location. At a guard with $\neg b$, both functions
+strictly decrease to zero. At a guard with $b$, backward expansion and
+mass preservation give
+\[
+ V(\ell_{\rm in},\sigma)
+ =\sum_{\sigma'}\post{B}(\dirac{\sigma})(\sigma')
+                         (v(\sigma')+1)
+ \leq v(\sigma)+1=V(\ell_g,\sigma).
+\]
+For $U$, the source decrease premise supplies a feasible body path to
+some $\sigma'$ with $u(\sigma')\leq u(\sigma)-1$. Along \emph{any}
+body path of $n$ edges, the minimum recursion gives
+$U(\gamma_0)\leq U(\gamma_n)+n$. Thus, for this path, $n\leq L_B$
+and
+\begin{align*}
+ U(\ell_{\rm in},\sigma)
+ &\leq a\,u(\sigma')+1+n\\
+ &\leq a\,(u(\sigma)-1)+1+L_B
+  =a\,u(\sigma)<U(\ell_g,\sigma).
+\end{align*}
+The extra unit in $a=L_B+1$ accounts precisely for the guard edge.
 
-For the variant, reserve enough numerical room for internal control flow. At the guard put
-$U(\ell_g,\sigma)=L_B\,u(\sigma)+1$ and put $U=0$ at the program exit. Define values backwards inside the body: at a deterministic location use the successor value plus one; at a probabilistic location use one plus the minimum successor value. Thus every deterministic edge decreases $U$, and some probabilistic successor decreases it.
-
-The source-level decrease condition says that, with probability at least $\varepsilon$, a body execution ends in $\sigma'$ with $u(\sigma')<u(\sigma)$. Since its path has length at most $L_B$, scaling by $L_B$ ensures that at least one such path descends through the internal pCFG values and returns to a smaller guard value. Fixed program probabilities provide the required positive lower bound at internal probabilistic locations.
-
-Finally, if $v(\sigma)\le r$, source-level boundedness bounds $u(\sigma)$; multiplication by $L_B$ and addition of at most $L_B$ internal steps preserves boundedness of $U$. The lifted certificates satisfy \Cref{thm:pcfg-rule}, so $G$ reaches its exit almost surely. AST preservation by the translation yields $\weight{\post{C}(\mu)}=\weight{\mu}$ for every $\mu\in M$.
+\paragraph{Sublevel boundedness.}
+Fix $r\geq0$ and choose $H_r\in\mathbb N$ bounding $u$ on
+$\{\sigma\in\supp(I)\mid v(\sigma)\leq r\}$.
+At guard configurations with $V\leq r$, we have $U\leq aH_r+1$;
+at the program exit, $U=0$. At an internal configuration $\gamma$,
+backward expansion expresses $V(\gamma)$ as the expectation of
+$v(\sigma')+1$ at the next guard. This is a finite probability
+distribution. If $V(\gamma)\leq r$, at least one positive-probability
+endpoint satisfies $v(\sigma')+1\leq r$. Choose a path to that endpoint.
+The path inequality above yields
+\[
+ U(\gamma)\leq a\,u(\sigma')+1+L_B\leq aH_r+1+L_B.
+\]
+This is a uniform bound over the entire pCFG sublevel set, including
+internal locations. All premises of \Cref{thm:pcfg-rule} now hold,
+with the same progress constant $p_*$ for every sublevel set. Its
+soundness and AST preservation by the translation establish AST of
+$C$ on $M$. This argument is pointwise in initial states; it requires
+no finite expectation of $v$ under an arbitrary $\mu\in M$.
 \end{proof}
 
 \subsection{Relative Completeness}
 
+\paragraph{Assertion language.}
+For relative completeness, we use first-order arithmetic with addition,
+multiplication, and order interpreted over $\mathbb Q$, as
+in~\cite{DBLP:journals/pacmpl/MajumdarS25}. Program states have effective
+rational encodings, and guards and updates are total computable operations
+on these encodings. Initial supports are arithmetically definable.
+Natural numbers and computable relations are definable in this rational
+arithmetic~\cite[Section~2.4]{DBLP:journals/pacmpl/MajumdarS25}.
+Natural-valued certificates are represented by their graphs, and
+real-valued certificates by predicates for rational cuts
+$q<f(\sigma)$; they need not be rational-valued or arithmetic terms.
+For distributional invariants we allow the lifted support assertion
+$\supp(\mu)\subseteq S$ for an arithmetical state predicate $S$.
+Completeness is relative to all true sentences of this arithmetic
+structure, not to a decision procedure or to the templates of
+\Cref{sec:certificate-synthesis}.
+
 \begin{theorem}[Relative completeness]
 \label{thm:complete}
-For AST loops $C=\while{b}{B}$ with loop-free body, the program-level rule is relatively complete with respect to the first-order arithmetic theory in which its assertions and certificates are expressed.
+Let $C=\while{b}{B}$ have loop-free body. If $C$ is AST on $M$, then
+certificates satisfying \Cref{thm:program-rule} exist. Under the preceding
+arithmetic assumptions, they are expressible in the assertion language,
+and the rule is relatively complete.
 \end{theorem}
-\begin{proof}[Proof sketch]
-Suppose $C$ is AST on $M$. Its translated pCFG $G$ is AST from $\supp(M)$. Relative completeness of \Cref{thm:pcfg-rule} yields an inductive invariant $\mathit{Inv}$ and pCFG certificates $V,U$.
+\begin{proof}
+Put $E=\supp(M)$. By AST preservation, $\mathcal T[C]$ is AST from
+every state in $E$. The pCFG completeness result supplies common
+certificates $\mathit{Inv},V,U$ for these initial states; the extension
+from one initial state to a set of initial states is justified in
+\Cref{app:initial-sets}. Set
+\begin{equation}
+ \begin{split}
+ S&=\{\sigma\mid(\ell_g,\sigma)\in\mathit{Inv}\},\qquad
+ I=\{\mu\in\subdists\mid\supp(\mu)\subseteq S\},\\
+ v(\sigma)&=[b](\sigma)V(\ell_g,\sigma),\qquad
+ u(\sigma)=[b](\sigma)U(\ell_g,\sigma)\quad(\sigma\in S).
+ \end{split}
+ \label{eq:project-certificates}
+\end{equation}
+Inductiveness of $\mathit{Inv}$ and the operational correspondence show
+that $S$ contains $E$ and is closed under enabled body executions.
+Support closure therefore makes $I$ a distributional invariant, with
+$\supp(I)=S$.
 
-Project the guard-location invariant to distributions:
+The projected functions have the required codomains and vanish on
+$S\cap\llbracket\neg b\rrbracket$; on enabled states $v$ is positive.
+For such a state $\sigma$, \Cref{lem:contract-v} and
+$v(\sigma')\leq V(\ell_g,\sigma')$ give
 \[
- I=\{\mu\in\subdists\mid
-       \supp(\mu)\subseteq\{\sigma\mid(\ell_g,\sigma)\in\mathit{Inv}\}\}.
+ \sum_{\sigma'}\post{B}(\dirac{\sigma})(\sigma')v(\sigma')
+ \leq\sum_{\sigma'}\post{B}(\dirac{\sigma})(\sigma')
+                         V(\ell_g,\sigma')
+ \leq V(\ell_g,\sigma)=v(\sigma).
 \]
-Operational/denotational correspondence and inductiveness of $\mathit{Inv}$ make $I$ a distributional invariant. Set $v(\sigma)=V(\ell_g,\sigma)$ and $u(\sigma)=U(\ell_g,\sigma)$. The expected non-increase of $v$ after a complete iteration follows from \Cref{lem:contract-v} and the equality between path probabilities and $\post{B}(\dirac{\sigma})$.
+Similarly, every endpoint counted in \eqref{eq:contract-u} satisfies
+\[
+ u(\sigma')\leq U(\ell_g,\sigma')
+   <U(\ell_g,\sigma)=u(\sigma).
+\]
+Thus the source decrease premise holds with the single constant
+$\varepsilon_B$. Finally, for every $r\geq0$,
+\[
+ \{u(\sigma)\mid\sigma\in S,\ v(\sigma)\leq r\}
+ \subseteq\{0\}\cup
+ \{U(\gamma)\mid\gamma\in\mathit{Inv},\ V(\gamma)\leq r\}.
+\]
+The right-hand side is bounded. This inclusion handles terminal states
+without incorrectly identifying their $v$- and $V$-sublevel membership.
 
-By \Cref{lem:contract-u}, some body path reaches a lower guard-level $U$-value. Inside a fixed $V$-sublevel set, the pCFG rule supplies positive lower bounds for all probabilistic descent choices. A body path has at most $L_B$ edges, so the product of finitely many such bounds is positive; taking the minimum over the bounded certificate range yields the source-level decrease bound. Restricting the pCFG boundedness condition to guard configurations directly bounds $u$ on every $v$-sublevel set.
-
-The projected objects are definable whenever the original pCFG certificates and reachability assertions are definable in the underlying theory. They satisfy \Cref{thm:program-rule}.
+For expressibility, fixing the location variable in the formula for
+$\mathit{Inv}$ defines $S$, and hence its lifted support assertion.
+The graph of $u$ is obtained by a guard case distinction. If
+$\theta_V(\ell,\sigma,q)$ defines $q<V(\ell,\sigma)$, the cut of $v$
+is defined on $S$ by
+\[
+ \bigl(b(\sigma)\land\theta_V(\ell_g,\sigma,q)\bigr)
+ \lor\bigl(\neg b(\sigma)\land q<0\bigr).
+\]
+All premises reduce to arithmetic sentences: each body has finitely many
+symbolic paths with rational probabilities and computable updates, so
+its sums are finite; comparisons of real values use their rational cuts.
+For sublevel boundedness it suffices to quantify over integer thresholds
+$r$ and integer bounds. Invariant initialization and preservation reduce
+to $E\subseteq S$ and the support-closure condition. Their established
+validity therefore supplies a proof relative to true arithmetic.
 \end{proof}
 
-The two translations show that no semantic proving power is lost for the considered program class. The benefit is representational: users state certificates once per source state and reason about complete iterations.
+The two constructions preserve semantic proving power for this fragment.
+Users supply only the two source-state functions; the internal annotations
+are needed solely to justify the metatheory.

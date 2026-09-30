@@ -1,5 +1,6 @@
 % ESOP 2027 anonymous research-paper submission, Springer LNCS format.
-% Target: about 25 pages excluding references; keep the standard LNCS layout.
+% ESOP 2027 research submissions have no page limit.
+% Camera-ready: 25 pages excluding bibliography; see docs/SUBMISSION_NOTES.md.
 \documentclass[runningheads]{llncs}
 
 \usepackage[T1]{fontenc}
@@ -25,11 +26,33 @@
 \maketitle
 
 \begin{abstract}
-Almost-sure termination (AST) is essential to the total correctness of probabilistic sampling algorithms. Majumdar and Sathiyanarayana provide a sound and relatively complete AST rule for probabilistic control-flow graphs (pCFGs), whose application to source programs requires a graph translation and certificates over control locations and valuations. We lift their two-certificate approach to a rule stated directly over the distribution-transformer semantics of probabilistic while-loops with loop-free bodies. A non-negative supermartingale controls escape to unbounded regions, while a natural-valued variant decreases with uniformly positive probability and is bounded on each supermartingale sublevel set. Both obligations concern complete loop iterations, so users supply certificates over source states without intermediate control-location annotations. We establish soundness and relative completeness for this program class through certificate translations between the two levels.
+Almost-sure termination (AST) is essential to the correctness of exact
+samplers, but rejection and restart complicate progress arguments.
+We formulate a program-level version of the two-certificate AST rule of
+Majumdar and Sathiyanarayana for probabilistic while-loops with loop-free
+bodies and fixed choice probabilities. A natural-valued variant provides
+probabilistic progress; a non-negative supermartingale controls escape
+from regions where the variant is bounded. Both certificates concern
+complete iterations in distribution-transformer semantics. We prove
+soundness and relative completeness through translations to and from
+pCFG certificates, without requiring users to annotate internal locations.
 
-We illustrate the rule on the one-dimensional random walk, then give both pCFG-level and program-level AST proofs of the Fast Dice Roller. This comparison makes explicit the location-dependent cases and offsets eliminated by reasoning over complete iterations. Further program-level proofs cover rejection and restart in the Fast Loaded Dice Roller and dyadic refinement in the Han--Hoshi sampler. For FDR and FLDR, existing distributional invariants can be reused to integrate these termination arguments with output-correctness proofs. The case studies demonstrate how the rule exposes the probabilistic progress argument while reducing control-flow bookkeeping. A shared counterexample-guided prototype automatically generates affine templates and synthesizes certificates for the random walk, symbolic FDR, and both a concrete FLDR instance and a parametric FLDR abstraction. These experiments establish feasibility under supplied invariants and iteration semantics; they also show how the available state features affect whether one function can serve both certificate roles.
+We give proofs for the Fast Dice Roller (FDR), Fast Loaded Dice Roller
+(FLDR), and Han--Hoshi sampler, and compare FDR annotations at both levels.
+A shared counterexample-guided synthesis kernel searches for two guarded
+affine or fixed-piecewise-affine certificates from supplied invariants and
+iteration semantics. Reproduced instances include the unbounded random
+walk, symbolic FDR, a concrete FLDR tree, and a structural FLDR abstraction.
+Final SMT queries verify the certificate constraints throughout the input
+domains. The search is restricted by bounded integer coefficients and a
+sufficient domination condition; abstraction soundness remains a separate
+mathematical obligation. These examples demonstrate feasibility, including
+AST with infinite expected runtime, rather than a general performance
+advantage or synthesis completeness for AST programs.
 
-\keywords{almost-sure termination \and probabilistic programs \and sampling algorithms \and distribution transformers \and loop invariants \and supermartingales \and Fast Dice Roller}
+\keywords{almost-sure termination \and probabilistic programs
+\and sampling algorithms \and distribution transformers
+\and supermartingales \and template-based synthesis}
 \end{abstract}
 
 % Main text: eight sections, in reading order.
@@ -38,17 +61,27 @@ We illustrate the rule on the one-dimensional random walk, then give both pCFG-l
 \input{3_Program_Level_AST_Rule}
 \input{4_Soundness_and_Completeness}
 \input{5_Sampling_Algorithms}
+\FloatBarrier
 \input{6_Certificate_Synthesis}
 \input{7_Related_Work}
 \input{8_Conclusion}
 
 \ifappendixversion
+\clearpage
 \appendix
 \input{appendices/A_Translation_and_AST_Preservation}
 \input{appendices/B_One_Iteration_Calculations}
 \input{appendices/C_Proof_Obligation_Comparison}
 \input{appendices/D_Artifact_and_Proof_Notes}
 \fi
+
+\clearpage
+\paragraph{Data availability.}
+The accompanying reproduction package contains the synthesis implementation,
+input encodings, pinned dependency, recorded solver results, and exact-arithmetic
+diagnostics. Its README gives the commands and maps outputs to the paper.
+No externally collected dataset is used. The mathematical metatheory is not
+mechanized; the implementation checks the supplied synthesis obligations.
 
 \bibliographystyle{splncs04}
 \bibliography{references}

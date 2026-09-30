@@ -18,3 +18,333 @@ Reuse from partial correctness & requires projection/lifting & direct\\
 \end{center}
 
 For FDR, both columns are feasible and prove the same AST fact. This makes FDR a controlled comparison of proof style. The program-level proofs of FLDR and Han--Hoshi further demonstrate how progress is expressed using non-reset outcomes and interval boundaries, respectively; they are not additional comparisons against explicitly constructed pCFG certificates.
+
+\begin{figure}[t]
+    \centering
+    \begin{tikzpicture}[
+        ->,
+        scale=0.95,
+        every node/.style={
+            font=\small,
+            transform shape
+        },
+        loc/.style={
+            draw,
+            circle,
+            minimum size=7mm,
+            inner sep=1pt
+        },
+        prob/.style={
+            loc,
+            fill=black!10
+        },
+        term/.style={
+            loc,
+            double,
+            double distance=1pt
+        },
+        lab/.style={
+            font=\scriptsize,
+            fill=white,
+            inner sep=1pt
+        }
+    ]
+        % Initialisation and loop head
+        \node[loc]  (init) at (-5.2, 0) {$\ell_{\mathsf{init}}$};
+        \node[loc]  (l1)   at (-3.7, 0) {$\ell_1$};
+        \node[loc]  (l2)   at (-2.1, 0) {$\ell_2$};
+
+        % Terminal location, moved to the upper left
+        \node[term] (out)  at (-3.0, 1.45) {$\ell_{\mathsf{out}}$};
+
+        % Main loop body
+        \node[loc]  (l3)   at (-0.45, 0) {$\ell_3$};
+        \node[prob] (l4)   at ( 1.10, 0) {$\ell_4$};
+
+        \node[loc]  (l5a)  at (2.65, 0.80) {$\ell_{5a}$};
+        \node[loc]  (l5b)  at (2.65,-0.80) {$\ell_{5b}$};
+
+        \node[loc]  (l6)   at (4.25, 0) {$\ell_6$};
+
+        % Rejection branch on a separate lower row
+        \node[loc]  (l7)   at (4.25,-1.95) {$\ell_7$};
+        \node[loc]  (l8)   at (1.75,-1.95) {$\ell_8$};
+
+        % Initialisation
+        \draw (init) --
+            node[lab,above] {$v:=1$}
+            (l1);
+
+        \draw (l1) --
+            node[lab,above] {$c:=0$}
+            (l2);
+
+        % Loop guard
+        \draw (l2) --
+            node[lab,above left,pos=.48] {$v\geq n$}
+            (out);
+
+        \draw (l2) --
+            node[lab,above] {$v<n$}
+            (l3);
+
+        % Deterministic update and probabilistic choice
+        \draw (l3) --
+            node[lab,above] {$v:=2v$}
+            (l4);
+
+        \draw (l4) --
+            node[lab,above left,pos=.48] {$\frac12$}
+            (l5a);
+
+        \draw (l4) --
+            node[lab,below left,pos=.48] {$\frac12$}
+            (l5b);
+
+        % Bit-dependent assignments
+        \draw (l5a) --
+            node[lab,above right,pos=.52] {$c:=2c$}
+            (l6);
+
+        \draw (l5b) --
+            node[lab,below right,pos=.52] {$c:=2c+1$}
+            (l6);
+
+        % Successful iteration: compact upper return
+        \draw (l6) to[
+            out=115,
+            in=25,
+            looseness=0.82
+        ]
+            node[lab,above,pos=.48] {$c<n$}
+            (l2);
+
+        % Rejection branch
+        \draw (l6) --
+            node[lab,right] {$c\geq n$}
+            (l7);
+
+        \draw (l7) --
+            node[lab,below] {$v:=v-n$}
+            (l8);
+
+        % Return after both subtraction assignments
+        \draw (l8) to[
+            out=180,
+            in=-65,
+            looseness=0.82
+        ]
+            node[lab,below,pos=.47] {$c:=c-n$}
+            (l2);
+    \end{tikzpicture}
+
+    \vspace{-1mm}
+    \caption{The pCFG obtained from FDR. The locations
+    $\ell_2,\ldots,\ell_8$ expose the loop guard, the update $v:=2v$, the
+    fair-bit choice, the bit-dependent updates of $c$, and the rejection
+    branch.}
+    \label{fig:fdr-pcfg}
+\end{figure}
+
+
+\subsection{A Fully Annotated FDR Graph}
+The pCFG rule of Majumdar and Sathiyanarayana is applicable to FDR and
+establishes the same AST statement as \Cref{thm:fdr}.  Unlike the
+program-level proof, however, it reasons about individual configurations
+$(\ell,\sigma)$ of the graph in \Cref{fig:fdr-pcfg}.  Thus, the initialisation,
+loop guard, doubling of $v$, fair-bit choice, conditional, and the two
+subtraction assignments all become separate proof obligations.
+
+We spell out the pCFG certificate following Seidel~\cite[Chapter~5]{seidel2026thesis},
+with explicit integrality, parity, and sublevel bounds. Write
+$\mathit{Inv}_\ell$ for the states admitted at location $\ell$. The variable $n$ is integer-valued throughout; $v$ is integer-valued
+from $\ell_1$ onward and $c$ from $\ell_2$ onward. Variables not yet
+initialized may have arbitrary values.  The invariant
+is obtained by transporting the support information
+\eqref{eq:fdr-support} through the intermediate assignments:
+In this display, $n,v,c$ abbreviate the respective coordinates of $\sigma$.
+\begin{align*}
+ \mathit{Inv}_{\ell_{\mathsf{init}}}
+   &\coloneqq \{\sigma \mid n\in\mathbb{N}_{>0}\},\\
+ \mathit{Inv}_{\ell_1}
+   &\coloneqq \{\sigma \mid n\in\mathbb{N}_{>0}
+                    \land v=1\},\\
+ \mathit{Inv}_{\ell_2}
+   &\coloneqq \{\sigma \mid n\in\mathbb{N}_{>0}
+                    \land 1\leq v<2n
+                    \land 0\leq c<\min\{v,n\}\},\\
+ \mathit{Inv}_{\ell_3}
+   &\coloneqq \{\sigma\in\mathit{Inv}_{\ell_2}\mid
+                    v<n\},\\
+ \mathit{Inv}_{\ell_4}
+   &\coloneqq \{\sigma \mid n\in\mathbb{N}_{>0}
+                    \land v\in2\mathbb N_{>0}
+                    \land 2\leq v\leq2n-2
+                    \land 0\leq c<\tfrac{v}2\},\\
+ \mathit{Inv}_{\ell_{5a}}
+   &\coloneqq \mathit{Inv}_{\ell_4},
+ \qquad
+ \mathit{Inv}_{\ell_{5b}}
+   \coloneqq \mathit{Inv}_{\ell_4},\\
+ \mathit{Inv}_{\ell_6}
+   &\coloneqq \{\sigma \mid n\in\mathbb{N}_{>0}
+                    \land 2\leq v\leq2n-2
+                    \land 0\leq c<v\},\\
+ \mathit{Inv}_{\ell_7}
+   &\coloneqq \{\sigma\in\mathit{Inv}_{\ell_6}\mid
+                   c\geq n\},\\
+ \mathit{Inv}_{\ell_8}
+   &\coloneqq \{\sigma \mid n\in\mathbb{N}_{>0}
+                    \land 1\leq v\leq n-2
+                    \land n\leq c<v+n\},\\
+ \mathit{Inv}_{\ell_{\mathsf{out}}}
+   &\coloneqq \{\sigma\in\mathit{Inv}_{\ell_2}\mid
+                    v\geq n\}.
+\end{align*}
+Hence
+\[
+    \mathit{Inv}
+    \coloneqq
+    \bigcup_{\ell}
+    \bigl(\{\ell\}\times\mathit{Inv}_{\ell}\bigr)
+\]
+where $\ell$ ranges over the locations of \Cref{fig:fdr-pcfg},
+is an inductive pCFG invariant. The loop-head component
+$\mathit{Inv}_{\ell_2}$ is precisely the support part of the distributional
+invariant reused in the program-level proof; the other components are
+location-specific consequences of it.
+
+The supermartingale is simple but already location-dependent through the
+terminal location:
+\[
+    V(\ell,\sigma)
+    \coloneqq
+    \begin{cases}
+        0, & \ell=\ell_{\mathsf{out}},\\
+        \sigma(n), & \ell\neq\ell_{\mathsf{out}}.
+    \end{cases}
+\]
+Since $n$ is never modified, every nonterminal deterministic successor has
+the same $V$-value as its predecessor, while a transition to
+$\ell_{\mathsf{out}}$ decreases it to $0$.  At the sole probabilistic location
+$\ell_4$, both successors retain the value $\sigma(n)$.  Thus the
+supermartingale obligations are immediate.  At nonterminal locations, $V\leq r$ implies $n\leq r$. Terminal
+states may have arbitrary $n$, but their variant will be zero.
+
+The pCFG variant must instead account for the exact point within an iteration.
+One suitable choice is the following location-specific refinement of the
+iteration-level distance bound
+$\left\lceil\log_2\!\bigl(n/(v-c)\bigr)\right\rceil$:
+\[
+U(\ell,\sigma)\coloneqq
+\begin{cases}
+  7\left\lceil\log_2(\sigma(n))\right\rceil+3,
+    & \ell=\ell_{\mathsf{init}},\\[2pt]
+  7\left\lceil\log_2(\sigma(n))\right\rceil+2,
+    & \ell=\ell_1,\\[2pt]
+  7\left\lceil
+      \log_2\!\left(\dfrac{\sigma(n)}{\sigma(v)-\sigma(c)}\right)
+    \right\rceil+1,
+    & \ell=\ell_2,\\[8pt]
+  7\left\lceil
+      \log_2\!\left(\dfrac{\sigma(n)}{\sigma(v)-\sigma(c)}\right)
+    \right\rceil,
+    & \ell=\ell_3,\\[8pt]
+  7\left\lceil
+      \log_2\!\left(
+        \dfrac{\sigma(n)}{\frac{\sigma(v)}2-\sigma(c)}
+      \right)
+    \right\rceil-1,
+    & \ell=\ell_4,\\[10pt]
+  7\left\lceil
+      \log_2\!\left(
+        \dfrac{\sigma(n)}{\sigma(v)-2\sigma(c)}
+      \right)
+    \right\rceil+5,
+    & \ell=\ell_{5a},\\[10pt]
+  7\left\lceil
+      \log_2\!\left(
+        \dfrac{\sigma(n)}{\sigma(v)-(2\sigma(c)+1)}
+      \right)
+    \right\rceil+5,
+    & \ell=\ell_{5b},\\[10pt]
+  7\left\lceil
+      \log_2\!\left(\dfrac{\sigma(n)}{\sigma(v)-\sigma(c)}\right)
+    \right\rceil+4,
+    & \ell=\ell_6,\\[10pt]
+  7\left\lceil
+      \log_2\!\left(\dfrac{\sigma(n)}{\sigma(v)-\sigma(c)}\right)
+    \right\rceil+3,
+    & \ell=\ell_7,\\[10pt]
+  7\left\lceil
+      \log_2\!\left(
+        \dfrac{\sigma(n)}{\sigma(v)+\sigma(n)-\sigma(c)}
+      \right)
+    \right\rceil+2,
+    & \ell=\ell_8,\\[10pt]
+  0,
+    & \ell=\ell_{\mathsf{out}}.
+\end{cases}
+\]
+
+The factor $7$ bounds the number of pCFG transitions needed for one source-level
+loop iteration.  The additive offsets ensure strict descent on transitions
+that merely change the control location.  The expressions at
+$\ell_4,\ell_{5a},\ell_{5b}$ additionally compensate for the fact that one of
+the two updates of the iteration has already been executed.  For example,
+at $\ell_4$ the current value of $v$ has already been doubled whereas $c$
+still has its old value, explaining the denominator
+$\sigma(v)/2-\sigma(c)$.  At $\ell_{5a}$ and $\ell_{5b}$, the expressions anticipate the
+respective updates of $c$, which are executed on the outgoing edges.
+The deterministic decrease conditions can consequently be discharged by
+checking the edges of \Cref{fig:fdr-pcfg}; the guard edge to
+$\ell_{\mathsf{out}}$ decreases to $0$, and the offsets enforce strict
+decrease on the remaining deterministic edges.  At $\ell_4$, the
+$\ell_{5a}$ successor---corresponding to the fair-bit outcome $0$---has a
+strictly smaller variant.  This successor has probability $\frac12$.
+Semantically, this is the familiar iteration-level observation that choosing
+the zero bit doubles $v-c$; the rejection updates subtract $n$ from both
+variables and hence preserve that difference.  In the pCFG proof this single
+observation is distributed over the locations
+$\ell_4,\ell_{5a},\ell_6,\ell_7,\ell_8$.
+
+For clarity, the deterministic differences $U_{\rm source}-U_{\rm target}$
+are listed below; the state updates on each edge are applied before
+computing the target value. Evenness at $\ell_4,\ell_{5a},\ell_{5b}$
+ensures $v-(2c+1)\geq1$, so every logarithm is defined.
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Edge & Decrease in $U$\\
+\midrule
+$\ell_{\mathsf{init}}\to\ell_1$, $\ell_1\to\ell_2$ & $1$\\
+$\ell_2\to\ell_3$, $\ell_3\to\ell_4$ & $1$\\
+$\ell_{5a}\to\ell_6$, $\ell_{5b}\to\ell_6$ & $1$\\
+$\ell_6\to\ell_2$ & $3$\\
+$\ell_6\to\ell_7$, $\ell_7\to\ell_8$, $\ell_8\to\ell_2$ & $1$\\
+$\ell_2\to\ell_{\mathsf{out}}$ & at least $1$\\
+\bottomrule
+\end{tabular}
+\end{center}
+At the fair choice, put
+$q=\lceil\log_2(n/(v/2-c))\rceil$.
+The zero-bit successor has value $7(q-1)+5=7q-2$, whereas the source
+has value $7q-1$. Thus this edge decreases $U$ by one with mass $1/2$;
+no descent claim is needed for the other probabilistic edge.
+
+Finally, for $r\geq1$ and a nonterminal configuration with $V\leq r$,
+all displayed logarithmic terms are bounded above by
+$\lceil\log_2 n\rceil$, using integrality and evenness at $\ell_4$.
+Consequently $U\leq7\lceil\log_2r\rceil+5$ suffices.
+The initialization values obey the same bound; terminal values are zero,
+also when $n>r$. For $r<1$ the sublevel contains only terminal
+configurations. Thus the pCFG rule applies with $\varepsilon_r=1/2$.
+
+In comparison, the program-level proof uses one support invariant, the two
+state functions displayed in \Cref{thm:fdr}, and the single body calculation
+\eqref{eq:fdr-post}.  It also directly reuses the invariant required for the
+uniform-output proof.  Both proof routes have the same proving power, but the
+program-level rule expresses the algorithmic fact---progress over a complete
+loop iteration---without introducing locations, offsets, and intermediate
+state expressions solely for control-flow bookkeeping.
+

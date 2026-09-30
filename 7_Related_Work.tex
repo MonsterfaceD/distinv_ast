@@ -1,36 +1,83 @@
 \section{Related Work}
 \label{sec:relwork}
 
-\paragraph{Proof rules for almost-sure termination.}
-Classical bounded-variant arguments establish AST by requiring a uniformly positive probability of descent within a bounded natural-valued range~\cite{DBLP:series/mcs/McIverM05}. Supermartingale-based rules extend the scope of this approach. McIver et al.~\cite{10.1145/3158121} formulate an AST rule directly over source programs, including demonic choice, using one real-valued function with both supermartingale and progress obligations. At pCFG level, Majumdar and Sathiyanarayana~\cite{DBLP:journals/pacmpl/MajumdarS25} establish sound and relatively complete proof rules and also prove relative completeness of the earlier rule of McIver et al.
+\paragraph{AST proof rules.}
+Bounded variants establish AST through a uniformly positive probability
+of descent in a bounded natural-valued range~\cite{DBLP:series/mcs/McIverM05}.
+McIver et al.~\cite{10.1145/3158121} give a source-level rule, including
+demonic choice, in which a single real-valued function satisfies both
+supermartingale and probabilistic progress obligations. Majumdar and
+Sathiyanarayana~\cite{DBLP:journals/pacmpl/MajumdarS25} separate these roles
+at pCFG level and prove relative completeness in arithmetic, also
+establishing completeness of the earlier single-function rule.
+Our contribution concerns the representation of certificates and their
+transfer to whole iterations, rather than greater semantic proving power.
+Separating the roles allows a resetting variant without requiring that
+particular variant to be a supermartingale; it does not show that every
+single-function certificate must fail.
 
-The two-certificate rule of Majumdar and Sathiyanarayana is our starting point: it already separates the supermartingale from the natural-valued variant. We transfer this structure to complete loop iterations in distribution-transformer semantics and relate the resulting certificates to pCFG certificates in both directions. Relative to their rule, the contribution is the program-level formulation, its metatheory, and the reduction in location-dependent proof obligations. Relative to McIver et al., the distinction is the use of two separately chosen functions, coupled through sublevel boundedness, instead of requiring one function to serve both roles. This permits a variant to reset on rejection without itself satisfying a supermartingale inequality. Our FDR comparison makes the change in certificate representation explicit; FLDR and Han--Hoshi illustrate applications of the source-level rule. We address qualitative AST, which permits infinite expected runtime.
+The program-level transfer originates in Seidel's master's
+thesis~\cite{seidel2026thesis}, whose Chapter~6 presents the two-certificate
+rule and translations between program and pCFG certificates. The present
+paper develops that foundation with explicit normalization and boundedness
+arguments, sampler case studies, and a reproducible synthesis prototype.
 
-\paragraph{Operational and denotational models.}
-pCFGs and Markov decision processes are the standard operational substrate for termination and reachability analysis of probabilistic and randomized systems~\cite{DBLP:books/wi/Puterman94,DBLP:books/sp/BaierK08}. Tools such as Storm~\cite{DBLP:journals/sttt/HenselJKQV22} and refined analyses of visiting times and stationary behavior~\cite{DBLP:conf/tacas/MertensKQW24,DBLP:journals/jcss/JungesK0W21} operate at this level. Viewing probabilistic systems as \emph{distribution transformers} rather than as single-state transition systems has recently been fruitful for both Markov chains and MDPs: Aghamov et al.~\cite{DBLP:journals/corr/abs-2406-15087,DBLP:conf/birthday/AghamovBKNOPV25} model-check Markov chains through their action on distributions, and Akshay et al.~\cite{DBLP:conf/cav/AkshayCMZ23,DBLP:conf/ijcai/0001CMZ24} synthesize invariants and certified policies for MDPs under distributional reach-avoidance objectives; distribution-based objectives for MDPs are also studied in~\cite{DBLP:conf/lics/AkshayGV18}. Our rule applies the same distribution-transformer perspective one level higher, directly to program syntax rather than to an underlying automaton, which avoids the location-indexed bookkeeping that a translation to pCFGs or MDPs otherwise imposes.
+\paragraph{Distribution transformers and program logics.}
+Kozen's semantics~\cite{DBLP:conf/focs/Kozen79,DBLP:conf/stoc/Kozen83}
+provides the denotational foundation for our post-distribution
+transformers. Expectation-transformer reasoning~\cite{DBLP:series/mcs/McIverM05}
+and distributional program logics, including den Hartog and de
+Vink~\cite{DBLP:journals/ijfcs/HartogV02} and
+Ellora~\cite{DBLP:conf/esop/BartheEGGHS18}, support broader probabilistic
+correctness properties. Our AST rule complements such reasoning:
+distributional invariants can carry output information, while termination
+uses their support and two state functions. Thus, the rule does not
+replace distributional output-correctness arguments.
 
-\paragraph{Denotational semantics and program logics for probabilistic programs.}
-The denotational, post-distribution-transformer semantics we build on originates with Kozen~\cite{DBLP:conf/focs/Kozen79,DBLP:conf/stoc/Kozen83}. It also underlies the calculi for weakest preconditions and weakest pre-expectations of McIver and Morgan~\cite{DBLP:series/mcs/McIverM05} and Kaminski~\cite{DBLP:phd/dnb/Kaminski19}, in the tradition of Dijkstra's predicate-transformer semantics~\cite{DBLP:journals/cacm/Dijkstra75,DBLP:books/daglib/0067387}. Hoare-style program logics for probabilistic programs were introduced by den Hartog and de Vink~\cite{DBLP:journals/ijfcs/HartogV02} and extended by the Ellora framework~\cite{DBLP:conf/esop/BartheEGGHS18}; more recent calculi include quantitative strongest-postcondition reasoning~\cite{DBLP:journals/pacmpl/ZhangK22}, its hyperproperty generalization~\cite{DBLP:journals/corr/abs-2404-05097}, and modal separation logic for conditional probability~\cite{DBLP:journals/pacmpl/Li0H23}. These frameworks provide broader forms of reasoning about probabilistic behavior. Our focus is a specific AST rule that can be used alongside distributional partial-correctness arguments.
+\paragraph{Certificate and invariant synthesis.}
+Constraint-based synthesis already supports martingales and ranking
+supermartingales~\cite{ChakarovSankaranarayanan2013}. Batz et
+al.~\cite{BatzEtAl2023} use counterexample-guided synthesis of piecewise
+linear quantitative invariants at source level, including for
+infinite-state programs. Their objectives include expected-outcome bounds
+and finite expected runtime. We instantiate this search pattern with two AST certificates and the
+sufficient coupling $U\leq V$. The random
+walk illustrates qualitative termination with infinite expected runtime.
+Neither CEGIS nor affine or piecewise affine templates are new here.
+The contribution is their explicit instantiation for these two
+iteration-level certificate roles. Invariants, transition summaries,
+feature bases, and partitions remain supplied inputs; bounded search is
+incomplete even though successful candidates are checked universally
+over the encoded states.
 
-\paragraph{Verifying exact sampling algorithms.}
-Exact discrete samplers built from fair coin flips, following the classical constructions of von Neumann~\cite{vonNeumann1951} and Lumbroso's Fast Dice Roller (FDR)~\cite{DBLP:journals/corr/abs-1304-1916}, have received growing verification attention. Saad et al.\ introduce the Fast Loaded Dice Roller (FLDR) as a near-optimal sampler for finite discrete distributions~\cite{DBLP:conf/aistats/SaadFRM20}. Han and Hoshi's interval algorithm~\cite{HanHoshi1997} supplies the basis for our third sampler case study. Bagnall, Stewart, and Banerjee's Zar compiler~\cite{DBLP:journals/pacmpl/Bagnall0023,10.1145/3591220} formally verifies samplers compiled from probabilistic programs with loops and conditioning in Coq, targeting the random-bit model; generating-function techniques have likewise been used to reason about probabilistic programs and about samplers such as the fast dice roller~\cite{DBLP:conf/lopstr/KlinkenbergBKKM20,DBLP:conf/cav/ChenKKW22,haase2026generatingfunctionsmeetoccupation}. Exact and guaranteed-bound inference engines such as PSI~\cite{DBLP:conf/cav/GehrMV16,DBLP:conf/pldi/GehrSV20}, the approach of Beutner et al.~\cite{DBLP:conf/pldi/BeutnerOZ22}, and scalable exact inference for discrete programs~\cite{DBLP:journals/pacmpl/HoltzenBM20} address the complementary problem of computing or bounding the output distribution.
+Haase et al.~\cite{haase2026generatingfunctionsmeetoccupation} synthesize
+occupation invariants represented by generating functions. Such
+invariants describe expected visit counts and support exact inference,
+with positive AST obtainable under suitable finiteness conditions.
+Their unknowns and verification conditions therefore differ from our
+state-function certificates for qualitative AST. Template instantiation
+is common to both approaches, but their results are not interchangeable.
 
-Closest to our work is the distributional-invariant framework of Zilken et al.~\cite{zilken2026verifyingsamplingalgorithmsdistributional}. It already establishes partial and total correctness of FDR and FLDR, with AST arguments using existing rules in its appendices. We build on those invariants and verification examples to give a general program-level AST rule and an explicit comparison of proof representations. The Han--Hoshi case study adds a different sampling mechanism, using interval boundaries as the termination certificate. Its role here is to demonstrate applicability of the AST rule; the present manuscript does not develop a separate distributional output-correctness proof for Han--Hoshi.
-
-\paragraph{Scope of the synthesis contribution.}
-The prototype in \Cref{sec:certificate-synthesis} instantiates our AST
-obligations with template-based counterexample-guided search. Its contribution
-here is the shared treatment of both certificate roles over whole iterations,
-together with explicit assumptions and reproducible examples. We do not claim
-CEGIS, affine templates, or the separation of the two roles as new techniques.
-The random walk distinguishes qualitative AST from proofs requiring finite
-expected runtime. The FDR result, by contrast, already supplies a ranking
-supermartingale. The two FLDR experiments distinguish exact-instance synthesis
-from synthesis conditional on a structural abstraction, and show that a
-separation within a restricted feature basis need not survive a richer basis.
-These examples support the applicability of our program-level formulation;
-they do not establish a general advantage over existing certificate-synthesis
-methods or over the single-function AST rule of McIver et al.~\cite{10.1145/3158121}.
+\paragraph{Exact samplers and their verification.}
+The algorithms studied here are established constructions:
+Lumbroso's FDR~\cite{DBLP:journals/corr/abs-1304-1916}, Saad et al.'s
+FLDR~\cite{DBLP:conf/aistats/SaadFRM20}, and Han and Hoshi's interval
+algorithm~\cite{HanHoshi1997}. Zilken et
+al.~\cite{zilken2026verifyingsamplingalgorithmsdistributional} already
+verify partial and total correctness of FDR and FLDR using
+distributional invariants. We reuse those invariants and revisit AST
+through the two-certificate rule. Han--Hoshi supplies a different
+termination argument, rather than a new output-correctness proof.
+Bagnall et al.'s Zar compiler~\cite{DBLP:journals/pacmpl/Bagnall0023}
+verifies compilation of probabilistic programs into random-bit samplers
+in Coq. Our handwritten proofs and solver-backed prototype do not
+provide that level of mechanization.
 
 \paragraph{Nondeterminism.}
-Several lines of work verify probabilistic programs or Markov models in the presence of demonic or angelic nondeterminism~\cite{10.1145/3158121,DBLP:journals/pacmpl/BatzBKW24,Wang2018ADS,Zilberstein2025,10.1145/3743131,Zilberstein_2025}. Demonic AST requires termination with probability one under every admissible scheduler; both McIver et al.~\cite{10.1145/3158121} and the pCFG framework of Majumdar and Sathiyanarayana~\cite{DBLP:journals/pacmpl/MajumdarS25} support this interpretation. Our rule instead uses a single post-distribution for each input and currently excludes nondeterministic choice. Extending it requires a strategy-indexed or set-valued semantics and corresponding invariant and progress obligations. Strategy synthesis, as studied by Batz et al.~\cite{DBLP:journals/pacmpl/BatzBKW24}, offers a complementary route for proving AST under a selected strategy. We discuss the precise obstacles and possible extensions in \Cref{sec:conclusion}.
+Both AST rules above support demonic nondeterminism. Our current
+transformer assigns one post-distribution to each input. Extending the
+rule to universal scheduler quantification requires corresponding
+semantic and progress obligations. Programmatic strategy
+synthesis~\cite{DBLP:journals/pacmpl/BatzBKW24} instead resolves
+nondeterminism to obtain a selected program; it addresses a different
+quantification over choices.

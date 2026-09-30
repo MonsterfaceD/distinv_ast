@@ -1,42 +1,49 @@
 \section{A Program-Level Rule for AST}
 \label{sec:rule}
 
-Consider a program $C=\while{b}{B}$ whose body $B$ is loop-free. Let $M$ be a set of initial subdistributions. We now state the main contribution.
+Consider $C=\while{b}{B}$ with loop-free body $B$ and a set $M$ of
+initial subdistributions.
 
 \subsection{The Proof Rule}
 
 \begin{theorem}[Program-level AST rule]
 \label{thm:program-rule}
-The loop $C$ is AST on $M$ if there exist:
-\begin{enumerate}[label=(\arabic*)]
- \item a distributional invariant $I$ for $C$ and $M$;
- \item a function $v:\supp(I)\to\mathbb{R}_{\geq0}$ such that
-   \begin{enumerate}[label=(\alph*)]
-    \item $v(\sigma)=0$ iff $\sigma\in\supp(I)\cap\llbracket\neg b\rrbracket$;
-    \item for every $\sigma\in\supp(I)\cap\llbracket b\rrbracket$,
-    \[
-      \sum_{\sigma'}\post{B}(\dirac{\sigma})(\sigma')v(\sigma')\leq v(\sigma);
-    \]
-   \end{enumerate}
- \item a function $u:\supp(I)\to\mathbb{N}$ such that
-   \begin{enumerate}[label=(\alph*)]
-    \item $u(\sigma)=0$ for every $\sigma\in\supp(I)\cap\llbracket\neg b\rrbracket$;
-    \item there exists $\varepsilon>0$ for which, for every enabled state $\sigma\in\supp(I)\cap\llbracket b\rrbracket$;
-    \[
-      \sum_{\sigma':u(\sigma')<u(\sigma)}
-        \post{B}(\dirac{\sigma})(\sigma')\geq\varepsilon;
-      \tag{Decrease}
-    \]
-    \item for every $r\geq0$, the set
-    $\{u(\sigma)\mid \sigma\in\supp(I),\ v(\sigma)\leq r\}$ is bounded.
-   \end{enumerate}
+The loop $C$ is AST on $M$ if a distributional invariant $I$ admits
+functions $v:S\to\mathbb R_{\geq0}$ and $u:S\to\mathbb N$, where
+$S=\supp(I)$, with the following properties:
+\begin{enumerate}
+ \item $v(\sigma)=0$ exactly when $\sigma\models\neg b$, and
+       $u(\sigma)=0$ whenever $\sigma\models\neg b$;
+ \item for every $\sigma\in S\cap\llbracket b\rrbracket$,
+ \[
+   \sum_{\sigma'}\post{B}(\dirac{\sigma})(\sigma')v(\sigma')
+     \leq v(\sigma);
+ \]
+ \item some $\varepsilon>0$ satisfies, for every
+ $\sigma\in S\cap\llbracket b\rrbracket$,
+ \[
+   \sum_{\sigma':\,u(\sigma')<u(\sigma)}
+      \post{B}(\dirac{\sigma})(\sigma')\geq\varepsilon;
+   \tag{Decrease}
+ \]
+ \item for every $r\geq0$, the values of $u$ on $v_{\leq r}$ are bounded.
 \end{enumerate}
 \end{theorem}
+The decrease condition itself forces $u(\sigma)>0$ on enabled states.
+It permits increases on other outcomes, including rejection resets.
+Sublevel boundedness, rather than global boundedness, admits
+null-recurrent computations.
 
-The conditions deliberately do not require $u$ to decrease in expectation. It may increase sharply on some outcomes, as happens when a rejection sampler restarts. The rule asks only for a fixed positive mass of outcomes that reduce $u$. Nor must $u$ be globally bounded. Its boundedness is local to sublevel sets of $v$, allowing null-recurrent computations.
-
-\paragraph{Soundness proof intuition.}
-Fix a sublevel set $v_{\le r}$ and let $K_r$ bound $u$ there. From every nonterminal state in this set, a complete loop iteration has probability at least $\varepsilon$ of decreasing $u$. Hence there is probability at least $\varepsilon^{K_r}$ of following enough decreasing iterations to reach zero, provided the run stays in the set. Repeating this argument rules out nontermination confined to $v_{\le r}$. Meanwhile, the supermartingale property bounds the probability of reaching arbitrarily large values of $v$; non-negative supermartingale convergence rules out escaping every finite sublevel set with positive probability. Thus all nonterminating behavior has measure zero.
+\paragraph{Why the rule works.}
+Fix $v_{\leq r}$ and a positive integer bound $K_r$ on $u$ there.
+Starting in this set, the run has probability at least
+$\min(\varepsilon,1)^{K_r}$ of either terminating or leaving the set
+within $K_r$ iterations: otherwise $K_r$ successive decreases reach
+$u=0$, which cannot be enabled. Repeating this bound rules out
+nontermination confined to the set. Nonnegative supermartingale
+convergence makes unbounded values of $v$ a probability-zero event.
+The formal proof in \Cref{sec:metatheory} establishes the same result
+by constructing the pCFG certificates.
 
 \subsection{Illustration: The Symmetric Random Walk}
 \label{sec:walk}
@@ -49,7 +56,7 @@ Consider the symmetric random walk
 \]
 This loop terminates almost surely at $x=0$, although its expected termination time is infinite. It is therefore a compact illustration of why the supermartingale and variant play different roles.
 
-Let $M=\{\dirac{\sigma}\mid\sigma(x)=k,\ k>0\}$ and
+At loop entry, let $M=\{\dirac{\sigma}\mid\sigma(x)\in\mathbb N_{>0}\}$ and
 $I=\{\mu\in\subdists\mid\supp(\mu)\subseteq\{\sigma\mid\sigma(x)\in\mathbb{N}\}\}$.
 The set $I$ is distributionally inductive. Choose
 \[
@@ -64,22 +71,25 @@ so $v$ is in fact a martingale. With probability $1/2$, the left branch is taken
 
 At pCFG level, the same argument requires location-dependent values for the guard, probabilistic choice, and assignments. The program-level rule expresses it using the two state functions above and one body-step expectation. We make this representational comparison explicit for FDR in \Cref{sec:fdr}.
 
-A walled walk with $0\le x\le W$ admits an even older bounded-variant argument~\cite{DBLP:series/mcs/McIverM05}. Removing the wall destroys global boundedness but not AST. Sublevel-set boundedness is precisely what recovers the unbounded example and previews the sampler proofs below.
-
 \Cref{sec:synthesis-examples} returns to this example and synthesizes the two functions automatically within the chosen template space.
 
 \subsection{Iteration-Level Reasoning and Modularity}
 
-\paragraph{Iteration-level abstraction.}
-The essential difference to \Cref{thm:pcfg-rule} is the granularity of the decrease condition. For a body containing $m$ internal control-flow steps, the pCFG rule needs a value at each intermediate location and a descent-compatible branch at each probabilistic node. The new rule evaluates the final post-distribution once. Assignments, guards, and choices internal to $B$ are hidden behind $\post{B}$. This has three practical consequences:
-\begin{enumerate}
- \item certificates are functions of program states, not location--state pairs;
- \item an existing distributional invariant can be reused directly; and
- \item algebraic simplification of $\post{B}(\dirac{\sigma})$ exposes exactly the outcomes relevant to progress.
-\end{enumerate}
+The difference from \Cref{thm:pcfg-rule} is the granularity of progress:
+our obligations inspect the final distribution of a body execution.
+Internal assignments, tests, and choices are composed through
+$\post{B}$, so one need not supply a certificate at each intermediate
+location. Distributional invariants can be reused, and simplification of
+$\post{B}(\dirac{\sigma})$ exposes the outcomes relevant to descent.
 
-\paragraph{Uniform versus sublevel-dependent progress.}
-The pCFG rule permits an $\varepsilon_r$ for each sublevel set. In our loop-free bodies, fixed probabilistic choices and bounded path length give a positive lower bound on the probability of any feasible body path. Thus the existence of a decreasing path yields a global progress bound; all three sampler proofs use $\varepsilon=1/2$. A more general statement can replace $\varepsilon$ by $\varepsilon_r$ throughout without changing the proof architecture.
+The pCFG rule permits a different progress bound $\varepsilon_r$ on each
+sublevel set. For our fixed choices and loop-free bodies, every feasible
+body path has a uniform positive probability lower bound
+(\Cref{eq:body-path-bound}); hence one decreasing path per state suffices
+for a global $\varepsilon$. The sampler proofs below use $\varepsilon=1/2$.
 
-\paragraph{Modularity.}
-Initial deterministic code preceding the loop is handled by transforming $M$ into the set of loop-entry distributions. For a sampler with preprocessing, we regard the resulting finite data structure as read-only parameters of the sampling loop. The preprocessing itself terminates by ordinary bounded-loop reasoning. This isolates the probabilistic AST argument to the loop where it is needed.
+Terminating preprocessing is handled by transforming $M$ into the
+loop-entry distributions. A finite data structure produced beforehand
+is a read-only parameter of the sampling loop; its construction is
+verified separately by ordinary termination reasoning. This isolates
+the AST argument to the iteration that performs the sampling.

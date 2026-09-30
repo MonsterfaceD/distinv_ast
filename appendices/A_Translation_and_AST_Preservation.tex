@@ -13,7 +13,7 @@ The transformer domain $\mathcal{H}$ from \Cref{sec:prelims} has pointwise supre
 Composition and addition preserve $\omega$-continuity here, so $\Phi_{b,B}(f)\in\mathcal{H}$. Moreover, for every increasing chain $(f_n)_n$ in $\mathcal{H}$, pointwise evaluation gives $\Phi_{b,B}(\sup_n f_n)=\sup_n\Phi_{b,B}(f_n)$. Kleene's theorem therefore yields \Cref{eq:while-transformer-fixpoint}. Structural induction also establishes linearity on sums that are subdistributions: in the loop case, every approximant is linear, and its pointwise supremum remains linear. The countable-sum property follows from $\omega$-continuity.
 
 \paragraph{Operational correspondence.}
-The translation $\mathcal{T}$ assigns an entry and an exit location to each command. Assignment edges update the valuation, guarded edges encode conditionals and loop tests, and a probabilistic-choice location has outgoing probabilities $p$ and $1-p$. Sequential composition identifies the first command's exit with the second command's entry.
+The translation $\mathcal{T}$ assigns distinct entry and exit locations to each command, with fresh internal locations for its subcommands. Skip is a single identity edge. Assignments are single update edges. A conditional entry has guarded edges to the two branch entries; a probabilistic-choice entry instead has edges of probabilities $p$ and $1-p$. In either case the branch exits are identified with the command exit. Sequential composition identifies the first command's exit with the second command's entry. For a while-loop, its entry is the guard: the true edge enters the body, the false edge reaches the program exit, and the body exit is identified with the guard. Zero-probability edges are ignored, and the program exit is absorbing. Thus the loop-free body is acyclic and every path through it contains at least one edge.
 
 \begin{lemma}[Loop-free correspondence]
 For loop-free $B$ and states $\sigma,\sigma'$,
@@ -26,4 +26,106 @@ For loop-free $B$ and states $\sigma,\sigma'$,
 By structural induction on $B$. Skip and assignment have one path. Sequential composition sums over intermediate states. Conditional paths are partitioned by the guard. Probabilistic choice multiplies branch-path probabilities by $p$ and $1-p$, matching linearity of the post-transformer.
 \end{proof}
 
-For a loop $C=\while{b}{B}$ with loop-free body, induction on $j$ shows that $\Phi_{b,B}^{j}(\bot)(\mu)$ is the subdistribution of pCFG runs that exit within at most $j$ visits to the outer loop guard. The zeroth approximant is zero; for $j\geq1$, this means termination after at most $j-1$ completed body iterations. The induction step partitions runs into those that exit at the first guard test and those that execute $B$ and then terminate within the remaining guard visits. Taking pointwise suprema gives equality between post-distribution weight and pCFG reachability probability. Therefore $\weight{\post{C}(\dirac{\sigma})}=1$ iff the translated graph reaches its exit almost surely from $(\ell_{\rm in},\sigma)$. Linearity and $\omega$-continuity extend the equivalence to arbitrary initial subdistributions.
+For a loop $C=\while{b}{B}$ with loop-free body, induction on $j$ shows that $\Phi_{b,B}^{j}(\bot)(\mu)$ is the subdistribution of pCFG runs that exit within at most $j$ visits to the outer loop guard. The zeroth approximant is zero; for $j\geq1$, this means termination after at most $j-1$ completed body iterations. The induction step partitions runs into those that exit at the first guard test and those that execute $B$ and then terminate within the remaining guard visits. Taking pointwise suprema gives equality between post-distribution weight and pCFG reachability probability. Therefore $\weight{\post{C}(\dirac{\sigma})}=1$ iff the translated graph reaches its exit almost surely from the loop guard with valuation $\sigma$. For any initial subdistribution,
+\[
+ \weight{\mu}-\weight{\post{C}(\mu)}
+ =\sum_{\sigma\in\supp(\mu)}\mu(\sigma)
+     \bigl(1-\weight{\post{C}(\dirac{\sigma})}\bigr).
+\]
+Every summand is nonnegative, so the left-hand side vanishes exactly when
+$C$ is AST from every state in $\supp(\mu)$. Taking the union over
+$\mu\in M$ proves the claimed equivalence for arbitrary $M$.
+
+\subsection{Common Certificates for Initial-State Sets}
+\label{app:initial-sets}
+
+The pCFG completeness construction
+of~\cite{DBLP:journals/pacmpl/MajumdarS25} is presented for a fixed initial
+configuration. We record why it also supplies a single pair of
+certificates for the initial-state sets used here. We use the purely probabilistic model with fixed rational probabilities.
+Computability of the operations is needed only for the arithmetic
+representation below.
+
+Let $E$ be any set of initial valuations from which the pCFG is AST, and
+let $\mathit{Inv}$ contain exactly the configurations reachable from $E$
+by positive-probability paths. Every configuration in $\mathit{Inv}$ is
+AST: otherwise, a positive-probability path to a configuration with
+positive divergence probability would give positive divergence probability
+from an initial state. Set $U(\gamma)$ to the length of a shortest
+positive-probability path from $\gamma$ to the program exit. Such a finite
+path exists by AST. Hence $U$ is zero exactly at the exit and strictly
+decreases at the unique successor of a deterministic nonterminal
+configuration and at some successor of a probabilistic configuration.
+The minimum of $1$ and the positive probabilistic edge probabilities
+of the finite pCFG gives a common positive progress bound.
+
+It remains to construct a compatible $V$. Fix an injective natural-number
+encoding of configurations, computable for finite rational state tuples. For $\gamma\in\mathit{Inv}$, let
+$R(\gamma,n)$ be the probability of visiting a nonterminal configuration
+with code at least $n$ before termination, including the starting
+configuration. For terminal $\gamma$, set $R(\gamma,n)=0$.
+For fixed $n$, this function is a nonnegative supermartingale: outside
+the target set the first-step equation is an equality, and in the target
+set its value is $1$. Moreover,
+\[
+ \lim_{n\to\infty}R(\gamma,n)=0.
+\]
+Indeed, an almost-surely terminating run visits only finitely many
+configurations before its first exit, so the corresponding decreasing
+tail events have an intersection of probability zero.
+
+For every $k\geq1$, choose the least integer $n_k\geq k$ such that
+\[
+ R(\gamma,n_k)\leq2^{-k}
+ \quad\text{for all }\gamma\in\mathit{Inv}
+                     \text{ with }\operatorname{code}(\gamma)\leq k.
+\]
+Only finitely many configurations are constrained for each $k$, so this
+integer exists. Define
+\[
+ V(\gamma)=[\gamma\text{ is nonterminal}]
+              +\sum_{k=1}^{\infty}R(\gamma,n_k).
+\]
+For a fixed configuration with code $i$, the summands with $k\geq\max(1,i)$
+are bounded by $2^{-k}$; thus $V$ is finite everywhere. The indicator
+is itself a supermartingale because the exit is absorbing. Nonnegative
+summation preserves the supermartingale inequalities, and the indicator
+term makes $V$ positive at every nonterminal configuration and zero at
+the exit. Given $r\geq0$, choose an integer $m>r$. Any nonterminal
+configuration with code at least $\max\{n_1,\ldots,n_m\}$ belongs to all
+first $m$ target sets, and hence has $V\geq1+m>r$. Consequently,
+$V_{\leq r}$ contains only finitely many nonterminal configurations.
+As $U=0$ at terminal configurations, $U$ is bounded on every sublevel
+set. This proves semantic completeness for arbitrary $E$, including
+infinite sets, without any uniform bound on initial certificate values.
+The empty initial set is handled by the empty invariant.
+
+\paragraph{Arithmetic representation.}
+If $E$ is arithmetically definable, so is $\mathit{Inv}$: quantify over
+an initial state in $E$ and an encoded finite feasible path. The same
+encoding defines the graph of the shortest-path function $U$. For a finite horizon $t$, let $h_t(\gamma,n)$ be the probability of
+hitting a nonterminal configuration of code at least $n$ by step $t$
+before termination. It is a computable rational number, uniformly in
+its arguments, because the transition tree to depth $t$ is finite.
+Since $R(\gamma,n)=\sup_t h_t(\gamma,n)$, for rational $q$,
+\begin{align*}
+ q<R(\gamma,n)&\ \Longleftrightarrow\ \exists t:\ q<h_t(\gamma,n),\\
+ R(\gamma,n)\leq q&\ \Longleftrightarrow\ \forall t:\ h_t(\gamma,n)\leq q.
+\end{align*}
+Thus the defining property and minimality of $n_k$ give an arithmetic
+graph for the sequence, using the arithmetic predicate for
+$\mathit{Inv}$. To encode the strict lower cut of $V$, write
+$d_\gamma=[\gamma\text{ is nonterminal}]$. Then $q<V(\gamma)$ iff
+there exist $m\in\mathbb N$ and an encoded rational sequence
+$(q_1,\ldots,q_m)$ such that
+\[
+ q<d_\gamma+\sum_{k=1}^m q_k
+ \quad\text{and}\quad
+ q_k<R(\gamma,n_k)\text{ for every }1\leq k\leq m.
+\]
+The empty sequence is allowed. This equivalence follows from convergence
+of the nonnegative series and density of the rationals for each finite
+partial sum. It supplies one arithmetic formula, rather than a separate
+formula for each bound or configuration. No effective enumeration of
+$E$, and no computation of the infinite sum, is required. These are
+expressibility statements relative to true arithmetic.

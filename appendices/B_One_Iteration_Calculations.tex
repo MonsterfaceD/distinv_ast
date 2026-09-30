@@ -1,12 +1,107 @@
 \section{Detailed One-Iteration Calculations}
 \label{app:calculations}
 
-\paragraph{FDR.}
-Starting in $\sigma$, doubling $v$ and sampling the bit produces the two Dirac states $\sigma[v/2v,c/2c]$ and $\sigma[v/2v,c/2c+1]$, each of mass $1/2$. Filtering by $c\ge n$ and applying both subtraction assignments yields \Cref{eq:fdr-post}. On the left-bit outcome, subtraction of $n$ from both variables preserves their difference, hence in all enabled cases
+\subsection{FDR: Complete Updates and Support Preservation}
+Starting from an enabled state with integer $n,v,c$,
+$1\leq v<n$ and $0\leq c<v$, a bit $\beta$ gives
+$t=2c+\beta$ and $0\leq t<2v<2n$.
+If $t<n$, the complete successor is $(2v,t)$ and satisfies
+$0\leq t<\min(2v,n)$. If $t\geq n$, the successor is
+$(2v-n,t-n)$; here $1\leq2v-n<n$ and
+$0\leq t-n<2v-n$. Both cases preserve \eqref{eq:fdr-support}, and
+initialization gives $(v,c)=(1,0)$ for every $n\geq1$.
+The probability-weighted sum of these complete updates is exactly
+\eqref{eq:fdr-post}. In both cases the updated difference is
 \[
- (v'-c')=2(v-c).
+ v'-c'=2(v-c)-\beta.
 \]
-This is the algebraic core of the FDR variant argument.
+For $\beta=0$, this proves the logarithmic descent in \Cref{thm:fdr}.
+For the affine alternative, a continuing zero-bit outcome satisfies
+\[
+ n-v'+c'=n-v+c-(v-c)\leq n-v+c-1.
+\]
+A terminal outcome has guarded certificate zero. Thus the affine
+certificate is valid over the entire supplied support, not merely the
+states reachable for one fixed $n$.
 
-\paragraph{FLDR.}
-After incrementing $c$, the fair choice reaches indices $2d$ and $2d+1$. A rejecting child maps to $(c,d)=(0,0)$; a non-rejecting child retains depth $c+1$. Each level contains at most one leaf with the rejecting label, so the two children of an internal node cannot both reject. The total mass of non-reset successors is therefore at least $1/2$. A continuing successor reduces $k-c$ by exactly one; an accepting successor sets the guarded variant to zero, decreasing it by at least one. Rejection may instead increase the variant by resetting its value to $k$. These are the three outcome types used in the structural synthesis input of \Cref{sec:synthesis-examples}.
+\subsection{FLDR: The Exact Tree Contract}
+Put $w_i=a_i$ for $1\leq i\leq n$ and $w_{n+1}=2^k-m$, so
+$\sum_iw_i=2^k$. For $0\leq c\leq k$, let $e_{i,c}\in\{0,1\}$ be
+the bit of $w_i$ in position $k-c$, and put $h_c=\sum_i e_{i,c}$.
+At depth zero there is one node. Designate $h_0$ nodes as leaves and
+put $q_0=1-h_0$. At each subsequent depth $c$, expand the $q_{c-1}$
+internal nodes, producing $2q_{c-1}$ nodes, and designate $h_c$ of
+them as leaves. Thus
+\[
+ q_c=2q_{c-1}-h_c
+     =2^c-\sum_{i=1}^{n+1}
+         \left\lfloor\frac{w_i}{2^{k-c}}\right\rfloor
+     =\sum_{i=1}^{n+1}
+         \left\{\frac{w_i}{2^{k-c}}\right\},
+\]
+where braces denote fractional part. Consequently $q_c$ is a
+nonnegative integer at most $n$, and $q_k=0$. In particular, the
+construction always has enough nodes for its designated leaves and
+has no internal node at depth $k$.
+
+Set $\phi_h(c)=q_c$. In every row place the internal nodes first and
+then one leaf labeled $i$ for each $e_{i,c}=1$, in decreasing label
+order. At positive depth the row has $2q_{c-1}\leq2n$ nodes.
+An internal node with index $d<q_c$ therefore has the two valid children
+$2d,2d+1$ in the next row. Give internal nodes label zero in $H$.
+A root leaf occurs precisely when a single positive weight equals
+$2^k$; it is accepting, since $w_{n+1}<2^k$.
+These observations justify the support predicate in
+\Cref{sec:fldr}, including $d<2n$ and the absence of enabled states at
+depth $k$. A tighter bound $d\leq n$ would be false: for weights
+$(4,5)$, the accepting node $(c,d)=(2,3)$ is reachable although $n=2$.
+
+Each row has at most one leaf with label $n+1$. Hence among the two
+children of any internal node at least one avoids rejection. A rejecting
+child resets to the root, which is internal whenever a rejecting leaf
+exists. A non-rejecting child either accepts or remains internal at
+depth $c+1$. Thus the post-distribution has non-reset mass at least
+$1/2$, and every such outcome strictly decreases the guarded function
+$k-c$. This is the structural contract used by the abstract synthesis
+instance. It follows from the construction for all positive integer
+weight vectors; finite checks of generated trees are additional tests,
+not a replacement for this argument.
+
+For completeness, the leaf construction also preserves the proposal
+probabilities. A leaf labeled $i$ at depth $c$ has probability $2^{-c}$,
+so one traversal returns $i$ with probability
+$\sum_c e_{i,c}2^{-c}=w_i/2^k$. Rejection restarts from the root.
+Writing $p_i$ for the eventual probability of outcome $i$, first-traversal
+conditioning gives
+\[
+ p_i=\frac{a_i}{2^k}+\frac{2^k-m}{2^k}p_i,
+ \qquad\text{hence}\qquad p_i=\frac{a_i}{m}.
+\]
+The AST proof ensures that these probabilities account for the entire
+output mass. This direct argument also confirms that reordering leaves
+within a row does not alter the sampled distribution.
+
+\subsection{Han--Hoshi: Boundary Counting and a Tail Bound}
+For a nonempty interval $J\subseteq[0,1)$, containment in a target
+interval is equivalent to having no internal target boundary strictly
+inside $J$. An endpoint coinciding with a target boundary creates no
+ambiguity because all intervals are half-open. Splitting $J$ into its
+two half-open children assigns each interior target boundary to at most
+one child, proving \eqref{eq:han-hoshi-boundary-split}.
+
+The proof in \Cref{sec:HanHoshi} gives the stronger estimate
+$\mathbb E[\mathsf V_{t+1}\mid\sigma_t]\leq\mathsf V_t/2$ when terminal
+states are made absorbing. This remains true in the exceptional enabled
+case with no interior boundary: both children terminate. Starting from
+$J(0,1)$, one has $\mathsf V_0=\max\{1,n-1\}$, and induction yields
+\[
+ \Pr(T>t)\leq\mathbb E[\mathsf V_t]
+ \leq 2^{-t}\max\{1,n-1\},\qquad t\in\mathbb N.
+\]
+Here $T$ counts complete sampling-loop iterations and
+$[T>t]\leq\mathsf V_t$ because every enabled state has value at least
+one. This bound proves AST independently and even gives a finite
+expected number of bits for each finite weight vector. The main text
+uses the two-certificate rule to expose the common proof interface
+across the examples; this example does not require the full strength
+of that rule.

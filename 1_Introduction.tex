@@ -1,47 +1,85 @@
 \section{Introduction}
 \label{sec:intro}
 
-Randomized algorithms are routinely used in simulation, machine learning, network protocols, and exact sampling. Their correctness has two independent dimensions. \emph{Partial correctness} states that, whenever an algorithm returns, its result has the intended distribution. \emph{Almost-sure termination} (AST) states that it returns with probability one. Only their combination establishes total correctness: without AST, a sampler may produce the right distribution on terminating runs while losing probability mass to divergence.
+Verifying an exact sampler requires both the intended output law and
+almost-sure termination (AST). An argument about the relative probabilities
+of terminating outputs alone does not exclude probability mass lost to
+divergence. Termination is particularly subtle when rejection resets a
+progress measure: that measure need not decrease on every outcome, or even
+in expectation. Moreover, AST permits infinite expected runtime, as in the
+symmetric random walk stopped at zero. These examples motivate
+probabilistic progress conditions without uniform negative expected drift.
 
-AST proofs are subtle. A probabilistic loop may terminate almost surely even though its expected runtime is infinite and even though no globally bounded ranking function exists. The symmetric random walk on the non-negative integers is the canonical example: from $x>0$, move to $x-1$ or $x+1$ with equal probability and stop at zero. It reaches zero with probability one, yet its expected hitting time is infinite. Classical finite-state or bounded-variant arguments therefore do not suffice.
+\paragraph{From control-flow edges to complete iterations.}
+McIver et al.~\cite{10.1145/3158121} already give a source-level AST rule,
+using one function with both supermartingale and progress obligations.
+Majumdar and Sathiyanarayana~\cite{DBLP:journals/pacmpl/MajumdarS25}
+establish a sound and relatively complete rule for probabilistic
+control-flow graphs (pCFGs) with two separately chosen functions: a
+natural-valued variant for progress and a non-negative supermartingale
+that controls escape from regions where the variant is bounded.
 
-Majumdar and Sathiyanarayana recently introduced a sound and relatively complete rule for probabilistic termination at the level of probabilistic control-flow graphs (pCFGs)~\cite{DBLP:journals/pacmpl/MajumdarS25}. Their rule combines a supermartingale with a natural-valued variant. The supermartingale controls the probability of escaping to regions in which the variant becomes large; within each of its sublevel sets, the variant is bounded and decreases with a uniformly positive probability. This is a strong semantic characterization of AST.
+Applying the pCFG rule requires certificates over control locations and
+valuations. Assignments, tests, and random choices generate intermediate
+obligations; strict descent on deterministic edges may require offsets
+that merely account for control flow. Building on Seidel's program-level
+development~\cite{seidel2026thesis}, we place the two-certificate argument
+at loop heads, where each transition represents a complete iteration.
+Users supply state functions and the body's post-distribution, without
+annotating intermediate locations.
 
-Applying this pCFG rule to a source program introduces additional proof structure. A loop iteration that is conceptually a single sampling step becomes a collection of locations and transitions. The two certificate functions are defined over control locations and valuations, often requiring different symbolic cases for assignments, guards, and probabilistic branches. For the Fast Dice Roller (FDR), for example, a simple source-level observation about the growth of $v-c$ turns into a location-indexed variant with several cases. This overhead concerns the representation of the certificates, rather than a need to enumerate individual valuations. It is especially unfortunate for exact samplers, whose functional correctness is already naturally expressed by \emph{distributional invariants} and distribution-transformer semantics~\cite{zilken2026verifyingsamplingalgorithmsdistributional}.
+\paragraph{The iteration-level argument.}
+At every enabled state, the variant decreases with uniformly positive
+probability and the supermartingale does not increase in expectation.
+The variant is bounded on each supermartingale sublevel set. This coupling
+permits resets while controlling the regions in which progress is pursued.
+Both functions vanish at termination; they may coincide but serve different
+roles. Existing distributional invariants can retain output information,
+although AST uses only their supports.
 
-\paragraph{Our approach.}
-We lift the two-certificate pCFG rule to the source-program level, summarizing the complete effect of one loop-body execution by its post-distribution. Let $C=\while{b}{B}$, where $B$ is loop-free. The rule requires:
-\begin{enumerate}[label=(\roman*)]
-  \item a distributional invariant $I$ closed under one loop iteration;
-  \item a non-negative supermartingale $v$ whose expected value does not increase after executing $B$;
-  \item a natural-valued variant $u$ that, with probability at least $\varepsilon>0$, is smaller after executing $B$; and
-  \item boundedness of $u$ in every sublevel set of $v$.
-\end{enumerate}
-All obligations are stated over source states and the distribution transformer $\post{B}$. The rule therefore reasons at the semantic granularity at which programmers understand a probabilistic loop: one iteration at a time.
-
-Source-level AST rules already exist, notably the rule of McIver et al.~\cite{10.1145/3158121}. Our contribution is a program-level formulation of the separate supermartingale and variant certificates of Majumdar and Sathiyanarayana, together with its metatheory and integration with distributional invariants. The separation itself comes from the pCFG rule; the new formulation makes that approach available through obligations over a complete source-level iteration.
-
-\paragraph{Why sampling algorithms?}
-Exact sampling algorithms provide a natural setting in which to evaluate AST proof rules. Their loop invariants often describe entire distributions rather than merely state predicates; rejection sampling introduces restarts that defeat na\"ive pointwise descent arguments; and total correctness requires the AST proof to compose with a pre-existing output-distribution proof. Our formulation directly supports this workflow. Reachability information is extracted from the support of a distributional invariant, while the richer equal-mass constraints used for partial correctness can be reused unchanged.
-
-After a one-dimensional random walk introduces the rule's mechanism, we study three samplers with complementary roles. First, the Fast Dice Roller (FDR)~\cite{DBLP:journals/corr/abs-1304-1916} samples uniformly from $\{0,\ldots,n-1\}$ using fair bits. We give both pCFG-level and program-level proofs, making the additional location-dependent cases and offsets explicit. This comparison demonstrates a reduction in the bookkeeping needed to express the same termination argument. Second, the Fast Loaded Dice Roller (FLDR)~\cite{DBLP:conf/aistats/SaadFRM20} samples from a finite distribution with rational probabilities using a compact decision tree and rejection. Its program-level proof handles progress and reset in one body step. Third, the Han--Hoshi sampler repeatedly refines a dyadic interval until it lies entirely within a target-distribution interval. Its certificate counts the target boundaries inside the current interval. FLDR and Han--Hoshi demonstrate applicability through program-level proofs; the explicit comparison between the two proof rules is provided by FDR. The resulting evidence concerns certificate structure and manual proof obligations, without a measured claim about proof-development or solver runtime.
-
-For FDR and FLDR, prior work already supplies distributional invariants and AST arguments~\cite{zilken2026verifyingsamplingalgorithmsdistributional}. We reuse these verification problems to show how a general program-level AST rule fits the existing distributional proof framework.
+FDR illustrates the change in representation: doubling the sampling range
+and recycling rejected values belong to one iteration. Its source
+certificate captures their combined effect, while a pCFG certificate tracks
+intermediate valuations (\Cref{fig:fdr-iteration-variants,fig:fdr-pcfg}).
+The post-distribution must still be derived or supplied. Our comparison
+concerns explicit annotations, not measured verification cost.
 
 \paragraph{Contributions.}
-This paper makes the following contributions.
 \begin{enumerate}
- \item We present a new program-level proof rule for AST of probabilistic while-loops with loop-free bodies. The rule is phrased entirely in distribution-transformer semantics and cleanly separates the supermartingale and variant obligations. The symmetric random walk illustrates its use, including AST with infinite expected runtime (\Cref{sec:rule,sec:walk}).
- \item We establish soundness by compiling program-level certificates into certificates for the relatively complete pCFG rule. Conversely, we derive program-level certificates from pCFG certificates, yielding relative completeness with respect to the underlying first-order arithmetic theory (\Cref{sec:metatheory}).
- \item We give parallel pCFG- and program-level AST proofs for FDR. The comparison exhibits the location-dependent certificate cases and offsets eliminated at program level, and shows how to reuse an existing distributional invariant (\Cref{sec:fdr}).
- \item We prove AST of FLDR and Han--Hoshi at program level. FLDR captures rejection and restart through one body-step argument over its decision tree, while Han--Hoshi uses a certificate based on the target-distribution boundaries contained in the current dyadic interval. These case studies demonstrate the rule's applicability to distinct sampling mechanisms. For FDR and FLDR, the AST proofs combine with existing distributional invariants to recover total correctness (\Cref{sec:fldr,sec:HanHoshi}).
- \item We instantiate the rule with sound constraints for guarded affine certificates and a shared counterexample-guided synthesis kernel. It generates templates from all declared integer state variables and parameters and increases coefficient bounds automatically. Given inductive predicates and exact or soundly abstracted iteration semantics, it synthesizes certificates for the unbounded random walk, symbolic FDR, and concrete and parametric FLDR inputs. The results establish feasibility and expose the effect of the feature basis on shared versus separate certificates; they do not claim a new general synthesis technique (\Cref{sec:certificate-synthesis}).
+\item \textbf{A two-certificate AST rule over distribution transformers.}
+We formulate this rule for probabilistic while-loops with loop-free
+bodies (\Cref{sec:rule}). We prove soundness and relative completeness
+by translating certificates to and from pCFGs (\Cref{sec:metatheory}).
+Completeness is relative to true arithmetic and is independent of the
+restricted synthesis templates.
+ \item \textbf{Sampler certificates and a representation comparison.}
+ We instantiate the rule for FDR, the Fast Loaded Dice Roller (FLDR),
+ and Han--Hoshi sampling
+ (\Cref{sec:case-studies}), with an explicit pCFG comparison for FDR.
+ FDR and FLDR reuse existing distributional invariants
+ ~\cite{zilken2026verifyingsamplingalgorithmsdistributional}; Han--Hoshi
+ supplies an interval-boundary certificate. These are applications of the
+ rule to known samplers. The random walk illustrates its treatment of
+ infinite expected runtime.
+ \item \textbf{Certificate synthesis.}
+ For integer-state inputs with two equiprobable outcomes, we derive
+ sufficient constraints for the rule's premises and describe bounded
+ counterexample-guided coefficient search (\Cref{sec:certificate-synthesis}).
+ Invariants, iteration semantics, and any partition are supplied; the
+ templates impose the stronger boundedness condition $U\leq V$.
+ The shared implementation covers the random walk, symbolic FDR, an exact
+ FLDR instance, and a structural FLDR abstraction. Fixed partitions extend
+ the same search to piecewise affine certificates. SMT counterexample
+ queries verify the resulting obligations over the entire supplied
+ invariant domain; the connection between abstract FLDR and concrete
+ preprocessing is proved separately.
 \end{enumerate}
 
 \paragraph{Scope.}
-The present rule targets a single while-loop with a loop-free body and no nondeterministic choice. This fragment already captures the characteristic structure of many sampling algorithms, where all potentially unbounded computation is concentrated in one main loop, while preprocessing and the individual loop iterations terminate. Restricting the body to be loop-free therefore still covers a broad and practically relevant class of samplers, while making each iteration a finite distribution-transformer step and keeping the correspondence to pCFG paths transparent.
-
-The restriction also provides a natural basis for treating nested loops compositionally. In particular, an inner loop can first be verified for termination and its semantics summarized; the resulting terminating command can then be treated as part of the body of the surrounding loop. Developing such a compositional treatment systematically, as well as extending the rule to nondeterministic choice, is left to future work (\Cref{sec:conclusion}). The synthesis procedure in \Cref{sec:certificate-synthesis} additionally restricts the state and template domains; automatic invariant generation and extraction of body semantics remain future work.
-
-\paragraph{Outline.}
-\Cref{sec:prelims} introduces the language, distribution-transformer semantics, and certificate notions, including the pCFG rule in \Cref{sec:background}. \Cref{sec:rule} presents the program-level rule and illustrates it with the symmetric random walk. \Cref{sec:metatheory} establishes soundness and relative completeness. \Cref{sec:case-studies} develops the FDR comparison and the FLDR and Han--Hoshi proofs. \Cref{sec:certificate-synthesis} then studies certificate synthesis, returning to the random walk, FDR, and FLDR. We discuss related work in \Cref{sec:relwork} and conclude in \Cref{sec:conclusion}.
+The rule considers fixed-probability discrete choices without
+nondeterminism. Loop-free bodies have bounded path length; together with
+fixed probabilities this supplies a positive lower bound on every
+feasible body-path probability. The sampler loops above have this form,
+with terminating preprocessing treated separately. Nested loops and
+nondeterminism require extensions of the metatheory. Relative completeness
+of the rule must be distinguished from the restricted synthesis search.

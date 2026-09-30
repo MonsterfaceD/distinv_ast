@@ -1,6 +1,6 @@
 {
   "z3_version": "4.15.4",
-  "python_version": "3.12.14",
+  "python_version": "3.13.0",
   "method": "guarded full affine / supplied-partition affine integer CEGIS, U <= V",
   "timing_note": "wall-clock seconds in this run; not a benchmark",
   "examples": [
@@ -122,7 +122,7 @@
         "supermartingale": "unsat",
         "progress": "unsat"
       },
-      "wall_seconds": 0.0332312569989881
+      "wall_seconds": 0.061794099980033934
     },
     {
       "name": "fdr_symbolic",
@@ -305,7 +305,7 @@
         "supermartingale": "unsat",
         "progress": "unsat"
       },
-      "wall_seconds": 0.0703659710015927
+      "wall_seconds": 0.15657019999343902
     },
     {
       "name": "fldr_fixed_4_5",
@@ -343,8 +343,8 @@
       "samples": [
         {
           "state": [
-            1,
-            1
+            3,
+            0
           ],
           "descriptors": []
         },
@@ -358,13 +358,13 @@
         {
           "state": [
             1,
-            0
+            1
           ],
           "descriptors": []
         },
         {
           "state": [
-            3,
+            2,
             0
           ],
           "descriptors": []
@@ -376,16 +376,16 @@
           "bound": 1,
           "V_coefficients": [
             [
-              0,
               1,
+              0,
               0
             ]
           ],
           "U_coefficients": [
             [
+              1,
               0,
-              0,
-              1
+              0
             ]
           ],
           "result": "counterexample",
@@ -398,7 +398,7 @@
           },
           "violations": [
             "V_positive",
-            "U_le_V",
+            "U_positive",
             "supermartingale",
             "progress"
           ]
@@ -415,8 +415,8 @@
           ],
           "U_coefficients": [
             [
+              0,
               -1,
-              1,
               1
             ]
           ],
@@ -424,12 +424,13 @@
           "counterexample": {
             "state": [
               1,
-              0
+              1
             ],
             "descriptors": []
           },
           "violations": [
-            "U_positive"
+            "U_positive",
+            "progress"
           ]
         },
         {
@@ -444,21 +445,20 @@
           ],
           "U_coefficients": [
             [
-              -1,
               0,
+              -1,
               2
             ]
           ],
           "result": "counterexample",
           "counterexample": {
             "state": [
-              3,
+              2,
               0
             ],
             "descriptors": []
           },
           "violations": [
-            "U_positive",
             "progress"
           ]
         },
@@ -517,7 +517,7 @@
         "supermartingale": "unsat",
         "progress": "unsat"
       },
-      "wall_seconds": 0.12105773900111672
+      "wall_seconds": 0.21482849994208664
     },
     {
       "name": "fldr_abstract",
@@ -573,22 +573,22 @@
             true
           ],
           "descriptors": [
-            0,
+            2,
             0
           ]
         },
         {
           "state": [
-            1,
-            1,
+            2,
+            2,
             1,
             0,
-            1,
+            0,
             true
           ],
           "descriptors": [
-            2,
-            2
+            1,
+            0
           ]
         },
         {
@@ -603,69 +603,12 @@
           "descriptors": [
             2,
             2
-          ]
-        },
-        {
-          "state": [
-            2,
-            1,
-            1,
-            0,
-            0,
-            true
-          ],
-          "descriptors": [
-            2,
-            1
           ]
         }
       ],
       "trace": [
         {
           "candidate": 1,
-          "bound": 1,
-          "V_coefficients": [
-            [
-              0,
-              0,
-              0,
-              0,
-              0,
-              1
-            ]
-          ],
-          "U_coefficients": [
-            [
-              0,
-              0,
-              0,
-              0,
-              -1,
-              1
-            ]
-          ],
-          "result": "counterexample",
-          "counterexample": {
-            "state": [
-              1,
-              1,
-              1,
-              0,
-              1,
-              true
-            ],
-            "descriptors": [
-              2,
-              2
-            ]
-          },
-          "violations": [
-            "U_positive",
-            "progress"
-          ]
-        },
-        {
-          "candidate": 2,
           "bound": 1,
           "V_coefficients": [
             [
@@ -682,9 +625,51 @@
               0,
               0,
               0,
-              -1,
+              0,
               0,
               1
+            ]
+          ],
+          "result": "counterexample",
+          "counterexample": {
+            "state": [
+              2,
+              2,
+              1,
+              0,
+              0,
+              true
+            ],
+            "descriptors": [
+              1,
+              0
+            ]
+          },
+          "violations": [
+            "progress"
+          ]
+        },
+        {
+          "candidate": 2,
+          "bound": 1,
+          "V_coefficients": [
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              1
+            ]
+          ],
+          "U_coefficients": [
+            [
+              0,
+              0,
+              1,
+              -1,
+              0,
+              0
             ]
           ],
           "result": "counterexample",
@@ -712,48 +697,6 @@
           "bound": 1,
           "V_coefficients": [
             [
-              0,
-              1,
-              0,
-              0,
-              0,
-              0
-            ]
-          ],
-          "U_coefficients": [
-            [
-              1,
-              0,
-              0,
-              -1,
-              0,
-              0
-            ]
-          ],
-          "result": "counterexample",
-          "counterexample": {
-            "state": [
-              2,
-              1,
-              1,
-              0,
-              0,
-              true
-            ],
-            "descriptors": [
-              2,
-              1
-            ]
-          },
-          "violations": [
-            "U_le_V"
-          ]
-        },
-        {
-          "candidate": 4,
-          "bound": 1,
-          "V_coefficients": [
-            [
               1,
               0,
               0,
@@ -764,8 +707,8 @@
           ],
           "U_coefficients": [
             [
-              1,
               0,
+              1,
               0,
               -1,
               0,
@@ -778,7 +721,7 @@
       "bound_attempts": [
         {
           "bound": 1,
-          "candidates": 4,
+          "candidates": 3,
           "status": "verified"
         }
       ],
@@ -796,8 +739,8 @@
       ],
       "U_coefficients": [
         [
-          1,
           0,
+          1,
           0,
           -1,
           0,
@@ -811,7 +754,7 @@
         "supermartingale": "unsat",
         "progress": "unsat"
       },
-      "wall_seconds": 0.2574305189991719
+      "wall_seconds": 0.30879010003991425
     },
     {
       "name": "walk_two_sided_piecewise",
@@ -864,12 +807,6 @@
             -1
           ],
           "descriptors": []
-        },
-        {
-          "state": [
-            -2
-          ],
-          "descriptors": []
         }
       ],
       "trace": [
@@ -958,40 +895,6 @@
           ],
           "U_coefficients": [
             [
-              0,
-              1
-            ],
-            [
-              1,
-              0
-            ]
-          ],
-          "result": "counterexample",
-          "counterexample": {
-            "state": [
-              -2
-            ],
-            "descriptors": []
-          },
-          "violations": [
-            "progress"
-          ]
-        },
-        {
-          "candidate": 4,
-          "bound": 1,
-          "V_coefficients": [
-            [
-              -1,
-              0
-            ],
-            [
-              1,
-              0
-            ]
-          ],
-          "U_coefficients": [
-            [
               -1,
               0
             ],
@@ -1006,7 +909,7 @@
       "bound_attempts": [
         {
           "bound": 1,
-          "candidates": 4,
+          "candidates": 3,
           "status": "verified"
         }
       ],
@@ -1039,7 +942,7 @@
         "supermartingale": "unsat",
         "progress": "unsat"
       },
-      "wall_seconds": 0.07931173100223532
+      "wall_seconds": 0.11424749996513128
     },
     {
       "name": "fdr_symbolic_piecewise",
@@ -1089,41 +992,49 @@
         },
         {
           "state": [
-            7,
-            5,
-            4
-          ],
-          "descriptors": []
-        },
-        {
-          "state": [
-            5,
-            1,
-            0
-          ],
-          "descriptors": []
-        },
-        {
-          "state": [
-            8,
-            2,
-            1
-          ],
-          "descriptors": []
-        },
-        {
-          "state": [
-            76379,
-            25572,
-            25571
-          ],
-          "descriptors": []
-        },
-        {
-          "state": [
             4,
+            3,
+            2
+          ],
+          "descriptors": []
+        },
+        {
+          "state": [
+            3,
             1,
             0
+          ],
+          "descriptors": []
+        },
+        {
+          "state": [
+            86625,
+            21656,
+            21655
+          ],
+          "descriptors": []
+        },
+        {
+          "state": [
+            63772,
+            41520,
+            41519
+          ],
+          "descriptors": []
+        },
+        {
+          "state": [
+            99094,
+            24774,
+            24773
+          ],
+          "descriptors": []
+        },
+        {
+          "state": [
+            31889,
+            15944,
+            15943
           ],
           "descriptors": []
         }
@@ -1140,10 +1051,10 @@
               0
             ],
             [
+              1,
               0,
               0,
-              0,
-              1
+              0
             ]
           ],
           "U_coefficients": [
@@ -1155,22 +1066,22 @@
             ],
             [
               0,
-              1,
               0,
-              0
+              0,
+              1
             ]
           ],
           "result": "counterexample",
           "counterexample": {
             "state": [
-              7,
-              5,
-              4
+              4,
+              3,
+              2
             ],
             "descriptors": []
           },
           "violations": [
-            "U_le_V"
+            "progress"
           ]
         },
         {
@@ -1184,8 +1095,8 @@
               0
             ],
             [
-              1,
               0,
+              1,
               0,
               0
             ]
@@ -1199,15 +1110,15 @@
             ],
             [
               0,
+              1,
               0,
-              0,
-              1
+              0
             ]
           ],
           "result": "counterexample",
           "counterexample": {
             "state": [
-              5,
+              3,
               1,
               0
             ],
@@ -1216,6 +1127,7 @@
           "violations": [
             "V_positive",
             "U_positive",
+            "supermartingale",
             "progress"
           ]
         },
@@ -1224,43 +1136,42 @@
           "bound": 1,
           "V_coefficients": [
             [
+              1,
               0,
               0,
-              0,
-              1
+              0
             ],
             [
               0,
+              1,
               0,
-              0,
-              1
+              0
             ]
           ],
           "U_coefficients": [
             [
+              1,
               0,
               0,
-              -1,
-              1
+              0
             ],
             [
               0,
+              1,
               0,
-              0,
-              1
+              0
             ]
           ],
           "result": "counterexample",
           "counterexample": {
             "state": [
-              8,
-              2,
-              1
+              86625,
+              21656,
+              21655
             ],
             "descriptors": []
           },
           "violations": [
-            "U_positive",
             "progress"
           ]
         },
@@ -1284,8 +1195,8 @@
           "U_coefficients": [
             [
               1,
-              -1,
               0,
+              -1,
               0
             ],
             [
@@ -1298,9 +1209,9 @@
           "result": "counterexample",
           "counterexample": {
             "state": [
-              76379,
-              25572,
-              25571
+              63772,
+              41520,
+              41519
             ],
             "descriptors": []
           },
@@ -1329,8 +1240,8 @@
             [
               1,
               -1,
-              1,
-              -1
+              -1,
+              1
             ],
             [
               0,
@@ -1342,9 +1253,9 @@
           "result": "counterexample",
           "counterexample": {
             "state": [
-              4,
-              1,
-              0
+              99094,
+              24774,
+              24773
             ],
             "descriptors": []
           },
@@ -1354,6 +1265,50 @@
         },
         {
           "candidate": 6,
+          "bound": 1,
+          "V_coefficients": [
+            [
+              1,
+              0,
+              0,
+              0
+            ],
+            [
+              1,
+              0,
+              0,
+              0
+            ]
+          ],
+          "U_coefficients": [
+            [
+              1,
+              -1,
+              -1,
+              1
+            ],
+            [
+              0,
+              0,
+              1,
+              1
+            ]
+          ],
+          "result": "counterexample",
+          "counterexample": {
+            "state": [
+              31889,
+              15944,
+              15943
+            ],
+            "descriptors": []
+          },
+          "violations": [
+            "progress"
+          ]
+        },
+        {
+          "candidate": 7,
           "bound": 1,
           "V_coefficients": [
             [
@@ -1389,7 +1344,7 @@
       "bound_attempts": [
         {
           "bound": 1,
-          "candidates": 6,
+          "candidates": 7,
           "status": "verified"
         }
       ],
@@ -1430,7 +1385,7 @@
         "supermartingale": "unsat",
         "progress": "unsat"
       },
-      "wall_seconds": 3.6441381520016876
+      "wall_seconds": 4.931954100029543
     },
     {
       "name": "fldr_fixed_4_5_piecewise",
@@ -1477,13 +1432,6 @@
         },
         {
           "state": [
-            1,
-            0
-          ],
-          "descriptors": []
-        },
-        {
-          "state": [
             3,
             0
           ],
@@ -1502,6 +1450,13 @@
             0
           ],
           "descriptors": []
+        },
+        {
+          "state": [
+            1,
+            0
+          ],
+          "descriptors": []
         }
       ],
       "trace": [
@@ -1511,8 +1466,8 @@
           "V_coefficients": [
             [
               0,
-              1,
-              0
+              0,
+              1
             ],
             [
               0,
@@ -1522,49 +1477,9 @@
           ],
           "U_coefficients": [
             [
-              1,
-              0,
-              0
-            ],
-            [
               0,
               0,
-              0
-            ]
-          ],
-          "result": "counterexample",
-          "counterexample": {
-            "state": [
-              1,
-              0
-            ],
-            "descriptors": []
-          },
-          "violations": [
-            "V_positive",
-            "U_le_V"
-          ]
-        },
-        {
-          "candidate": 2,
-          "bound": 1,
-          "V_coefficients": [
-            [
-              1,
-              0,
-              0
-            ],
-            [
-              0,
-              0,
-              0
-            ]
-          ],
-          "U_coefficients": [
-            [
-              1,
-              0,
-              0
+              1
             ],
             [
               0,
@@ -1583,11 +1498,12 @@
           "violations": [
             "V_positive",
             "U_positive",
+            "supermartingale",
             "progress"
           ]
         },
         {
-          "candidate": 3,
+          "candidate": 2,
           "bound": 1,
           "V_coefficients": [
             [
@@ -1603,9 +1519,9 @@
           ],
           "U_coefficients": [
             [
-              1,
               0,
-              0
+              0,
+              1
             ],
             [
               1,
@@ -1622,12 +1538,12 @@
             "descriptors": []
           },
           "violations": [
-            "U_le_V",
-            "supermartingale"
+            "supermartingale",
+            "progress"
           ]
         },
         {
-          "candidate": 4,
+          "candidate": 3,
           "bound": 1,
           "V_coefficients": [
             [
@@ -1636,9 +1552,9 @@
               0
             ],
             [
+              1,
               0,
-              0,
-              1
+              0
             ]
           ],
           "U_coefficients": [
@@ -1648,9 +1564,9 @@
               0
             ],
             [
+              1,
               0,
-              0,
-              1
+              0
             ]
           ],
           "result": "counterexample",
@@ -1669,6 +1585,45 @@
           ]
         },
         {
+          "candidate": 4,
+          "bound": 2,
+          "V_coefficients": [
+            [
+              0,
+              0,
+              2
+            ],
+            [
+              0,
+              0,
+              1
+            ]
+          ],
+          "U_coefficients": [
+            [
+              0,
+              -1,
+              2
+            ],
+            [
+              0,
+              0,
+              1
+            ]
+          ],
+          "result": "counterexample",
+          "counterexample": {
+            "state": [
+              1,
+              0
+            ],
+            "descriptors": []
+          },
+          "violations": [
+            "progress"
+          ]
+        },
+        {
           "candidate": 5,
           "bound": 2,
           "V_coefficients": [
@@ -1678,9 +1633,9 @@
               2
             ],
             [
-              1,
               0,
-              0
+              0,
+              1
             ]
           ],
           "U_coefficients": [
@@ -1690,9 +1645,9 @@
               2
             ],
             [
-              1,
               0,
-              0
+              0,
+              1
             ]
           ],
           "result": "verified"
@@ -1701,12 +1656,12 @@
       "bound_attempts": [
         {
           "bound": 1,
-          "candidates": 4,
+          "candidates": 3,
           "status": "no_certificate_in_bounded_template"
         },
         {
           "bound": 2,
-          "candidates": 1,
+          "candidates": 2,
           "status": "verified"
         }
       ],
@@ -1719,9 +1674,9 @@
           2
         ],
         [
-          1,
           0,
-          0
+          0,
+          1
         ]
       ],
       "U_coefficients": [
@@ -1731,9 +1686,9 @@
           2
         ],
         [
-          1,
           0,
-          0
+          0,
+          1
         ]
       ],
       "certificate_checks": {
@@ -1743,7 +1698,7 @@
         "supermartingale": "unsat",
         "progress": "unsat"
       },
-      "wall_seconds": 0.32098461400164524
+      "wall_seconds": 0.49699789995793253
     },
     {
       "name": "fldr_abstract_piecewise",
@@ -1807,52 +1762,10 @@
         },
         {
           "state": [
-            2,
+            5856,
+            5856,
             1,
-            1,
-            0,
-            0,
-            true
-          ],
-          "descriptors": [
-            2,
-            1
-          ]
-        },
-        {
-          "state": [
-            2,
-            2,
-            2,
-            0,
-            0,
-            true
-          ],
-          "descriptors": [
-            2,
-            2
-          ]
-        },
-        {
-          "state": [
-            241,
-            241,
-            1,
-            239,
-            0,
-            true
-          ],
-          "descriptors": [
-            0,
-            0
-          ]
-        },
-        {
-          "state": [
-            11652,
-            11652,
-            1,
-            11649,
+            5853,
             0,
             true
           ],
@@ -1863,25 +1776,11 @@
         },
         {
           "state": [
-            2,
-            2,
-            2,
-            0,
-            0,
-            true
-          ],
-          "descriptors": [
-            0,
-            1
-          ]
-        },
-        {
-          "state": [
-            5,
-            2,
+            1,
             1,
             1,
             0,
+            1,
             true
           ],
           "descriptors": [
@@ -1895,26 +1794,40 @@
             2,
             1,
             0,
-            2,
+            1,
             true
           ],
           "descriptors": [
-            2,
-            2
+            0,
+            1
           ]
         },
         {
           "state": [
-            3,
+            7633,
             3,
             1,
-            2,
+            0,
             0,
             true
           ],
           "descriptors": [
+            0,
+            0
+          ]
+        },
+        {
+          "state": [
+            3826,
+            2,
             1,
-            2
+            1,
+            0,
+            true
+          ],
+          "descriptors": [
+            2,
+            1
           ]
         }
       ],
@@ -1924,8 +1837,8 @@
           "bound": 1,
           "V_coefficients": [
             [
-              0,
               1,
+              0,
               0,
               0,
               0,
@@ -1942,9 +1855,9 @@
           ],
           "U_coefficients": [
             [
+              0,
+              0,
               1,
-              0,
-              0,
               0,
               0,
               0
@@ -1961,11 +1874,69 @@
           "result": "counterexample",
           "counterexample": {
             "state": [
-              2,
+              5856,
+              5856,
               1,
+              5853,
+              0,
+              true
+            ],
+            "descriptors": [
+              1,
+              0
+            ]
+          },
+          "violations": [
+            "progress"
+          ]
+        },
+        {
+          "candidate": 2,
+          "bound": 1,
+          "V_coefficients": [
+            [
+              0,
+              0,
               1,
               0,
               0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "U_coefficients": [
+            [
+              0,
+              0,
+              1,
+              0,
+              -1,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "result": "counterexample",
+          "counterexample": {
+            "state": [
+              1,
+              1,
+              1,
+              0,
+              1,
               true
             ],
             "descriptors": [
@@ -1980,70 +1951,12 @@
           ]
         },
         {
-          "candidate": 2,
-          "bound": 1,
-          "V_coefficients": [
-            [
-              0,
-              0,
-              0,
-              0,
-              0,
-              1
-            ],
-            [
-              1,
-              0,
-              0,
-              0,
-              0,
-              0
-            ]
-          ],
-          "U_coefficients": [
-            [
-              0,
-              0,
-              1,
-              0,
-              0,
-              0
-            ],
-            [
-              1,
-              0,
-              0,
-              0,
-              0,
-              0
-            ]
-          ],
-          "result": "counterexample",
-          "counterexample": {
-            "state": [
-              2,
-              2,
-              2,
-              0,
-              0,
-              true
-            ],
-            "descriptors": [
-              2,
-              2
-            ]
-          },
-          "violations": [
-            "U_le_V"
-          ]
-        },
-        {
           "candidate": 3,
           "bound": 1,
           "V_coefficients": [
             [
-              0,
               1,
+              0,
               0,
               0,
               0,
@@ -2060,35 +1973,35 @@
           ],
           "U_coefficients": [
             [
+              0,
               1,
               0,
-              0,
-              0,
+              -1,
               0,
               0
             ],
             [
               0,
+              0,
+              0,
+              0,
               1,
-              0,
-              0,
-              0,
               0
             ]
           ],
           "result": "counterexample",
           "counterexample": {
             "state": [
-              241,
-              241,
+              2,
+              2,
               1,
-              239,
               0,
+              1,
               true
             ],
             "descriptors": [
               0,
-              0
+              1
             ]
           },
           "violations": [
@@ -2100,16 +2013,16 @@
           "bound": 1,
           "V_coefficients": [
             [
-              1,
               0,
+              1,
               0,
               0,
               0,
               0
             ],
             [
-              1,
               0,
+              1,
               0,
               0,
               0,
@@ -2118,10 +2031,10 @@
           ],
           "U_coefficients": [
             [
-              0,
               1,
               0,
               0,
+              -1,
               0,
               0
             ],
@@ -2137,20 +2050,20 @@
           "result": "counterexample",
           "counterexample": {
             "state": [
-              11652,
-              11652,
+              7633,
+              3,
               1,
-              11649,
+              0,
               0,
               true
             ],
             "descriptors": [
-              1,
+              0,
               0
             ]
           },
           "violations": [
-            "progress"
+            "U_le_V"
           ]
         },
         {
@@ -2158,8 +2071,8 @@
           "bound": 1,
           "V_coefficients": [
             [
-              0,
               1,
+              0,
               0,
               0,
               0,
@@ -2167,8 +2080,8 @@
             ],
             [
               0,
-              1,
               0,
+              1,
               0,
               0,
               0
@@ -2186,208 +2099,33 @@
             [
               0,
               0,
-              1,
               0,
               0,
-              0
+              0,
+              1
             ]
           ],
           "result": "counterexample",
           "counterexample": {
             "state": [
+              3826,
               2,
-              2,
-              2,
-              0,
+              1,
+              1,
               0,
               true
             ],
             "descriptors": [
-              0,
+              2,
               1
             ]
           },
           "violations": [
-            "progress"
+            "supermartingale"
           ]
         },
         {
           "candidate": 6,
-          "bound": 1,
-          "V_coefficients": [
-            [
-              1,
-              0,
-              0,
-              0,
-              0,
-              0
-            ],
-            [
-              0,
-              1,
-              0,
-              0,
-              0,
-              0
-            ]
-          ],
-          "U_coefficients": [
-            [
-              0,
-              1,
-              0,
-              -1,
-              0,
-              0
-            ],
-            [
-              0,
-              0,
-              0,
-              0,
-              0,
-              1
-            ]
-          ],
-          "result": "counterexample",
-          "counterexample": {
-            "state": [
-              5,
-              2,
-              1,
-              1,
-              0,
-              true
-            ],
-            "descriptors": [
-              2,
-              1
-            ]
-          },
-          "violations": [
-            "supermartingale"
-          ]
-        },
-        {
-          "candidate": 7,
-          "bound": 1,
-          "V_coefficients": [
-            [
-              0,
-              1,
-              0,
-              0,
-              0,
-              0
-            ],
-            [
-              0,
-              1,
-              0,
-              0,
-              0,
-              0
-            ]
-          ],
-          "U_coefficients": [
-            [
-              0,
-              1,
-              0,
-              0,
-              -1,
-              0
-            ],
-            [
-              0,
-              0,
-              0,
-              0,
-              0,
-              1
-            ]
-          ],
-          "result": "counterexample",
-          "counterexample": {
-            "state": [
-              2,
-              2,
-              1,
-              0,
-              2,
-              true
-            ],
-            "descriptors": [
-              2,
-              2
-            ]
-          },
-          "violations": [
-            "U_positive",
-            "progress"
-          ]
-        },
-        {
-          "candidate": 8,
-          "bound": 1,
-          "V_coefficients": [
-            [
-              0,
-              1,
-              0,
-              0,
-              0,
-              0
-            ],
-            [
-              0,
-              0,
-              0,
-              0,
-              0,
-              1
-            ]
-          ],
-          "U_coefficients": [
-            [
-              0,
-              1,
-              0,
-              -1,
-              0,
-              0
-            ],
-            [
-              0,
-              0,
-              0,
-              0,
-              0,
-              1
-            ]
-          ],
-          "result": "counterexample",
-          "counterexample": {
-            "state": [
-              3,
-              3,
-              1,
-              2,
-              0,
-              true
-            ],
-            "descriptors": [
-              1,
-              2
-            ]
-          },
-          "violations": [
-            "supermartingale"
-          ]
-        },
-        {
-          "candidate": 9,
           "bound": 1,
           "V_coefficients": [
             [
@@ -2431,7 +2169,7 @@
       "bound_attempts": [
         {
           "bound": 1,
-          "candidates": 9,
+          "candidates": 6,
           "status": "verified"
         }
       ],
@@ -2480,7 +2218,7 @@
         "supermartingale": "unsat",
         "progress": "unsat"
       },
-      "wall_seconds": 9.843226156001037
+      "wall_seconds": 8.465115900035016
     }
   ],
   "negative_template_experiment": {
@@ -2523,13 +2261,13 @@
       },
       {
         "state": [
-          2
+          -1
         ],
         "descriptors": []
       },
       {
         "state": [
-          -1
+          2
         ],
         "descriptors": []
       },
@@ -2714,6 +2452,33 @@
         "bound": 1,
         "V_coefficients": [
           [
+            1,
+            0
+          ]
+        ],
+        "U_coefficients": [
+          [
+            0,
+            1
+          ]
+        ],
+        "result": "counterexample",
+        "counterexample": {
+          "state": [
+            -1
+          ],
+          "descriptors": []
+        },
+        "violations": [
+          "V_positive",
+          "U_le_V"
+        ]
+      },
+      {
+        "candidate": 2,
+        "bound": 1,
+        "V_coefficients": [
+          [
             0,
             1
           ]
@@ -2733,33 +2498,6 @@
         },
         "violations": [
           "progress"
-        ]
-      },
-      {
-        "candidate": 2,
-        "bound": 1,
-        "V_coefficients": [
-          [
-            1,
-            0
-          ]
-        ],
-        "U_coefficients": [
-          [
-            1,
-            0
-          ]
-        ],
-        "result": "counterexample",
-        "counterexample": {
-          "state": [
-            -1
-          ],
-          "descriptors": []
-        },
-        "violations": [
-          "V_positive",
-          "U_positive"
         ]
       },
       {
@@ -3574,7 +3312,7 @@
       }
     ],
     "status": "no_certificate_in_bounded_template",
-    "wall_seconds": 0.4304478789999848
+    "wall_seconds": 1.376549799926579
   },
-  "total_wall_seconds": 14.816023322997353
+  "total_wall_seconds": 16.158155499957502
 }

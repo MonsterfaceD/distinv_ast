@@ -1,57 +1,40 @@
-\section{Conclusion and Future Work}
+\section{Conclusion}
 \label{sec:conclusion}
 
-\paragraph{Achieved results.}
-We formulated the two-certificate AST approach of Majumdar and Sathiyanarayana directly over the distribution-transformer semantics of probabilistic while-loops with loop-free bodies. The supermartingale and variant describe complete loop iterations, so their use does not require intermediate control-location annotations. We established soundness and relative completeness for this fragment through translations between program-level and pCFG-level certificates.
+We presented a program-level formulation of the two-certificate AST rule
+and proved it sound and relatively complete for fixed-probability loops
+with loop-free bodies. The certificate translations expose the work saved
+at the source interface: users reason about the body's post-distribution
+and supply two state functions, while the metatheory accounts for internal
+control locations. Distributional partial-correctness invariants can be
+retained, although termination uses only their supports.
 
-The examples serve complementary purposes. The one-dimensional random walk introduces the rule and its ability to handle infinite expected runtime. FDR provides an explicit comparison of pCFG-level and program-level AST proofs: the latter eliminates the location-dependent cases, scaling factors, and offsets of the former while reusing the distributional invariant. FLDR demonstrates how a variant can decrease on progress and reset on rejection, with a separate supermartingale controlling its sublevel bounds. Han--Hoshi demonstrates a different certificate construction: the number of target boundaries in the current dyadic interval captures progress under refinement. For FDR and FLDR, our AST proofs integrate with existing distributional output-correctness arguments~\cite{zilken2026verifyingsamplingalgorithmsdistributional}. These case studies support the benefit of expressing termination arguments over complete iterations; the explicit comparison of proof representations is provided by FDR.
+The sampler proofs illustrate different progress mechanisms: recycling in
+FDR, depth advancement with resets in FLDR, and boundary elimination in
+Han--Hoshi. They do not establish that distinct certificates are always
+necessary. In particular, concrete FLDR admits a shared certificate when
+node indices are available, despite the failure of a shared depth-only
+one. The random walk separates qualitative AST from finite expected runtime.
 
-\paragraph{Limitations.}
-The rule applies to a single while-loop with a \emph{loop-free} body and no nondeterministic choice. Loop-freeness guarantees that each body execution terminates and has bounded control-flow length, as used by our certificate translations. The denotational transformer itself is also defined for bodies containing loops; extending the rule to them requires suitable termination summaries and a revised metatheory. We also restrict attention to rational-valued variables and discrete probabilistic choices.
+One bounded CEGIS kernel synthesizes guarded affine certificates and
+piecewise affine certificates for fixed partitions. Its final
+queries verify the constraints over the full supplied invariant domains.
+This provides reproducible evidence for the certificate interface, not an
+end-to-end verifier: invariants, iteration semantics, partitions, and the
+FLDR abstraction are supplied, and $U\leq V$ restricts sublevel boundedness.
+The rule's relative completeness does not transfer to this search.
 
-\paragraph{Nondeterminism: which termination property?}
-Under the standard demonic interpretation, AST means termination with probability one under \emph{every} admissible scheduler~\cite{10.1145/3158121,DBLP:journals/pacmpl/MajumdarS25}. Writing $\Pr^{\pi}_{\sigma}(C\mathbin{\downarrow})$ for the termination probability from state $\sigma$ under scheduler $\pi$, this means
-\[
-  \forall\sigma\in\supp(M)\;\forall\pi:\quad
-  \Pr\nolimits^{\pi}_{\sigma}(C\mathbin{\downarrow})=1,
-\]
-equivalently $\inf_{\pi}\Pr^{\pi}_{\sigma}(C\mathbin{\downarrow})=1$ for every such $\sigma$. Here schedulers may use the finite execution history and randomization to resolve enabled choices; no fairness restriction is assumed. Proving AST under one fixed scheduler, or the existence of an almost-surely terminating scheduler, is a different objective. In particular, in infinite-state models a supremal termination probability of one need not be attained by any scheduler~\cite{DBLP:journals/pacmpl/BatzBKW24}. The pCFG framework of Majumdar and Sathiyanarayana already handles bounded demonic nondeterminism; our current specialization does not transfer that capability to the program-level rule.
+Nested loops require AST summaries for inner executions and a new
+compositional theorem: unbounded inner executions invalidate our bounded-path
+translation argument.
 
-\paragraph{Where the present formulation stops.}
-Our premises use the unique distribution $\post{B}(\dirac{\sigma})$. With nondeterministic choice, different resolutions can produce different post-distributions, so the current semantics has no clause for that construct. Natural alternatives are a strategy-indexed semantics or a semantics collecting possible post-distributions. If a chosen resolution is expressible as a program in our language with a loop-free body, the current rule can already prove AST of that resolved program, hence AST under the selected strategy. Fixing a history-dependent scheduler does not automatically give a reusable transformer on distributions over program states alone: the scheduler's residual memory must also be accounted for when composing iterations.
+For nondeterministic programs, \emph{demonic} semantics requires AST under
+every scheduler resolving the choices. Extending our rule would therefore
+require invariant preservation and the supermartingale condition for all
+admissible body distributions, together with a uniform progress guarantee
+for the variant. Checking only one selected distribution would cover only
+the corresponding behavior. Establishing soundness of this extension remains
+future work.
 
-Pointwise minima or maxima of output distributions do not solve this problem. For example, the nondeterministic choice between $\ass{x}{0}$ and $\ass{x}{1}$, from a fixed initial state, yields two distinct Dirac distributions. Their pointwise minimum has mass zero and their pointwise maximum has mass two, although both branches terminate. Thus neither construction supplies the required output-distribution semantics. Infima and suprema are instead useful for bounding scalar expectations or event probabilities over possible distributions.
-
-The proof obligations must change as well. For demonic AST, the invariant must be preserved by every admissible one-iteration behavior, and both certificate inequalities must hold for every such behavior. To indicate a possible formulation, let $\mathcal{K}_B(\sigma)$ collect the output distributions of the loop-free body from $\sigma$ under all within-iteration schedulers. With common certificates $v,u$, the natural robust obligations are
-\begin{align*}
- \sup_{\nu\in\mathcal{K}_B(\sigma)}
-   \sum_{\sigma'}\nu(\sigma')v(\sigma')
-   &\leq v(\sigma),\\
- \inf_{\nu\in\mathcal{K}_B(\sigma)}
-   \sum_{\sigma':u(\sigma')<u(\sigma)}\nu(\sigma')
-   &\geq\varepsilon.
-\end{align*}
-These would be required at every enabled invariant state, with one $\varepsilon>0$ independent of the state and the resolution of choice, alongside invariant closure, the terminal-state conditions, and sublevel boundedness. Checking only a favorable resolution cannot establish demonic AST: a loop that nondeterministically chooses between exiting and skipping can be kept running forever by always skipping. For an existential objective, one consistent strategy must satisfy the invariant and both certificate obligations; optimizing them separately need not produce the same strategy. The displayed obligations are proposed as a direction for future work; \Cref{thm:program-rule} currently establishes only the purely probabilistic case. Our contraction and lifting arguments would also need to account for nondeterministic choices. A compositional semantics and corresponding soundness and relative-completeness results remain future work.
-
-\paragraph{Certificate synthesis.}
-\Cref{sec:certificate-synthesis} demonstrates that the program-level
-obligations admit a common CEGIS implementation. The prototype automatically
-builds affine templates from declared integer state variables and parameters,
-selects its first sample, and expands a bounded coefficient search when needed.
-It synthesizes globally verified certificates for the unbounded random walk,
-symbolic FDR, a concrete FLDR instance, and FLDR under a supplied structural
-abstraction. The method still requires inductive state predicates and iteration
-semantics; the abstract FLDR experiment additionally relies on a mathematical
-connection to the preprocessing properties.
-
-These results support automation within a stated hypothesis class. They do
-not establish synthesis completeness for AST programs or superiority to
-existing tools. In particular, a depth-only FLDR argument needs separate
-functions within that basis, whereas the exact instance admits a shared
-certificate once the node index is included. We therefore treat the synthesis
-as supporting evidence for the program-level rule. Automatic extraction of
-body semantics, invariant generation, richer templates, and broader evaluation
-remain future work.
-
-\paragraph{Further directions.}
-A fully compositional treatment of nested loops would allow AST summaries to be combined along a program's syntax tree. Strategy-based semantics and programmatic strategy synthesis~\cite{DBLP:journals/pacmpl/BatzBKW24} provide starting points for the nondeterministic extension outlined above. A comparison with the combined certificate of McIver et al.~\cite{10.1145/3158121} could identify program classes for which either style is easier to construct. A broader evaluation could quantify certificate cases, verification conditions, and proof-development effort beyond the FDR comparison.
+Automatic input generation, richer templates, and broader comparative
+evaluation remain separate tasks.

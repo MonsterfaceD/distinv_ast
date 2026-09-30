@@ -1,65 +1,73 @@
-\section{Artifact and Proof-Development Notes}
+\section{Reproducibility and Artifact Checks}
 \label{app:artifact}
 
-The current manuscript is an anonymous ESOP draft in Springer LNCS format, with \texttt{main\_esop.tex} as its entry point. Before submission, the following items should be completed: (i) mechanize or fully expand the translation-correctness proof; (ii) state the preprocessing properties of FLDR as explicit lemmas and connect them to its reference implementation; (iii) decide whether the generalized $\varepsilon_r$ version belongs in the main theorem; and (iv) evaluate proof size using a stable metric, for example number of certificate cases and generated verification conditions. The anonymous author block should be retained for anonymous review.
-
-The \texttt{synthesis/} directory contains the common kernel
-(\texttt{engine.py}), problem inputs (\texttt{examples.py}), the runner
-(\texttt{synthesis\_examples.py}), a pinned solver dependency, recorded
-results, and explanatory notes. From that directory, run:
-\begin{lstlisting}[basicstyle=\ttfamily\small]
+The companion package implements the constraints of
+\Cref{sec:certificate-synthesis}. It trusts the supplied semantics and
+invariants, the mathematical FLDR abstraction argument, and Z3's answers.
+It neither mechanizes the metatheory nor independently checks solver proof
+objects. The README gives file-level documentation, exact commands, and
+expected results. The shared kernel is in \texttt{engine.py};
+\texttt{examples.py} supplies inputs and the finite FLDR tree constructor.
+From the artifact directory, run:
+\begin{lstlisting}[basicstyle=\ttfamily\small,breaklines=true]
 python3 -m pip install -r requirements.txt
-python3 synthesis_examples.py --output results.json
-python3 diagnostics.py
-python3 piecewise_examples.py
-python3 piecewise_diagnostics.py
+python3 synthesis_examples.py --output run.json
+python3 diagnostics.py --output checks.json
+python3 audit_sampler_certificates.py --output audit.json
 \end{lstlisting}
-The default coefficient schedule is $1,2,4,8,16$, with ten seconds per solver
-call and 500 candidates per input. All four recorded inputs finish with
-verified certificates. \texttt{results.json} retains the coefficient vectors,
-counterexamples, bound attempts, invariant checks, and separate verification
-queries. \texttt{diagnostics.json} records rejection of selected invalid
-certificates, rejection of a vacuous transition contract, and a direct
-integer/rational audit of the concrete FLDR certificate. Exact model choices
-and candidate counts can depend on solver tie-breaking.
+The recorded Python~3.12.14/Z3~4.15.4 run verifies all eight positive
+inputs. JSON files record coefficients, counterexamples, individual
+obligation checks, bounds, and measured wall times. Solver choices and timings may vary across systems. No performance
+comparison is claimed. Failure of
+the unpartitioned two-sided walk excludes only the tested bounds; the
+all-bounds impossibility is proved analytically in Section~6.
 
-The optional piecewise extension is implemented in the same kernel.
-The runner \texttt{piecewise\_\allowbreak examples.py} reruns the four original inputs, excludes
-single-affine candidates for the two-sided walk up to the configured bound,
-and synthesizes certificates for that walk and three sampler inputs using
-supplied partitions. \texttt{piecewise\_\allowbreak results.json} records these runs
-separately from the original affine experiment. The two-sided walk's
-template-wide impossibility argument is analytic, as explained in
-\Cref{sec:synthesis-examples}; finite search alone does not establish it.
-\texttt{piecewise\_\allowbreak diagnostics.json} additionally records rejection of
-overlapping and incomplete active-state partitions and of predicates using
-undeclared symbols or transition descriptors. A signed countdown checks
-active-to-active region crossings in both directions. The final certificates
-are reverified over the unbounded input domains, supplemented by an exact
-arithmetic check on selected states.
+\paragraph{Optional partitions and negative checks.}
+The artifact also uses the supplied splits $2v<n$ for FDR and $c<k-1$
+for FLDR. Successful coefficient bounds are $1,2,1$ for FDR, fixed FLDR,
+and abstract FLDR. The recorded fixed-tree certificate uses $c-2d+2$
+below depth $3$ and $c$ at depth $3$. Abstract FLDR uses $V=k$ and
+$U=k-c$, represented by $1$ in the final active region. No extra split
+is necessary for the baseline sampler results.
 
-The concrete and abstract FLDR inputs answer different questions. The former
-uses the exact tree for weights $(4,5)$ and automatically includes both loop
-variables $c,d$. The latter uses all declared integer symbols $m,k,n,c,d$
-and a supplied structural contract for the two child outcomes. Its coverage
-check ensures that admissible pairs exist; the fact that every concrete FLDR
-pair is represented still follows from the stated preprocessing properties,
-not from the certificate solver. The Boolean activity flag denotes the guard;
-auxiliary outcome descriptors are not template features.
+Diagnostics reject invalid certificates, a vacuous transition contract,
+and overlapping, incomplete, or ill-scoped partitions. A signed countdown
+crosses the partition boundary in both directions and verifies $|x|$
+universally. The FDR drift inequality and alternative abstract pair
+$V=k$, $U=k-c$ are separately SMT-checked.
 
-The artifact supports the feasibility results in
-\Cref{tab:synthesis-results}; it is not a broad performance evaluation or a
-mechanization of the paper's soundness and relative-completeness theorems.
-The depth-only separation argument and the full-state common certificate are
-both retained so that the limited scope of that separation is explicit.
+\paragraph{An exact audit of the concrete FLDR certificate.}
+For weights $(4,5)$ the shared certificate $W=c-2d+2$ gives:
+\begin{center}
+\begin{tabular}{@{}ccccc@{}}
+\toprule
+$(c,d)$ & $W$ & Successor values & Mean & A strict decrease\\
+\midrule
+$(0,0)$ & $2$ & $(3,1)$ & $2$ & $2\to1$\\
+$(1,0)$ & $3$ & $(4,2)$ & $3$ & $3\to2$\\
+$(1,1)$ & $1$ & $(0,0)$ & $0$ & $1\to0$\\
+$(2,0)$ & $4$ & $(5,2)$ & $7/2$ & $4\to2$\\
+$(3,0)$ & $5$ & $(2,0)$ & $1$ & $5\to0$\\
+\bottomrule
+\end{tabular}
+\end{center}
+The diagnostic checks these rows with integers and rational numbers,
+independently of SMT solving. Both certificates are positive integers on
+active nodes and zero on terminal nodes. Each mean is at most the current
+value and each pair has a smaller value, with probability at least $1/2$.
+Domination follows from $U=V$.
 
+\paragraph{Finite preprocessing and sampler audits.}
+Exact arithmetic checks all 1,554 weight vectors with one to four outcomes
+and weights in $\{1,\ldots,6\}$. These tests validate dyadic leaf masses,
+height, reset targets, the structural contract, $d<2n$, and immediate
+root acceptance. They support the universal row argument in
+\Cref{app:calculations}, but do not replace it. An independent diagnostic
+additionally checks 247,721 FDR location-states with $n\leq40$ and
+11,424 Han--Hoshi intervals across 84 weight vectors. Its JSON specifies
+the finite domains.
 
-For the concrete FLDR input $(4,5)$, the enabled nodes are $(0,0)$,
-$(1,0)$, $(1,1)$, $(2,0)$, and $(3,0)$. The shared certificate
-$W=c-2d+2$ has values $2,3,1,4,5$, respectively. The corresponding
-successor-value pairs are $(3,1)$, $(4,2)$, $(0,0)$, $(5,2)$, and
-$(2,0)$. Their means are $2,3,0,7/2,1$, each at most the current
-value, and each pair contains a value smaller by at least one.
-All enabled values are positive integers, terminal values are zero, and
-$U=V=W$ establishes the domination condition. This is the direct
-rational-arithmetic check recorded by the diagnostic script.
+These checks have distinct scopes: universal SMT validation on supplied
+domains, exact enumeration of a fixed tree, and bounded regression across
+instances. No simulation estimate is used as a certificate or as a proof
+of AST.

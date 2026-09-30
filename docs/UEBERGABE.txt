@@ -1,0 +1,144 @@
+ÜBERGABE — AST-Paper, Prof-Draft vom 30.09.2026
+
+AUSGANG UND ERGEBNIS
+Maßgebliche Ausgangsversion: das angehängte 3009.zip. Vollständige Überarbeitung
+an den Quellen, keine bloße Liste von Vorschlägen. main_esop.tex ist weiterhin
+der Einstieg. Das PDF bleibt für eine spätere Begutachtung anonymisiert.
+
+Seitenaufteilung der gelieferten, tatsächlich kompilierten Fassung:
+- Haupttext einschließlich Titel/Abstract: Seiten 1–25.
+- Beweis- und Reproduktionsanhänge A–D: Seiten 26–35 (10 Seiten).
+- Literatur einschließlich vorgelagerter Data availability statement: 36–37.
+- Gesamt: 37 Seiten. Gegenüber dem Ausgangs-PDF mit 39 Seiten wurde der
+  Haupttext von etwa 31 auf 25 Seiten verdichtet; die vollständigen Belege
+  wurden ausgebaut und zum Teil in die Anhänge verlagert.
+
+Die 25 Haupttextseiten dürfen NICHT als Einhaltung eines 25-Seiten-Gesamtlimits
+ausgegeben werden. Nach konservativer Zählung hat diese Fassung 35 Seiten ohne
+Literatur. Sie ist ein vollständiger Begutachtungs-/Betreuer-Draft, noch keine
+25-seitige Proceedings-Endfassung. Für diese müsste Material gekürzt oder über
+einen mit den Veranstaltern geklärten erweiterten Beleg zugänglich gemacht
+werden; tragende Beweise sind nicht stillschweigend weggefallen.
+
+WESENTLICHE ÄNDERUNGEN
+1. Theorie: Soundness und relative Completeness samt beiden Übersetzungen
+   geprüft und präzisiert. Explizite Support-Erhaltung, Guard-/Exit-Unterscheidung,
+   Skalierung L_B+1, interne Sublevel-Beschränktheit und terminale Projektion.
+   Der Anhang begründet gemeinsame Zertifikate für beliebige Initialmengen und
+   die arithmetische Darstellbarkeit über rationale Schnitte. Veraltete Aussagen
+   über bloße Beweisskizzen entfernt. Jonas Seidels öffentlich verfügbare Thesis
+   und die Originalarbeit von Majumdar/Sathiyanarayana wurden herangezogen.
+2. Sampler: FDR-Übergänge explizit bitweise formuliert. Im pCFG-Invarianten
+   Geradheit nach Verdopplung ergänzt; ohne diese war ein Logarithmus auf dem
+   behaupteten Invariantenbereich undefiniert. FLDR d<=n durch den begründeten
+   Bereich d<2n ersetzt. Baumkonvention, sofort akzeptierende Wurzeln und
+   Preprocessing-Verbindung explizit gemacht. Han–Hoshi-Randfälle und eine
+   unabhängige Tail-Abschätzung ausgearbeitet. Detailliertes pCFG-Material
+   ist in Anhang C erhalten.
+3. Synthese: Die ZIP enthielt nur die alte Implementierung für Walk/FDR,
+   obwohl der Text bereits weitere Module und Experimente nannte. Jetzt gibt
+   es tatsächlich einen gemeinsamen CEGIS-Kern für alle beschriebenen
+   Kerninstanzen und feste stückweise affine Partitionen. Invarianten und
+   ganze Iterationssemantik werden vorgegeben; alle deklarierten Integer-
+   Komponenten plus Konstante bilden automatisch die affine Featurebasis.
+   V und U haben unabhängige Koeffizienten, werden wegen U<=V gemeinsam gesucht.
+   Koeffizientenbereiche, Ressourcenlimits und unbeschränkte Kandidatenprüfung
+   stimmen mit Section 6 überein.
+4. Text/Literatur: Abstract, Introduction, Related Work und Conclusion
+   abgestimmt. Veraltete Aufgabenlisten, doppelte TeX-Fassungen und unbelegte
+   Experimente entfernt. Unter anderem den falschen Haase-Eintrag korrigiert;
+   die direkte CEGIS-Verwandtschaft und die Thesis-Provenienz explizit gemacht.
+5. Technik: Sauberes Quellenpaket, eigenständig nutzbares Zusatzpaket, englische
+   README, gepinnte Abhängigkeit, reale JSON-Ergebnisse und Einreichungshinweise.
+
+TATSÄCHLICH AUSGEFÜHRTE PRÜFUNGEN
+- Vollständiger LaTeX/BibTeX-Build unter TeX Live 2023 mit unveränderter LNCS-
+  Klasse. Keine Compile-Fehler, undefinierten Verweise/Zitate oder Overfull-Boxen.
+  Zwei harmlose Paketmeldungen betreffen amsmath/vec und thmtools/LNCS.
+- Alle 37 Seiten gerendert und visuell kontrolliert; besonders Formeln,
+  FDR-/FLDR-/Han–Hoshi-Figuren, Zertifikatstabelle und pCFG-Anhang geprüft.
+- Frische virtuelle Python-Umgebung, z3-solver==4.15.4.0 installiert.
+  Alle acht positiven Syntheseinstanzen erneut ausgeführt und universell
+  verifiziert. Alle endgültigen Koeffizienten stimmen mit results.json überein.
+  Kandidatenzahlen dürfen wegen Solver-Reihenfolge variieren.
+- Aufgezeichneter vollständiger Syntheselauf: 14.816 Sekunden; unabhängiger
+  Wiederholungslauf: 14.741 Sekunden. Einzelne Messungen dieser Umgebung,
+  kein Benchmark. Python 3.12.14; Z3 meldet 4.15.4.
+- Negativer zweiseitiger Walk ohne Partition: keine Lösung in den getesteten
+  Koeffizientenbereichen 1,2,4,8,16. Die allgemeine Unmöglichkeit eines affinen
+  Zertifikats wird getrennt analytisch gezeigt.
+- Fehlerhafte Zertifikate, ungültige Partitionen und ein vakuoser Vertrag
+  wurden zurückgewiesen; Regionswechsel separat geprüft.
+- Exakte FLDR-Prüfung aller fünf aktiven Knoten für (4,5); endliche Regression
+  von 1.554 Gewichtsvektoren mit 9.935 aktiven Knoten.
+- Unabhängige exakte, beschränkte Diagnosen: 247.721 FDR-pCFG-Konfigurationen
+  für n<=40 sowie 11.424 Han–Hoshi-Intervalle für 84 Gewichtsvektoren.
+  Diese endlichen Diagnosen sind keine Beweise über unendliche Zustandsräume.
+
+VERIFIZIERTE KERNERGEBNISSE (auf aktiven Zuständen, sonst 0)
+Walk: V=U=x.
+FDR mit symbolischem n: V=n, U=n-v+c.
+FLDR (4,5): V=U=c-2d+2.
+Strukturelles FLDR-Modell: V=m, U=m-c.
+Zweiseitiger Walk mit vorgegebenem Split bei 0: V=U=|x|.
+Die Alternative V=k, U=k-c für abstraktes FLDR wird separat verifiziert;
+sie ist nicht das ausgewählte Ergebnis des aufgezeichneten affinen Laufs.
+
+GRENZEN UND NOCH OFFENE ENTSCHEIDUNGEN
+Bei den vorgenommenen Prüfungen wurde keine weitere konkrete formale Lücke
+unter den ausdrücklich genannten Annahmen identifiziert. Dies ist keine
+maschinell geprüfte Metatheorie und keine Zusicherung, dass Review keine
+weiteren Probleme findet. Insbesondere:
+- Relative Completeness gilt für das angegebene Fragment und die hinreichend
+  ausdrucksstarke wahre Arithmetik, nicht für die Synthesesuche.
+- Kein Parser, keine Invarianten-/Partitionssynthese und kein automatisch
+  bewiesener Übersetzer von Programmtext zu SMT-Modell.
+- Die universellen SMT-Aussagen vertrauen Z3 und den gelieferten Kodierungen;
+  Solver-Proof-Objects werden nicht unabhängig geprüft.
+- Die abstrakte FLDR-Synthese hängt am mathematisch begründeten Baumvertrag.
+  Endliche Tests ersetzen diesen universellen Zusammenhang nicht.
+- U<=V und beschränkte Integer-Koeffizienten sind echte Einschränkungen.
+  Es gibt keinen breiten Leistungsvergleich mit anderen Synthesewerkzeugen.
+- Vor einer Proceedings-Endfassung: Umfang inklusive Anhängen reduzieren,
+  tatsächlichen Archivzugang in Data availability ergänzen und endgültige
+  Autorenschaft mit den Beteiligten festlegen. Die anonyme Fassung erfindet
+  keine Autorenliste; Jonas' wissenschaftliche Beiträge sind zitiert.
+
+ESOP 2027 — KONKRETES VORGEHEN
+1. Diesen vollständigen Draft und das Reproduktionspaket mit dem Betreuer
+   besprechen. Hauptquelle ist main_esop.tex, Overleaf: dieselbe Main-Datei.
+2. Bis 15.10.2026 AoE die anonyme Research-Paper-PDF über den offiziellen
+   ESOP-HotCRP-Link einreichen. Metadaten und Interessenkonflikte im Formular
+   vollständig angeben. Keine parallele Einreichung derselben Arbeit.
+3. Ob zur Paper-Einreichung ein Code-ZIP oder Materiallink möglich ist, muss
+   im tatsächlichen Formular bzw. mit dem PC-Chair geklärt werden. Die
+   öffentlichen 2027-Seiten verifizieren keinen konkreten Supplement-Upload.
+   Das getrennte Artifact-ZIP ist dafür vorbereitet; interne docs/ gehören
+   nicht in ein anonymes Supplement. LaTeX-Quellen nicht ungefragt als
+   obligatorischen Paper-Upload behandeln.
+4. Rebuttal: 07.–09.12.2026; Entscheidung: 22.12.2026.
+5. Bei Annahme freiwillige Artifact Evaluation bis 11.01.2027 erwägen.
+   Sie ist ein separates Verfahren und ändert die Paper-Annahme nicht.
+   Die technische Verpackung/Uploadroute ist noch nicht veröffentlicht und
+   muss anhand der dann vollständigen AE-Anleitung gewählt werden.
+6. Proceedings-Endfassung bis 25.01.2027: LNCS, höchstens 25 Seiten ohne
+   Literatur; für Anhänge ist keine gesonderte Ausnahme bestätigt. Data
+   availability unmittelbar vor Literatur ist vorgeschrieben und ausgenommen.
+   AE-Entscheidung: 11.02.2027. Alle Fristen sind AoE.
+
+Die offiziellen 2027-Regeln sind bereits veröffentlicht: Research-Paper-
+Einreichung ohne Seitenlimit; LNCS/PACMPL/TOPLAS erlaubt; doppelt anonym.
+Ausführliche Anleitung und Quellen stehen zusätzlich in docs/SUBMISSION_NOTES.md.
+Geprüfte offizielle Quellen, Stand 30.09.2026:
+https://etaps.org/2027/conferences/esop/
+https://etaps.org/2027/cfp/
+https://etaps.org/2027/conferences/ae-esop-fossacs-ifs/
+https://esop27.hotcrp.com/
+
+DATEIEN UND E-MAIL
+3009.zip enthält AST_ESOP_Prof_Draft/ mit Quellen, PDF, synthesis/ und docs/.
+AST_Synthesis_Artifact.zip enthält dasselbe Reproduktionspaket eigenständig.
+AST_ESOP_Prof_Draft.pdf ist die vollständige 37-seitige Fassung.
+Die E-Mail ist als docs/EMAIL_ENTWURF.txt vorbereitet und im Chat wiedergegeben.
+Nicht versendet: Der verfügbare Gmail-Zugang meldete mail_service_not_enabled.
+Es wurde keine Empfängeradresse geraten und keine Nachricht versendet.

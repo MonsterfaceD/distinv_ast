@@ -1,0 +1,17 @@
+Betreff: AST-Paper: überarbeiteter Draft mit Zertifikatssynthese
+
+Hallo Joost-Pieter,
+
+anbei der überarbeitete Draft unseres AST-Papers. Neu ist vor allem Section 6: Ein gemeinsamer CEGIS-Kern sucht die beiden Zertifikate aus affinen bzw. stückweise affinen Templates. Die Beispiele umfassen den Random Walk, symbolisches FDR sowie eine konkrete und eine strukturell abstrahierte FLDR-Variante; die gefundenen Zertifikate werden über den jeweils vorgegebenen Zustandsbereichen SMT-geprüft.
+
+Ich habe außerdem die Soundness- und Completeness-Beweise sowie die Sampler-Beispiele überarbeitet und den Text mit der ausführbaren Implementierung abgeglichen. Invarianten, Iterationssemantik und Partitionen bleiben vorgegeben; die Synthese ist entsprechend als eingeschränkter Machbarkeitsnachweis eingeordnet. Das Reproduktionspaket mit README liegt separat bei. Über dein Feedback zur Darstellung und zum Umfang des Synthesebeitrags würde ich mich freuen.
+
+Viele Grüße
+Daniel
+
+Vorgesehene Anhänge:
+- AST_ESOP_Prof_Draft.pdf
+- 3009.zip (vollständiges überarbeitetes Projekt)
+- AST_Synthesis_Artifact.zip
+
+Versandstatus: nicht versendet; der verfügbare E-Mail-Zugang meldete einen nicht aktivierten Maildienst. Eine Empfängeradresse wurde deshalb nicht geraten.
