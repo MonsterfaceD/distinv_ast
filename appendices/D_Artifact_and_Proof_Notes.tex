@@ -15,9 +15,11 @@ python3 synthesis_examples.py --output run.json
 python3 diagnostics.py --output checks.json
 python3 audit_sampler_certificates.py --output audit.json
 \end{lstlisting}
-The recorded Python~3.12.14/Z3~4.15.4 run verifies all eight positive
-inputs. JSON files record coefficients, counterexamples, individual
-obligation checks, bounds, and measured wall times. Solver choices and timings may vary across systems. No performance
+The recorded synthesis run in \texttt{results.json} uses
+Python~3.13.0/Z3~4.15.4 and verifies all eight positive inputs.
+JSON files record coefficients, counterexamples, individual
+obligation checks, bounds, and measured wall times. Solver-selected
+certificates, candidate counts, and timings may vary across systems. No performance
 comparison is claimed. Failure of
 the unpartitioned two-sided walk excludes only the tested bounds; the
 all-bounds impossibility is proved analytically in Section~6.
@@ -26,7 +28,7 @@ all-bounds impossibility is proved analytically in Section~6.
 The artifact also uses the supplied splits $2v<n$ for FDR and $c<k-1$
 for FLDR. Successful coefficient bounds are $1,2,1$ for FDR, fixed FLDR,
 and abstract FLDR. The recorded fixed-tree certificate uses $c-2d+2$
-below depth $3$ and $c$ at depth $3$. Abstract FLDR uses $V=k$ and
+below depth $3$ and the constant $1$ at depth $3$. Abstract FLDR uses $V=k$ and
 $U=k-c$, represented by $1$ in the final active region. No extra split
 is necessary for the baseline sampler results.
 

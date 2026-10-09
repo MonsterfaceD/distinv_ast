@@ -40,8 +40,12 @@ Starting in this set, the run has probability at least
 $\min(\varepsilon,1)^{K_r}$ of either terminating or leaving the set
 within $K_r$ iterations: otherwise $K_r$ successive decreases reach
 $u=0$, which cannot be enabled. Repeating this bound rules out
-nontermination confined to the set. Nonnegative supermartingale
-convergence makes unbounded values of $v$ a probability-zero event.
+nontermination confined to the set. For each fixed initial state, the
+values of $v$ along successive iterations form a nonnegative
+supermartingale with finite initial value; terminal states are held fixed.
+Its almost-sure convergence to a finite limit implies almost-sure
+boundedness. Taking the countable union over integer thresholds $r$
+therefore rules out nontermination.
 The formal proof in \Cref{sec:metatheory} establishes the same result
 by constructing the pCFG certificates.
 

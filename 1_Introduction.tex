@@ -22,8 +22,7 @@ that controls escape from regions where the variant is bounded.
 Applying the pCFG rule requires certificates over control locations and
 valuations. Assignments, tests, and random choices generate intermediate
 obligations; strict descent on deterministic edges may require offsets
-that merely account for control flow. Building on Seidel's program-level
-development~\cite{seidel2026thesis}, we place the two-certificate argument
+that merely account for control flow. We place the two-certificate argument
 at loop heads, where each transition represents a complete iteration.
 Users supply state functions and the body's post-distribution, without
 annotating intermediate locations.

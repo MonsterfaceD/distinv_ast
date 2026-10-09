@@ -89,17 +89,21 @@ ambiguity because all intervals are half-open. Splitting $J$ into its
 two half-open children assigns each interior target boundary to at most
 one child, proving \eqref{eq:han-hoshi-boundary-split}.
 
-The proof in \Cref{sec:HanHoshi} gives the stronger estimate
-$\mathbb E[\mathsf V_{t+1}\mid\sigma_t]\leq\mathsf V_t/2$ when terminal
-states are made absorbing. This remains true in the exceptional enabled
+Let $\sigma_t$ be the state after $t$ sampling-loop iterations, with
+terminal states held fixed, and put $\mathsf V_t=\mathsf V(\sigma_t)$
+for the certificate from \Cref{sec:HanHoshi}. Write
+$T=\inf\{t\in\mathbb N\mid\sigma_t(r)\ne0\}$, with
+$\inf\varnothing=\infty$, for the number of iterations until termination.
+The one-step estimate proved there is
+$\mathbb E[\mathsf V_{t+1}\mid\sigma_t]\leq\mathsf V_t/2$.
+This remains true in the exceptional enabled
 case with no interior boundary: both children terminate. Starting from
 $J(0,1)$, one has $\mathsf V_0=\max\{1,n-1\}$, and induction yields
 \[
  \Pr(T>t)\leq\mathbb E[\mathsf V_t]
  \leq 2^{-t}\max\{1,n-1\},\qquad t\in\mathbb N.
 \]
-Here $T$ counts complete sampling-loop iterations and
-$[T>t]\leq\mathsf V_t$ because every enabled state has value at least
+Here $[T>t]\leq\mathsf V_t$ because every enabled state has value at least
 one. This bound proves AST independently and even gives a finite
 expected number of bits for each finite weight vector. The main text
 uses the two-certificate rule to expose the common proof interface

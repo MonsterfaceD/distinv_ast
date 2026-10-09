@@ -7,8 +7,8 @@ No network access is used after installing the solver.
 
 ## Quick start
 
-Tested with Python 3.12.14 and `z3-solver==4.15.4.0` (Z3 reports `4.15.4`).
-Run these commands from this directory:
+The recorded synthesis run in `results.json` uses Python 3.13.0 and
+`z3-solver==4.15.4.0` (Z3 reports `4.15.4`). Run these commands from this directory:
 
 ```bash
 python3 -m venv .venv
@@ -20,9 +20,10 @@ python3 audit_sampler_certificates.py --output reproduced_audit.json
 ```
 
 On Windows, activate with `.venv\Scripts\activate` instead. The last command
-uses only Python's standard library and can run without Z3. Compare statuses,
-verified coefficients, and logical checks with the supplied JSON files.
-Do not expect identical timings or solver-selected counterexamples.
+uses only Python's standard library and can run without Z3. Compare verification
+statuses and logical checks with the supplied JSON files. Solver-selected
+certificates, counterexamples, candidate counts, and timings can differ between
+runs. Each successful candidate must still pass every certificate check.
 
 ## File map
 
@@ -94,7 +95,7 @@ solvers and no resource limits, each counterexample excludes its candidate,
 so finite-template CEGIS terminates. This is not completeness for all AST
 programs or all affine certificates.
 
-## Expected synthesis results
+## Recorded synthesis results
 
 Expressions below hold on active states; terminal values are zero.
 `results.json` contains the definitive recorded coefficients and counts.
@@ -104,10 +105,10 @@ Expressions below hold on active states; terminal values are zero.
 | Nonnegative random walk | x, 1 | V = U = x | 1 |
 | FDR, symbolic n | n, v, c, 1 | V = n; U = n-v+c | 1 |
 | FLDR, weights (4,5) | c, d, 1 | V = U = c-2d+2 | 2 |
-| FLDR structural abstraction | m, k, n, c, d, 1 | V = m; U = m-c | 1 |
+| FLDR structural abstraction | m, k, n, c, d, 1 | V = m; U = k-c | 1 |
 | Two-sided walk, x<0 / x>=0 | x, 1 per region | V = U = abs(x) | 1 |
 | FDR, 2v<n / 2v>=n | n, v, c, 1 per region | V = n; U = n-v+c in both regions | 1 |
-| FLDR (4,5), c<3 / c>=3 | c, d, 1 per region | V = U = c-2d+2 below 3; c at depth 3 | 2 |
+| FLDR (4,5), c<3 / c>=3 | c, d, 1 per region | V = U = c-2d+2 below 3; 1 at depth 3 | 2 |
 | FLDR abstract, c<k-1 / c>=k-1 | m, k, n, c, d, 1 per region | V = k; U = k-c below k-1, 1 otherwise | 1 |
 
 The unpartitioned two-sided walk returns `no_certificate_in_bounded_template`

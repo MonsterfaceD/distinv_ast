@@ -6,7 +6,9 @@ $\Sigma=\mathbb Q^{\vars}$. Expressions denote total functions on states;
 updates preserve $\Sigma$. For a Boolean expression $b$, write
 $\llbracket b\rrbracket=\{\sigma\mid\sigma\models b\}$ and $[b]$ for its
 Iverson bracket. The update of $x$ to $a(\sigma)$ is
-$\sigma[x/a(\sigma)]$. We use $\mathbb N=\{0,1,\ldots\}$.
+$\sigma[x/a(\sigma)]$. Multiple updates within one pair of brackets
+are simultaneous, with all right-hand sides evaluated in the original
+state. We use $\mathbb N=\{0,1,\ldots\}$.
 
 \subsection{Programs, Subdistributions, and AST}
 
@@ -24,6 +26,9 @@ $\weight{\mu}=\sum_\sigma\mu(\sigma)\leq1$. Write $\subdists$ for their
 set, $\supp(\mu)=\{\sigma\mid\mu(\sigma)>0\}$, and $\dirac{\sigma}$
 for a Dirac distribution. For a set $M$ of subdistributions, put
 $\supp(M)=\bigcup_{\mu\in M}\supp(\mu)$.
+Restriction to a guard is pointwise multiplication:
+$([b]\mu)(\sigma)=[b](\sigma)\mu(\sigma)$. Subdistributions are
+ordered pointwise, and $0$ denotes the zero subdistribution.
 
 A program denotes a transformer $\post{C}:\subdists\to\subdists$.
 It is linear, $\omega$-continuous, and does not increase mass. The clauses
@@ -105,15 +110,22 @@ Majumdar and Sathiyanarayana~\cite{DBLP:journals/pacmpl/MajumdarS25}
 give a sound and relatively complete AST rule for probabilistic
 control-flow graphs (pCFGs), including bounded demonic nondeterminism.
 We use its purely probabilistic specialization with fixed probabilities.
-A configuration $\gamma=(\ell,\sigma)$ comprises a control location and
-a valuation. Assignment and conditional locations have one enabled
+A pCFG has a finite set $L$ of control locations. A configuration
+$\gamma=(\ell,\sigma)\in L\times\Sigma$ comprises a control location
+and a valuation. Assignment and conditional locations have one enabled
 successor; probabilistic locations choose among finitely many successors.
-The program exit $\ell_{\mathsf{out}}$ is absorbing. Write
+Write $\ell_{\mathsf{init}}$ for the initial location and
+$\ell_{\mathsf{out}}$ for the absorbing exit. Write
 $\Succ(\gamma)$ for the positive-probability successors and
 $P(\gamma,\gamma')$ for their transition probabilities, with $P=1$ at
 deterministic steps. An invariant $\mathit{Inv}$ for initial valuations
 $E$ contains all $(\ell_{\mathsf{init}},\sigma)$ with $\sigma\in E$ and
 is closed under these transitions.
+Reachability always means reachability along a finite path of
+positive-probability transitions, including the path of length zero.
+AST from $E$ means reaching a configuration at $\ell_{\mathsf{out}}$
+with probability one from each $(\ell_{\mathsf{init}},\sigma)$,
+$\sigma\in E$; the terminal valuation is unrestricted.
 
 \begin{theorem}[pCFG AST rule, adapted from~\cite{DBLP:journals/pacmpl/MajumdarS25}]
 \label{thm:pcfg-rule}

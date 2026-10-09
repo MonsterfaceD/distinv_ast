@@ -2,7 +2,7 @@
 \label{sec:metatheory}
 
 We prove soundness and relative completeness by translating certificates in
-both directions, following the approach of Seidel~\cite[Chapter~6]{seidel2026thesis}. The only
+both directions. The only
 control-flow parameter is a bound on the number of edges in one body
 execution; one backward recursion handles every internal location.
 All sums below range over the positive-mass outcomes of their distributions.
@@ -11,7 +11,9 @@ All sums below range over the positive-mass outcomes of their distributions.
 
 Fix $C=\while{b}{B}$ with loop-free $B$. Write $\ell_g$ for its guard,
 $\ell_{\rm in}$ for the body entry, and $\ell_{\rm exit}$ for the program
-exit. In $\mathcal T[C]$, the body exit is identified with $\ell_g$;
+exit. Thus $\ell_{\mathsf{init}}=\ell_g$ and
+$\ell_{\mathsf{out}}=\ell_{\rm exit}$ in the notation of
+\Cref{sec:background}. In $\mathcal T[C]$, the body exit is identified with $\ell_g$;
 there is no additional back edge. Skip is represented by one identity
 edge. Let $L_B\geq1$ bound the number of \emph{edges} in any complete body
 path. Every such path is finite, and from a fixed state there are only
@@ -165,7 +167,9 @@ For relative completeness, we use first-order arithmetic with addition,
 multiplication, and order interpreted over $\mathbb Q$, as
 in~\cite{DBLP:journals/pacmpl/MajumdarS25}. Program states have effective
 rational encodings, and guards and updates are total computable operations
-on these encodings. Initial supports are arithmetically definable.
+on these encodings. The union $E=\supp(M)$ of the initial supports is
+arithmetically definable; no arithmetic description of the individual
+probability masses in $M$ is required.
 Natural numbers and computable relations are definable in this rational
 arithmetic~\cite[Section~2.4]{DBLP:journals/pacmpl/MajumdarS25}.
 Natural-valued certificates are represented by their graphs, and
@@ -238,11 +242,18 @@ is defined on $S$ by
  \bigl(b(\sigma)\land\theta_V(\ell_g,\sigma,q)\bigr)
  \lor\bigl(\neg b(\sigma)\land q<0\bigr).
 \]
-All premises reduce to arithmetic sentences: each body has finitely many
-symbolic paths with rational probabilities and computable updates, so
-its sums are finite; comparisons of real values use their rational cuts.
-For sublevel boundedness it suffices to quantify over integer thresholds
-$r$ and integer bounds. Invariant initialization and preservation reduce
+All premises reduce to arithmetic sentences: the body has finitely many
+symbolic paths with rational probabilities and computable updates, and
+\Cref{app:arithmetic-obligations} gives the cut encodings for their
+finite weighted sums and comparisons. The progress witness
+$\varepsilon_B$ is a positive rational constant. Sublevel boundedness is
+equivalent to
+\[
+ \forall r\in\mathbb N\;\exists K\in\mathbb N\;\forall\sigma\in S:
+ \quad v(\sigma)\leq r\ \Longrightarrow\ u(\sigma)\leq K.
+\]
+Integer thresholds suffice because every real threshold is bounded above
+by an integer. Invariant initialization and preservation reduce
 to $E\subseteq S$ and the support-closure condition. Their established
 validity therefore supplies a proof relative to true arithmetic.
 \end{proof}

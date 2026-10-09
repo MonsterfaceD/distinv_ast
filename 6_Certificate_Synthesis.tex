@@ -142,8 +142,8 @@ Input & $V$ & $U$ & $B$ & Candidates\\
 Random walk & $x$ & $x$ & 1 & 2\\
 FDR, symbolic $n$ & $n$ & $n-v+c$ & 1 & 3\\
 FLDR, weights $(4,5)$ & $c-2d+2$ & $c-2d+2$ & 2 & 4\\
-FLDR, abstract family & $m$ & $m-c$ & 1 & 4\\
-Two-sided walk, supplied split & $|x|$ & $|x|$ & 1 & 4\\
+FLDR, abstract family & $m$ & $k-c$ & 1 & 3\\
+Two-sided walk, supplied split & $|x|$ & $|x|$ & 1 & 3\\
 \bottomrule
 \end{tabular}
 \caption{Synthesized expressions on active states, with terminal values zero.
@@ -271,10 +271,10 @@ Tree height at most $k$ and at most one rejecting leaf per level justify
 this contract (\Cref{sec:fldr}). The certificate solver does not derive these
 facts from preprocessing. The domain overapproximates
 $k=\lceil\log_2m\rceil$ and avoids logarithmic arithmetic.
-The full basis $(m,k,n,c,d,1)$ yields $V=m$, $U=m-c$ on active states;
+The full basis $(m,k,n,c,d,1)$ yields $V=m$, $U=k-c$ on active states;
 all irrelevant coefficients become zero without a prescribed feature subset.
 Every successor has $V'$ equal to $m$ or zero, a nonrejecting outcome
-decreases $U$ by at least one, and $1\leq U=m-c\leq m=V$.
+decreases $U$ by at least one, and $1\leq U=k-c\leq k\leq m=V$.
 The alternative pair $V=k$, $U=k-c$ is also independently verified,
 but is not the candidate selected in the recorded affine run.
 

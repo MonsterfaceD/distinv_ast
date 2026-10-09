@@ -68,14 +68,11 @@ enabled state has a finite shortest distance satisfying
  \left\lceil\log_2\!\left(\frac{n}{v-c}\right)\right\rceil.
  \label{eq:fdr-shortest-distance-bound}
 \end{equation}
-This shortest-path view, following Seidel~\cite[Section~5.3]{seidel2026thesis},
-motivates our logarithmic variant below. The bound
+This shortest-path view motivates our logarithmic variant below. The bound
 need not be exact: for $n=6$ and $(v,c)=(4,2)$ it equals $2$, although both
 successors, $(8,4)$ and $(8,5)$, are terminal, so $d_{\min}=1$.
 \Cref{fig:fdr-iteration-variants} contrasts the two functions.
 
-% The iteration-level presentation is inspired by Figure 5.2 of
-% Jonas Seidel's Master's thesis (2026), DOI: 10.18154/RWTH-2026-04488.
 % This new drawing contracts all recycling updates and shows actual
 % shortest distances alongside the terminal-normalized logarithmic variant.
 \begin{figure}[t]
@@ -300,7 +297,7 @@ Thus \Cref{thm:program-rule} applies.
 
 This proof isolates the actual AST argument in three facts: $m$ is stable, tree height is logarithmically bounded by $m$, and at least one child avoids rejection. A direct pCFG treatment would additionally require values at the increment, choice, test, and reset locations, plus cases for both children. FLDR complements the FDR comparison by showing how the program-level rule accommodates rejection and restart through the post-distribution of one iteration.
 
-\Cref{sec:synthesis-examples} reuses these structural facts as an input abstraction for certificate synthesis. With all scalar state variables and symbolic parameters available, the recorded shared-kernel run finds $v=[b]m$, $u=[b](m-c)$. For the concrete weights $(4,5)$, it also finds a common certificate depending on both depth and node index. Thus the resetting depth variant illustrates the flexibility of separate functions, without establishing that distinct functions are necessary for FLDR.
+\Cref{sec:synthesis-examples} reuses these structural facts as an input abstraction for certificate synthesis. With all scalar state variables and symbolic parameters available, the recorded shared-kernel run finds $v=[b]m$, $u=[b](k-c)$. For the concrete weights $(4,5)$, it also finds a common certificate depending on both depth and node index. Thus the resetting depth variant illustrates the flexibility of separate functions, without establishing that distinct functions are necessary for FLDR.
 
 \paragraph{From AST to total correctness.}
 The reused distributional invariants establish that the terminating FDR output is uniform and that FLDR returns $i$ with probability $a_i/m$~\cite{zilken2026verifyingsamplingalgorithmsdistributional}. \Cref{thm:fdr,thm:fldr} show AST, i.e. that the corresponding post-distributions have total mass one. Hence the partial-correctness distributions are proper output distributions, yielding total correctness for both algorithms.

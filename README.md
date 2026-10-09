@@ -1,16 +1,15 @@
-# Program-Level AST — supervisor draft, 30 September 2026
+# Program-Level AST — supervisor draft, 9 October 2026
 
-The authoritative starting point was the uploaded `3009.zip`. This revision
-includes checked metatheory, corrected sampler certificates, and an executable
-shared certificate-synthesis artifact.
+This project contains the program-level AST manuscript, sampler certificates,
+and an executable shared certificate-synthesis artifact. The synthesis results
+reported in the manuscript and artifact README refer to the supplied
+`AST_Synthesis_Artifact/results.json`.
 
 ## Read and build
 
-- `main_esop.pdf`: full anonymous draft, including all proof appendices.
+- `main_esop.pdf`: generated anonymous draft, including all proof appendices.
 - `main_esop.tex`: main file; select this file in Overleaf.
-- `docs/UEBERGABE.txt`: German audit summary, scope and remaining limitations.
-- `docs/SUBMISSION_NOTES.md`: verified ESOP 2027 rules and submission steps.
-- `docs/EMAIL_ENTWURF.txt`: unsent supervisor email.
+- `AST_Synthesis_Artifact/README.md`: artifact setup, inputs, results, and limits.
 
 Build with pdfLaTeX and BibTeX, using a normal TeX Live or MiKTeX installation:
 
@@ -18,8 +17,19 @@ Build with pdfLaTeX and BibTeX, using a normal TeX Live or MiKTeX installation:
 latexmk -pdf -interaction=nonstopmode -halt-on-error main_esop.tex
 ```
 
-Alternatively run `pdflatex main_esop.tex`, `bibtex main_esop`, then pdfLaTeX
-twice. The included LNCS class and bibliography style are unchanged. Install
+Alternatively run the complete sequence:
+
+```bash
+pdflatex -interaction=nonstopmode -halt-on-error main_esop.tex
+bibtex main_esop
+pdflatex -interaction=nonstopmode -halt-on-error main_esop.tex
+pdflatex -interaction=nonstopmode -halt-on-error main_esop.tex
+```
+
+A single pdfLaTeX pass does not resolve all citations and cross-references.
+Before sharing the PDF, check that it includes the bibliography and that the
+final log reports no undefined citations or references. The included LNCS class
+and bibliography style are unchanged. Install
 TeX Live's `texlive-latex-extra`, `texlive-science`, and recommended fonts
 (or equivalent MiKTeX packages) if dependencies in `packages.tex` are missing.
 No custom margins, text size, or spacing changes are used.
@@ -49,13 +59,13 @@ The complete delivered draft is therefore not yet a 25-page camera-ready paper.
 
 ## Reproduce the artifact
 
-The `synthesis/` folder is independently usable; the separate artifact ZIP
-contains the same files without manuscript or internal notes. Start with its
-README. The complete suite takes about 15 seconds in the recorded environment,
-excluding installation; timings depend on the machine.
+The `AST_Synthesis_Artifact/` folder is independently usable. Start with its
+README. The supplied synthesis run used Python 3.13.0 and Z3 4.15.4 and took
+approximately 16 seconds, excluding installation and the separate diagnostics.
+Timings and solver-selected certificates can vary across systems.
 
 ```bash
-cd synthesis
+cd AST_Synthesis_Artifact
 python3 -m pip install -r requirements.txt
 python3 synthesis_examples.py --output reproduced_results.json
 python3 diagnostics.py --output reproduced_diagnostics.json
@@ -66,7 +76,5 @@ The code trusts supplied semantic encodings and Z3. It checks fixed candidates
 universally on their supplied domains; finite coefficient search is incomplete.
 Neither the AST metatheory nor the FLDR preprocessing theorem is mechanized.
 
-The `docs/` folder is an internal handover: do not include the German email and
-handover in an anonymous supplement. Bibliographic attribution is retained in
-the manuscript. Update the data availability statement to the actual review or
-archival access route once that route is established.
+Update the data availability statement to the actual review or archival access
+route once that route is established.
