@@ -1,12 +1,24 @@
-\section{Almost-Sure Termination of Sampling Algorithms}
+\section{Almost-Sure Termination of Discrete Samplers}
 \label{sec:case-studies}
 
-\subsection{Fast Dice Roller: The Same Proof at Two Levels}
+We apply the program-level AST rule to three discrete samplers: the
+Fast Dice Roller (FDR), the Fast Loaded Dice Roller (FLDR), and the
+Han--Hoshi sampler. For each, we give a distributional invariant,
+the two certificate functions, and a progress probability before
+checking the rule. FDR also illustrates the relation to pCFG proofs;
+FLDR and Han--Hoshi demonstrate progress through restart and interval
+refinement, respectively. Throughout, program variables in formulas
+abbreviate their values in the current state $\sigma$. In particular,
+the program variable $v$ is distinct from the certificate $v(\sigma)$.
+
+\subsection{Fast Dice Roller: Certificates at Two Levels}
 \label{sec:fdr}
 
 \subsubsection{Program and Invariant.}
-
-The Fast Dice Roller (FDR) samples uniformly from $\{0,\ldots,n-1\}$ using fair coin flips~\cite{DBLP:journals/corr/abs-1304-1916}. We use the following program-level presentation:
+We extend the small FDR illustration in \Cref{sec:walk} to arbitrary
+$n\in\mathbb N_{>0}$. FDR samples uniformly from
+$\{0,\ldots,n-1\}$ using fair coin
+flips~\cite{DBLP:journals/corr/abs-1304-1916}:
 \begin{lstlisting}[basicstyle=\ttfamily\small,mathescape=true,frame=single]
 $v := 1;\ c := 0;$
 while ($v<n$) do
@@ -15,18 +27,36 @@ while ($v<n$) do
   if ($c\ge n$) then $v:=v-n;\ c:=c-n$ else skip
 end
 \end{lstlisting}
-On termination, $c$ is the sampled outcome. Existing distributional-invariant reasoning proves that the terminating output is uniform~\cite{zilken2026verifyingsamplingalgorithmsdistributional}; AST completes total correctness. The distributional invariant taken from ~\cite{zilken2026verifyingsamplingalgorithmsdistributional} states that at the loop head, the reachable states satisfy
+Here $v$ is the size of the current candidate range and $c$ is the
+candidate. A fair bit doubles the range and appends one binary digit
+to the candidate. If the updated $c\geq n$, subtracting $n$ from both
+variables recycles the unused part of the range for subsequent
+iterations. Otherwise, a range of size at least $n$ permits the loop
+to terminate and return $c$.
+
+The distributional-invariant proof
+of~\cite{zilken2026verifyingsamplingalgorithmsdistributional} establishes
+uniformity of the terminating output. Its support information suffices
+for our AST proof. Let $S_{\mathrm{FDR}}$ be the states with integer
+$n,v,c$ satisfying
 \begin{equation}
- 0\le c<\min(v,n),\qquad 0<v<2n,\qquad n>0.
+ 0\leq c<\min(v,n),\qquad 0<v<2n,\qquad n>0.
  \label{eq:fdr-support}
 \end{equation}
-Here $n,v,c$ are integers, as ensured by initialization and preserved by the
-body. The distributional invariant additionally states that equal admissible
-$c$-values carry equal mass; only its support information
-\eqref{eq:fdr-support} and integrality are needed for our termination proof.
+For loop-entry states, allowing every positive integer $n$, take
+\[
+ \begin{aligned}
+ M_{\mathrm{FDR}}
+ &=\{\dirac{\sigma}\mid n\in\mathbb N_{>0},\ v=1,\ c=0\},\\
+ I_{\mathrm{FDR}}
+ &=\{\mu\in\subdists\mid\supp(\mu)\subseteq S_{\mathrm{FDR}}\}.
+ \end{aligned}
+\]
+This explicitly retains the support component of the existing invariant.
+The stronger relations between probability masses used for output
+correctness can be retained alongside it.
 
-\subsubsection{Program-Level AST Proof.}
-Let $B_{\mathrm{FDR}}$ denote the body. For bit $\beta\in\{0,1\}$,
+Let $B_{\mathrm{FDR}}$ denote the body. For a bit $\beta\in\{0,1\}$,
 write $t_\beta=2c+\beta$ and define the complete update
 \[
  F_\beta(\sigma)=
@@ -36,42 +66,117 @@ write $t_\beta=2c+\beta$ and define the complete update
  \end{cases}
 \]
 All expressions on the right are evaluated in the input state $\sigma$.
-The one-iteration post-distribution is therefore
+Thus one complete iteration, including any recycling, has distribution
 \begin{equation}
- \post{B_{\mathrm{FDR}}}(\dirac{\sigma})
+ \den{B_{\mathrm{FDR}}}(\dirac{\sigma})
  =\tfrac12\dirac{F_0(\sigma)}+\tfrac12\dirac{F_1(\sigma)}.
  \label{eq:fdr-post}
 \end{equation}
-This calculation includes the conditional recycling after either bit.
+Initialization satisfies \eqref{eq:fdr-support}, and both complete
+updates preserve it from enabled states; \Cref{app:calculations}
+checks the two cases. Terminal mass is retained unchanged, so
+$I_{\mathrm{FDR}}$ is a distributional invariant.
 
-\paragraph{Motivation: shortest paths to termination.}
-Consider the iteration-level Markov chain: its states are loop-head states,
-and each transition from an enabled state summarizes one complete execution
-of $B_{\mathrm{FDR}}$, including possible recycling. States with $v\geq n$
-are terminal. Let $d_{\min}(\sigma)$ be the length of a shortest
-positive-probability path from $\sigma$ to a terminal state, measured in
-\emph{complete loop iterations}; terminal states have distance zero.
-
-To obtain a simple bound on this distance, write $\Delta=v-c$. In an
-enabled state, \eqref{eq:fdr-support} gives $1\leq\Delta\leq n-1$.
-Choosing bit zero doubles $\Delta$, and subtracting $n$ from both variables
-preserves their difference. Consequently, after
-\[
- k=\left\lceil\log_2\!\left(\frac{n}{v-c}\right)\right\rceil
-\]
-consecutive zero bits, either the loop has already terminated or its
-difference would be $2^k\Delta\geq n$, which is impossible at an enabled
-loop head. Such a bit sequence has positive probability. Thus every
-enabled state has a finite shortest distance satisfying
+\subsubsection{Program-Level AST Proof.}
+We first use guarded affine certificates. Together with $I_{\mathrm{FDR}}$,
+choose
 \begin{equation}
- d_{\min}(\sigma)\leq
- \left\lceil\log_2\!\left(\frac{n}{v-c}\right)\right\rceil.
+ \begin{aligned}
+ v(\sigma)&=\begin{cases}n,&v<n,\\0,&v\geq n,\end{cases}
+ &u(\sigma)&=\begin{cases}n-v+c,&v<n,\\0,&v\geq n,\end{cases}
+ &\varepsilon&=\tfrac12.
+ \end{aligned}
+ \label{eq:fdr-affine-certificates}
+\end{equation}
+These functions are defined on $S_{\mathrm{FDR}}$. The supermartingale
+records the fixed input size while the loop is enabled; the variant
+measures the gap between $n$ and the difference $v-c$.
+
+\begin{theorem}[AST of FDR]
+\label{thm:fdr}
+For every $n\in\mathbb N_{>0}$, FDR terminates almost surely.
+\end{theorem}
+\begin{proof}
+We check \Cref{thm:program-rule} for the invariant and certificates
+above. Both functions vanish on terminal states. On enabled states,
+integrality and \eqref{eq:fdr-support} give
+$1\leq v-c\leq n-1$, hence $1\leq u(\sigma)\leq n-1$;
+also $v(\sigma)=n>0$. In particular, $u$ is natural-valued.
+
+The input $n$ is unchanged by the body, so each successor has
+supermartingale value either $n$ or $0$. Its expected value is
+therefore at most $n=v(\sigma)$.
+For progress, choose the zero-bit outcome $\sigma'=F_0(\sigma)$.
+Doubling $v$ and $c$ doubles their difference, and recycling subtracts
+the same $n$ from both. Thus the final difference is $2(v-c)$.
+If $\sigma'$ remains enabled,
+\[
+ u(\sigma')=n-2(v-c)=u(\sigma)-(v-c)\leq u(\sigma)-1.
+\]
+Otherwise $u(\sigma')=0<u(\sigma)$. The zero-bit outcome has mass
+$1/2$ in \eqref{eq:fdr-post}, giving the stated progress bound.
+Finally, $u(\sigma)\leq v(\sigma)$ everywhere on the invariant
+support. Thus $u\leq\lfloor r\rfloor$ on every sublevel set
+$v_{\leq r}$, uniformly even when $n$ varies. All four conditions hold.
+\end{proof}
+
+The active-state expression $n-v+c$ is affine in the program variables
+and input parameter. \Cref{sec:synthesis-examples} recovers these same
+certificates automatically with affine templates.
+
+\paragraph{Shortest paths and a logarithmic variant.}
+Keeping $I_{\mathrm{FDR}}$, $v$, and $\varepsilon=1/2$ fixed, we may
+also choose
+\begin{equation}
+ u_{\log}(\sigma)=
+ \begin{cases}
+ \left\lceil\log_2\!\left(\dfrac{n}{v-c}\right)\right\rceil,&v<n,\\
+ 0,&v\geq n.
+ \end{cases}
+ \label{eq:fdr-log-variant}
+\end{equation}
+For an enabled state, $1\leq v-c<n$, so the logarithm is positive
+and finite; the ceiling makes $u_{\log}$ a positive integer.
+This variant is motivated by the number of complete iterations needed
+to reach a terminal state along a possible sequence of bits.
+Write $d_{\min}(\sigma)$ for the shortest such number: a step from
+an enabled state is one complete update $F_0$ or $F_1$, and the target
+is any state with $v\geq n$. Terminal states have distance zero.
+
+To see that a finite path to termination exists, put $\Delta=v-c$.
+Every zero-bit iteration doubles $\Delta$, including iterations that
+recycle. After
+$k=\lceil\log_2(n/\Delta)\rceil$ consecutive zero bits, either the loop
+has terminated or its difference would be $2^k\Delta\geq n$.
+The latter is impossible at an enabled loop head, where
+$\Delta\leq n-1$. This sequence therefore reaches a terminal state
+within $k$ iterations and has probability at least $2^{-k}>0$. Hence
+\begin{equation}
+ d_{\min}(\sigma)\leq u_{\log}(\sigma).
  \label{eq:fdr-shortest-distance-bound}
 \end{equation}
-This shortest-path view motivates our logarithmic variant below. The bound
-need not be exact: for $n=6$ and $(v,c)=(4,2)$ it equals $2$, although both
-successors, $(8,4)$ and $(8,5)$, are terminal, so $d_{\min}=1$.
-\Cref{fig:fdr-iteration-variants} contrasts the two functions.
+The bound need not be exact. For $n=6$ and $(v,c)=(4,2)$, it gives
+$u_{\log}=2$, but both successors $(8,4)$ and $(8,5)$ are terminal,
+so $d_{\min}=1$. \Cref{fig:fdr-iteration-variants} compares the
+logarithmic variant $u_{\log}$ with the exact distance $d_{\min}$.
+
+The zero-bit outcome proves descent of $u_{\log}$ directly: if it
+continues, then
+\[
+ u_{\log}(F_0(\sigma))
+ =\left\lceil\log_2\!\left(\frac{n}{2(v-c)}\right)\right\rceil
+ =u_{\log}(\sigma)-1;
+\]
+if it terminates, its value is zero. On enabled states with
+$v(\sigma)\leq r$, we have $n\leq r$ and therefore
+$u_{\log}\leq\lceil\log_2 n\rceil\leq\lceil\log_2 r\rceil$.
+For $r<1$, the sublevel contains only terminal states.
+Thus $u_{\log}$ satisfies the same rule.
+The distance $d_{\min}$ is another valid variant: the first bit of
+a shortest path decreases it by one with probability at least $1/2$,
+and \eqref{eq:fdr-shortest-distance-bound} supplies its sublevel bound.
+The affine variant avoids both a logarithm and a shortest-path
+calculation, which is why we use it for the main proof.
 
 % This new drawing contracts all recycling updates and shows actual
 % shortest distances alongside the terminal-normalized logarithmic variant.
@@ -86,7 +191,7 @@ successors, $(8,4)$ and $(8,5)$, are terminal, so $d_{\min}=1$.
    fdrbit/.style={font=\scriptsize,fill=white,inner sep=1pt},
    fdredge/.style={->,semithick}
  ]
- % Each node displays (v,c), then u | d_min.
+ % Each node displays (v,c), then u_log | d_min.
  \node[fdrstate] (s10) at (3.5,4.5)
    {$(1,0)$\\$\textcolor{red!75!black}{3}\mid\textcolor{blue!75!black}{3}$};
  \node[fdrstate] (s20) at (1.5,3)
@@ -117,11 +222,11 @@ successors, $(8,4)$ and $(8,5)$, are terminal, so $d_{\min}=1$.
    \draw[fdredge] (\from) -- node[fdrbit,pos=0.48] {$\bit$} (\to);
  }
  \node[font=\scriptsize,align=center] at (3.5,-0.85)
-   {$\textcolor{red!75!black}{u}\mid\textcolor{blue!75!black}{d_{\min}}$
+   {$\textcolor{red!75!black}{u_{\log}}\mid\textcolor{blue!75!black}{d_{\min}}$
     \quad Every edge has probability $1/2$.};
  \end{tikzpicture}
  \caption{Three-iteration unfolding of FDR for $n=6$. Each node gives
- $(v,c)$ and, below it, the logarithmic variant $u$ (red, left) and the
+ $(v,c)$ and, below it, the logarithmic variant $u_{\log}$ (red, left) and the
  shortest distance $d_{\min}$ (blue, right). Edge labels are sampled bits.
  Double borders mark terminal states, where both functions are zero.
  Dashed leaves repeat earlier states after recycling; they are not
@@ -129,106 +234,45 @@ successors, $(8,4)$ and $(8,5)$, are terminal, so $d_{\min}=1$.
  \label{fig:fdr-iteration-variants}
 \end{figure}
 
-\begin{theorem}[AST of FDR]
-\label{thm:fdr}
-For every $n\in\mathbb{N}_{>0}$, FDR terminates almost surely.
-\end{theorem}
-\begin{proof}
-Use the existing distributional invariant and define
-\[
- v(\sigma)=
- \begin{cases}0&v\ge n,\\ n&v<n,\end{cases}
- \qquad
- u(\sigma)=
- \begin{cases}
- 0&v\ge n,\\
- \left\lceil\log_2\!\left(\dfrac{n}{v-c}\right)\right\rceil&v<n.
- \end{cases}
-\]
-On enabled states, $1\leq v-c\leq n-1$, so $u$ is a positive integer.
-The supermartingale obligation is immediate: $n$ is unchanged and every
-successor is assigned either $n$ or $0$.
-For progress, inspect the outcome generated by the left fair branch.
-Its final difference is $2(v-c)$, irrespective of recycling. If the
-successor remains enabled, then
-\[
- u(\sigma')=
- \left\lceil\log_2\!\left(\frac{n}{2(v-c)}\right)\right\rceil
- =u(\sigma)-1.
-\]
-If it is terminal, $u(\sigma')=0<u(\sigma)$ instead. The left bit has
-probability $1/2$, giving $\varepsilon=1/2$.
-
-For every $r\geq0$, an enabled state in the sublevel set of the
-supermartingale satisfies $n\leq r$. Hence, for $r\geq1$,
-$u\leq\lceil\log_2 n\rceil\leq\lceil\log_2 r\rceil$ there.
-For $r<1$ the sublevel set contains only terminal states, with $u=0$.
-Thus $u$ is bounded on every sublevel set, also when $n$ ranges over all
-positive integers. All obligations of \Cref{thm:program-rule} hold.
-\end{proof}
-
-\paragraph{Alternative variants.}
-The exact shortest distance $d_{\min}$ is itself a valid variant for the
-same supermartingale. From each enabled state, the first edge of a shortest
-path leads to a successor with distance $d_{\min}-1$ and has probability
-at least $1/2$. Moreover, \eqref{eq:fdr-shortest-distance-bound}, together
-with the terminal value zero, gives $d_{\min}\leq u$, so the sublevel
-bound just proved also applies to $d_{\min}$. We retain $u$ because it has
-a simple explicit expression whose descent can be checked directly.
-
-An even simpler algebraic alternative is the guarded affine function
-\[
- \widetilde u(\sigma)=
- \begin{cases}
-   n-v+c,&v<n,\\
-   0,&v\geq n.
- \end{cases}
-\]
-On enabled states $1\leq\widetilde u\leq n-1$. A continuing zero-bit
-successor has
-$\widetilde u(\sigma')=\widetilde u(\sigma)-(v-c)
-\leq\widetilde u(\sigma)-1$; a terminal successor has value zero.
-Thus it also gives progress probability $1/2$, and
-$\widetilde u\leq v(\sigma)$ gives sublevel boundedness.
-Its active-state expression is affine in $(n,v,c)$, making it directly
-accessible to an affine-template synthesis algorithm, whereas the
-logarithmic expression requires a richer template language.
-Indeed, the synthesis procedure in \Cref{sec:synthesis-examples} finds
-this affine alternative for symbolic $n$. We keep the logarithmic
-variant here to preserve its direct connection to the shortest-path
-motivation and the pCFG comparison below.
-
 \subsubsection{pCFG-Level Proof and Comparison.}
-The same FDR argument can be stated using the pCFG rule of Majumdar and
-Sathiyanarayana. Its graph separates the guard, assignments, fair choice,
-conditional, and recycling updates. The loop head carries the support
-predicate \eqref{eq:fdr-support}; intermediate locations carry its images
-under the preceding assignments, including evenness of $v$ immediately
-after doubling. Forgetting such information can make an intermediate
-certificate undefined even when every reachable execution is well behaved.
+FDR also admits a proof using the pCFG AST
+rule~\cite{DBLP:journals/pacmpl/MajumdarS25}, recalled in
+\Cref{app:pcfg-rule}.
+In particular, the affine certificates in
+\eqref{eq:fdr-affine-certificates} can be extended to pCFG certificates
+by the construction in \Cref{sec:metatheory}. The affine choice is
+therefore available at both levels. The difference is which program
+points require annotations: the pCFG separates the guard, assignments,
+fair choice, conditional, and recycling updates. Its loop head carries
+\eqref{eq:fdr-support}, while intermediate locations carry the
+corresponding facts after partially executed updates.
 
-For the explicit graph in \Cref{app:comparison}, set $V=n$ at every
-nonterminal location and $V=0$ at the exit. A location-dependent natural
-variant is obtained from the same logarithmic expression by multiplying
-it by $7$, the maximum number of transitions in an iteration, and adding
-control-location offsets. Its arguments account for partially executed
-updates: immediately after doubling $v$, for example, the old difference
-is $v/2-c$. Every deterministic edge strictly decreases this annotation;
-the zero-bit edge decreases it with probability $1/2$. The appendix gives
-the full invariant, annotation, and edge checks.
+For a fully explicit comparison, \Cref{app:fdr-pcfg-proof} expands
+the logarithmic variant \eqref{eq:fdr-log-variant} into annotations
+for the graph. It uses $V=n$ at nonterminal locations and $V=0$ at
+the exit. Its natural-valued variant scales the logarithmic expression
+by $7$, a bound on the transitions in one iteration, and adds
+control-location offsets. The arguments also account for partially
+executed updates: immediately after doubling $v$, the old difference
+is $v/2-c$. The invariant records the required integrality and parity.
+The appendix checks strict descent on deterministic edges and descent
+with probability $1/2$ at the fair choice.
 
-Both proofs establish the same AST result. At program level, the control
-locations and offsets disappear: the proof uses one support predicate,
-two state functions, and \eqref{eq:fdr-post}. It also retains the existing
-distributional invariant for output correctness. This is a comparison of
-proof representation, not an empirical claim about verification time.
+The affine and logarithmic proofs establish the same AST result at
+either level. At program level, the supplied certificates consist of
+one distributional invariant, two state functions, and a progress
+constant; all intermediate effects are combined in \eqref{eq:fdr-post}.
+This comparison concerns the representation of the proof obligations,
+not verification time or an increase in proving power.
 
 \subsection{Fast Loaded Dice Roller: Rejection and Restart}
 \label{sec:fldr}
 
 The Fast Loaded Dice Roller (FLDR) samples outcome $i$ with probability
 $a_i/m$, where $a_1,\ldots,a_n$ are positive integers and
-$m=\sum_{i=1}^n a_i$~\cite{DBLP:conf/aistats/SaadFRM20}. Put
+$m=\sum_{i=1}^n a_i$~\cite{DBLP:conf/aistats/SaadFRM20}.
+Fix such a weight vector; the weights and the tree constructed from them
+are read-only parameters of the sampling loop. Put
 $k=\lceil\log_2m\rceil$ and add a rejecting outcome $n+1$ of weight
 $2^k-m$. The binary expansions of these $n+1$ weights determine a finite
 fair-bit decision tree: a set bit at position $k-c$ gives one leaf with
@@ -242,9 +286,11 @@ $H[d,c]$ be zero at an internal node and its output label at a leaf.
 The two children of internal node $(c,d)$ have indices $2d$ and $2d+1$
 in row $c+1$. This convention is also used by the concrete synthesis
 example; it is an explicit tree presentation of FLDR, rather than the
-array indexing of the original implementation.
+array indexing of the original implementation. We set both lookup
+functions to zero outside their valid table indices, making them total;
+these additional values are not used on the invariant below.
 
-Abstracting the terminating preprocessing, the sampling loop is:
+Once the finite tree has been constructed, the sampling loop is:
 \begin{lstlisting}[basicstyle=\ttfamily\small,mathescape=true,frame=single]
 $c := 0;\ d := 0;$
 while ($d < \phi_h(c)$) do
@@ -257,8 +303,10 @@ On termination it returns $H[d,c]$. If the root is already an accepting
 leaf, the loop is skipped; this includes the single weight $a_1=2^k$,
 in particular $m=1$. Otherwise the root is internal.
 
-The support invariant says that $(c,d)$ is a valid, non-rejecting tree
-node. In particular, its integer coordinates satisfy
+\paragraph{Initial distributions and invariant.}
+Let $S_{\mathrm{FLDR}}$ be the set of states in which $(c,d)$ is a
+valid node of this fixed tree and $H[d,c]\ne n+1$; thus the node is
+internal or accepting. In particular, its integer coordinates satisfy
 \begin{equation}
  0\le c\le k,\qquad 0\le d<2n,
  \qquad d<\phi_h(c)\ \Longrightarrow\ c<k.
@@ -266,27 +314,54 @@ node. In particular, its integer coordinates satisfy
 \end{equation}
 The last implication excludes enabled states at maximal depth.
 The row construction and these bounds are justified in
-\Cref{app:calculations}. No probability-equality constraint from the
-stronger distributional invariant is needed for AST.
+\Cref{app:calculations}. Validity as a tree node is part of the
+invariant, not merely a consequence of the displayed numerical bounds.
+Define
+\[
+ \begin{aligned}
+ M_{\mathrm{FLDR}}
+   &=\{\dirac{\sigma}\mid\sigma\in S_{\mathrm{FLDR}},
+                         \sigma(c)=\sigma(d)=0\},\\
+ I_{\mathrm{FLDR}}
+   &=\{\mu\in\subdists\mid\supp(\mu)\subseteq S_{\mathrm{FLDR}}\}.
+ \end{aligned}
+\]
+Initialization selects the root, which is internal or accepting, so
+$M_{\mathrm{FLDR}}\subseteq I_{\mathrm{FLDR}}$. From an internal node,
+both children are valid tree nodes. A rejecting child is replaced by
+the root; a non-rejecting child remains internal or accepts. Thus every
+complete body execution from an enabled state preserves $S_{\mathrm{FLDR}}$. Retaining the
+mass of already accepting states proves that $I_{\mathrm{FLDR}}$ is a
+distributional invariant. The stronger relations between probability
+masses used for output correctness are not required by the AST proof.
 
+\paragraph{Certificates.}
+Together with $I_{\mathrm{FLDR}}$, let $b$ be the guard
+$d<\phi_h(c)$ and, for $\sigma\in S_{\mathrm{FLDR}}$, choose
+\[
+ v(\sigma)=\begin{cases}0&\sigma\not\models b,\\m&\sigma\models b,\end{cases}
+ \qquad
+ u(\sigma)=\begin{cases}0&\sigma\not\models b,\\k-c&\sigma\models b,\end{cases}
+ \qquad \varepsilon=\tfrac12.
+\]
 \begin{theorem}[AST of FLDR]
 \label{thm:fldr}
 For every finite vector of positive integer weights, the FLDR sampling loop terminates almost surely.
 \end{theorem}
 \begin{proof}
-Let $b$ be the loop guard. Define
-\[
- v(\sigma)=\begin{cases}0&\sigma\not\models b,\\m&\sigma\models b,\end{cases}
- \qquad
- u(\sigma)=\begin{cases}0&\sigma\not\models b,\\k-c&\sigma\models b.\end{cases}
-\]
-Neither the weights nor $m$ are modified. Every post-state therefore has $v$ equal to $m$ if the loop remains enabled and $0$ otherwise, proving the supermartingale inequality.
+We check \Cref{thm:program-rule} on $M_{\mathrm{FLDR}}$ with the
+invariant and certificates above.
+Both certificates are zero on terminal states, and $v$ is positive on
+enabled states because $m>0$. Neither the weights nor $m$ are modified.
+Every post-state has $v$ equal to $m$ if the loop remains enabled and
+$0$ otherwise, proving the supermartingale inequality.
 
 Consider an enabled node. By \eqref{eq:fldr-support}, $c<k$, so
 $u=k-c\geq1$. A non-rejecting child either continues at depth $c+1$,
 decreasing $u$ by one, or accepts, decreasing $u$ to zero. At most one
-child rejects, so such a decreasing outcome has probability at least
-$1/2$. The other outcome may reset $(c,d)$ and increase $u$ back to $k$.
+child rejects, so the total probability of decreasing outcomes is at
+least $\varepsilon=1/2$. A rejecting outcome resets $(c,d)$ and may
+increase $u$ back to $k$.
 
 Finally, for $r\geq1$, every enabled state with $v\leq r$ satisfies
 $m\leq r$, hence $u\leq k\leq\lceil\log_2r\rceil$.
@@ -300,7 +375,15 @@ This proof isolates the actual AST argument in three facts: $m$ is stable, tree 
 \Cref{sec:synthesis-examples} reuses these structural facts as an input abstraction for certificate synthesis. With all scalar state variables and symbolic parameters available, the recorded shared-kernel run finds $v=[b]m$, $u=[b](k-c)$. For the concrete weights $(4,5)$, it also finds a common certificate depending on both depth and node index. Thus the resetting depth variant illustrates the flexibility of separate functions, without establishing that distinct functions are necessary for FLDR.
 
 \paragraph{From AST to total correctness.}
-The reused distributional invariants establish that the terminating FDR output is uniform and that FLDR returns $i$ with probability $a_i/m$~\cite{zilken2026verifyingsamplingalgorithmsdistributional}. \Cref{thm:fdr,thm:fldr} show AST, i.e. that the corresponding post-distributions have total mass one. Hence the partial-correctness distributions are proper output distributions, yielding total correctness for both algorithms.
+Distributional-invariant reasoning establishes the required output
+proportions for FDR and FLDR~\cite{zilken2026verifyingsamplingalgorithmsdistributional}.
+The AST proofs use only support information and are therefore also
+compatible with invariants retaining these probability relations.
+For the row-indexed FLDR tree used here, \Cref{app:calculations} additionally
+derives the output probabilities directly from its leaves and restart
+step. Together with \Cref{thm:fdr,thm:fldr}, which ensure total output
+mass one from each initialized input, these arguments establish total
+correctness: FDR is uniform, and FLDR returns $i$ with probability $a_i/m$.
 
 
 
@@ -310,7 +393,8 @@ The reused distributional invariants establish that the terminating FDR output i
 The fair-bit, finite-output instance of Han--Hoshi interval
 sampling~\cite{HanHoshi1997} draws from a distribution with positive
 integer weights $a_1,\ldots,a_n$ and total weight
-$m=\sum_{i=1}^n a_i$.  Write $S_i=\sum_{j=1}^i a_j$, with $S_0=0$.
+$m=\sum_{i=1}^n a_i$. Fix these weights as read-only parameters.
+Write $S_i=\sum_{j=1}^i a_j$, with $S_0=0$.
 The algorithm repeatedly refines a dyadic interval until it lies entirely
 inside one of the target intervals
 \[
@@ -326,7 +410,7 @@ while ($r=0$) do
   $r := \idx(c,v)$
 end
 \end{lstlisting}
-Here
+For $v>0$, define
 \[
  \idx(c,v)
  \coloneqq
@@ -337,23 +421,41 @@ Here
  0,&\text{if no such }i\text{ exists}.
  \end{cases}
 \]
+For $v\leq0$, set $\idx(c,v)=0$; these values are not used by the loop.
 The pair $(c,v)$ represents the interval
 \[
  J(c,v)=\left[\frac cv,\frac{c+1}v\right).
 \]
-At loop heads $v,c,r$ are integers, and the reachable states satisfy
+\paragraph{Initial distributions and invariant.}
+Let $S_{\mathrm{HH}}$ be the set of states with integer coordinates
+$v,c,r$ satisfying
 \begin{equation}
  v>0,\qquad 0\le c<v,\qquad 0\le r\le n.
  \label{eq:han-hoshi-support}
 \end{equation}
-Moreover, after an iteration, $r=0$ exactly when the selected child
-interval is not contained in a target interval.  As in the preceding case
-studies, a stronger distributional invariant used for output correctness
-may be retained; only the support information above is needed for AST.
-
-Let $B_{\mathrm{HH}}$ denote the loop body.  For $b\in\{0,1\}$, set
+Use the initialized states and the lifted support invariant
 \[
- c_b=2c+b,\qquad v'=2v,\qquad r_b=\idx(c_b,v').
+ \begin{aligned}
+ M_{\mathrm{HH}}
+   &=\{\dirac{\sigma}\mid\sigma\in S_{\mathrm{HH}},
+       \sigma(v)=1,\ \sigma(c)=\sigma(r)=0\},\\
+ I_{\mathrm{HH}}
+   &=\{\mu\in\subdists\mid\supp(\mu)\subseteq S_{\mathrm{HH}}\}.
+ \end{aligned}
+\]
+Clearly $M_{\mathrm{HH}}\subseteq I_{\mathrm{HH}}$. From an enabled
+state, doubling $v$ and replacing $c$ by $2c$ or $2c+1$ preserve
+$v>0$ and $0\leq c<v$; the assignment to $r$ gives an integer in
+$\{0,\ldots,n\}$. Hence complete body executions preserve
+$S_{\mathrm{HH}}$, and $I_{\mathrm{HH}}$ is a distributional invariant.
+No consistency condition between $r$ and $\idx(c,v)$ is needed for this
+support invariant. After each iteration they agree; initially, when
+$n=1$, the program nevertheless starts with $r=0$ and performs one
+refinement before returning its sole outcome.
+
+Let $B_{\mathrm{HH}}$ denote the loop body. For $\beta\in\{0,1\}$, set
+\[
+ c_\beta=2c+\beta,\qquad v'=2v,\qquad r_\beta=\idx(c_\beta,v').
 \]
 For a Dirac input $\dirac{\sigma}$,
 \begin{equation}
@@ -363,7 +465,32 @@ For a Dirac input $\dirac{\sigma}$,
  \label{eq:han-hoshi-post}
 \end{equation}
 Thus one complete program-level step is precisely a fair choice between
-the left and right halves of $J(c,v)$.
+the left and right halves of $J(c,v)$. Below, a prime on a certificate
+denotes its value in the successor sampled from
+\eqref{eq:han-hoshi-post}; $\mathbb E_\sigma$ and $\Pr\nolimits_\sigma$
+denote expectation and probability for this one-step distribution.
+
+\paragraph{Certificates.}
+For $\sigma\in S_{\mathrm{HH}}$, let
+\[
+ N(\sigma)
+ =\left|\left\{i\in\{1,\ldots,n-1\}\,\middle|\,
+ \frac cv<\frac{S_i}{m}<\frac{c+1}{v}\right\}\right|
+\]
+be the number of internal target boundaries lying strictly inside
+$J(c,v)$. Together with $I_{\mathrm{HH}}$, choose
+\[
+ \mathsf V(\sigma)=\mathsf U(\sigma)=
+ \begin{cases}
+ 0,&r\ne0,\\
+ \max\{1,N(\sigma)\},&r=0,
+ \end{cases}
+ \qquad \varepsilon=\tfrac12.
+\]
+Here $\mathsf V$ and $\mathsf U$ instantiate the functions $v$ and $u$
+of the program-level rule. The maximum with $1$ handles enabled
+states whose interval contains no internal boundary, including the
+initialized state when $n=1$.
 
 \begin{theorem}[AST of Han--Hoshi]
  \label{thm:han-hoshi}
@@ -371,29 +498,14 @@ For every finite vector of positive integer weights, the Han--Hoshi
 sampling loop terminates almost surely.
 \end{theorem}
 \begin{proof}
-For a reachable state $\sigma$, let
-\[
- N(\sigma)
- =\left|\left\{i\in\{1,\ldots,n-1\}\,\middle|\,
- \frac cv<\frac{S_i}{m}<\frac{c+1}{v}\right\}\right|
-\]
-be the number of internal target boundaries lying strictly inside
-$J(c,v)$.  Define the two certificates
-\[
- \mathsf V(\sigma)=\mathsf U(\sigma)=
- \begin{cases}
- 0,&r\ne0,\\
- \max\{1,N(\sigma)\},&r=0.
- \end{cases}
-\]
-They vanish exactly on terminal states, and $\mathsf U$ is
-natural-valued.
-
+We check \Cref{thm:program-rule} on $M_{\mathrm{HH}}$ with the
+invariant and certificates above. Both functions vanish exactly on
+terminal states, and $\mathsf U$ is natural-valued.
 Consider an enabled state and write $q=N(\sigma)$.  Splitting $J(c,v)$
 into its two children cannot create an internal target boundary.  Every
 boundary counted in a child is counted in the parent, while a boundary at
-the common endpoint of the children is counted in neither.  If $N_b$
-denotes the number of boundaries strictly inside child $b$, then
+the common endpoint of the children is counted in neither.  If $N_\beta$
+denotes the number of boundaries strictly inside child $\beta$, then
 \begin{equation}
  N_0+N_1\le q.
  \label{eq:han-hoshi-boundary-split}
@@ -402,8 +514,8 @@ Since the target intervals partition $[0,1)$ and every child lies in
 $[0,1)$, a child is contained in one target interval exactly when its
 interior contains no target boundary. This also handles boundaries at
 endpoints, which are not counted. Thus a child remains enabled exactly
-when it contains an internal boundary in its interior; hence its post-state certificate is $N_b$ if $N_b>0$ and
-zero otherwise.  Using \eqref{eq:han-hoshi-post} and
+when its interior contains a target boundary. Its post-state certificate
+is therefore exactly $N_\beta$, including the value zero when it terminates. Using \eqref{eq:han-hoshi-post} and
 \eqref{eq:han-hoshi-boundary-split}, for $q>0$ we obtain
 \[
  \mathbb E_\sigma[\mathsf V']
@@ -422,7 +534,7 @@ with probability $1/2$, so the decrease condition holds with
 $\varepsilon=1/2$.  If $q=0$, both children terminate and decrease
 $\mathsf U$ from $1$ to $0$, so the same bound applies.
 
-Finally, $\mathsf U=\mathsf V$ on every reachable state.  Consequently,
+Finally, $\mathsf U=\mathsf V$ on all of $S_{\mathrm{HH}}$.  Consequently,
 on each sublevel set $\mathsf V_{\le R}$ we have
 $\mathsf U\le R$.  All obligations of \Cref{thm:program-rule} hold, and
 the loop is AST.
@@ -528,7 +640,7 @@ iteration-level fact: bisecting an interval distributes its internal
 target boundaries over the two children, and at least one child contains
 strictly fewer.  The number of such boundaries serves simultaneously as
 the supermartingale and the natural-valued variant (with the value $1$
-for the enabled boundary-free initial case).  Hence Han--Hoshi supplies a further application of the
+for an enabled boundary-free state).  Hence Han--Hoshi supplies a further application of the
 program-level rule of \Cref{thm:program-rule}, with a certificate based on
 interval refinement rather than the progress-and-restart structure of
 FDR and FLDR.

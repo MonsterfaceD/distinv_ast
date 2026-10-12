@@ -15,14 +15,15 @@ The probability-weighted sum of these complete updates is exactly
 \[
  v'-c'=2(v-c)-\beta.
 \]
-For $\beta=0$, this proves the logarithmic descent in \Cref{thm:fdr}.
-For the affine alternative, a continuing zero-bit outcome satisfies
+For $\beta=0$, a continuing outcome satisfies
 \[
  n-v'+c'=n-v+c-(v-c)\leq n-v+c-1.
 \]
-A terminal outcome has guarded certificate zero. Thus the affine
-certificate is valid over the entire supplied support, not merely the
-states reachable for one fixed $n$.
+A terminal outcome has guarded certificate zero. This proves the
+affine descent used in \Cref{thm:fdr} over the entire supplied support,
+not merely the states reachable for one fixed $n$.
+The same difference identity also gives the logarithmic descent for
+\eqref{eq:fdr-log-variant}.
 
 \subsection{FLDR: The Exact Tree Contract}
 Put $w_i=a_i$ for $1\leq i\leq n$ and $w_{n+1}=2^k-m$, so

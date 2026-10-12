@@ -1,19 +1,36 @@
 \section{Soundness and Relative Completeness}
 \label{sec:metatheory}
 
-We prove soundness and relative completeness by translating certificates in
-both directions. The only
-control-flow parameter is a bound on the number of edges in one body
-execution; one backward recursion handles every internal location.
+We prove soundness and relative completeness by translating certificates
+between our program-level rule and the pCFG rule of Majumdar and
+Sathiyanarayana~\cite{DBLP:journals/pacmpl/MajumdarS25}.
+The complete pCFG rule is recalled in \Cref{app:pcfg-rule};
+\Cref{sec:iteration-level} compares its supermartingale and decrease
+conditions with ours. We first relate one body execution to its pCFG
+paths and establish support closure. For soundness, we extend the
+program-level certificates to all reachable pCFG configurations and
+apply the pCFG soundness result. For relative completeness, we use the
+pCFG completeness result and restrict its certificates to loop-head
+states. Thus the two proofs translate certificates in opposite directions.
+The extension uses a bound on the number of edges in one body execution
+and a backward recursion for the internal locations.
 All sums below range over the positive-mass outcomes of their distributions.
 
 \subsection{One Iteration and Its Support}
 
-Fix $C=\while{b}{B}$ with loop-free $B$. Write $\ell_g$ for its guard,
+Fix $C=\while{b}{B}$ with loop-free $B$. The structural translation
+$\mathcal T[C]$ represents the program as a pCFG: assignments become
+update edges, conditionals select edges by their guards, and probabilistic
+choices select edges with their stated probabilities. A configuration
+$\gamma=(\ell,\sigma)$ records the control location and the current
+valuation. Sequential composition identifies adjacent exits and entries;
+\Cref{app:translation} gives the full construction and proves its
+correspondence with the distribution semantics.
+Write $\ell_g$ for the loop guard,
 $\ell_{\rm in}$ for the body entry, and $\ell_{\rm exit}$ for the program
 exit. Thus $\ell_{\mathsf{init}}=\ell_g$ and
 $\ell_{\mathsf{out}}=\ell_{\rm exit}$ in the notation of
-\Cref{sec:background}. In $\mathcal T[C]$, the body exit is identified with $\ell_g$;
+\Cref{app:pcfg-rule}. In $\mathcal T[C]$, the body exit is identified with $\ell_g$;
 there is no additional back edge. Skip is represented by one identity
 edge. Let $L_B\geq1$ bound the number of \emph{edges} in any complete body
 path. Every such path is finite, and from a fixed state there are only
@@ -30,17 +47,26 @@ feasible body path has probability at least
 This bound is independent of the valuation and of the certificates.
 
 \paragraph{Support closure.}
-If $I$ is a distributional invariant for $C$ and an initial set of distributions $M$, then $S=\supp(I)$ contains
-$\supp(M)$ and is closed under enabled body executions. Indeed, for
+If $I$ is a distributional invariant for $C$ and an initial set of
+subdistributions $M$, then $S=\supp(I)$ contains $\supp(M)$ and is closed
+under enabled body executions, meaning
+\begin{equation}
+ \forall\sigma\in S\cap\llbracket b\rrbracket:\qquad
+ \supp\bigl(\post{B}(\dirac{\sigma})\bigr)\subseteq S.
+ \label{eq:body-support-closure}
+\end{equation}
+Indeed, for
 $\sigma\in S\cap\llbracket b\rrbracket$, choose $\mu\in I$ with
 $\mu(\sigma)>0$. Whenever $\post{B}(\dirac{\sigma})(\sigma')>0$,
 linearity gives
 \[
  \bigl([\neg b]\mu+\post{B}([b]\mu)\bigr)(\sigma')
- \geq\mu(\sigma)\post{B}(\dirac{\sigma})(\sigma')>0.
+ \geq\mu(\sigma)\cdot\post{B}(\dirac{\sigma})(\sigma')>0.
 \]
-The distribution on the left belongs to $I$, so $\sigma'\in S$.
-Conversely, if $S$ contains $\supp(M)$ and has this closure property,
+By the inductivity condition for $I$, the distribution on the left
+belongs to $I$, so $\sigma'\in\supp(I)=S$.
+Conversely, if $S$ contains $\supp(M)$ and satisfies
+\eqref{eq:body-support-closure},
 then $\{\mu\in\subdists\mid\supp(\mu)\subseteq S\}$ is a
 distributional invariant: each positive output mass comes from an input
 state in $S$, or from terminal mass retained unchanged.
@@ -53,7 +79,7 @@ Suppose $\mathit{Inv},V,U$ satisfy the pCFG premises in
 configuration $(\ell_g,\sigma)\in\mathit{Inv}$,
 \begin{align}
  \sum_{\sigma'}\post{B}(\dirac{\sigma})(\sigma')
-                V(\ell_g,\sigma')&\leq V(\ell_g,\sigma),
+                \cdot V(\ell_g,\sigma')&\leq V(\ell_g,\sigma),
  \label{eq:contract-v}\\
  \sum_{\sigma':\,U(\ell_g,\sigma')<U(\ell_g,\sigma)}
        \post{B}(\dirac{\sigma})(\sigma')&\geq\varepsilon_B.
@@ -86,30 +112,39 @@ requiring the path to remain in any fixed sublevel set.
 The program-level rule in \Cref{thm:program-rule} is sound.
 \end{theorem}
 \begin{proof}
-Assume certificates $I,v,u$. Let $\mathit{Inv}$ be the configurations
+Assume that $I,v,u$ satisfy all premises of \Cref{thm:program-rule}.
+We construct certificates for \Cref{thm:pcfg-rule}.
+Let $\mathit{Inv}$ be the configurations
 reachable in $\mathcal T[C]$ from $(\ell_g,\sigma)$ with
 $\sigma\in\supp(M)$. Support closure ensures that every reachable
-guard valuation belongs to $\supp(I)$. Set $a=L_B+1$ and prescribe
+guard valuation belongs to $\supp(I)$. Set $a=L_B+1$ and prescribe,
+at guard and exit configurations in $\mathit{Inv}$,
 \[
- \begin{array}{ll}
+ \begin{array}{@{}l@{\qquad}l@{}}
  V(\ell_g,\sigma)=v(\sigma)+1,
    &U(\ell_g,\sigma)=a\,u(\sigma)+1,\\
  V(\ell_{\rm exit},\sigma)=0,
    &U(\ell_{\rm exit},\sigma)=0.
  \end{array}
 \]
-At internal body configurations $\gamma$, define both functions by
-backward recursion, stopping at the next guard visit:
+A guard configuration is nonterminal even when $b$ is false: it still
+takes one edge to the program exit. The added units ensure positivity
+there as well.
+The remaining configurations $\gamma=(\ell,\sigma)\in\mathit{Inv}$,
+with $\ell\notin\{\ell_g,\ell_{\rm exit}\}$, are the internal body
+configurations, including the body entry. There we define both functions
+by backward recursion, stopping at the next guard visit:
 \begin{equation}
  V(\gamma)=\sum_{\gamma'\in\Succ(\gamma)}
-                  P(\gamma,\gamma')V(\gamma'),
+                  P(\gamma,\gamma')\cdot V(\gamma'),
  \qquad
  U(\gamma)=1+\min_{\gamma'\in\Succ(\gamma)}U(\gamma').
  \label{eq:lift-recursion}
 \end{equation}
-Here $P$ is the one-step transition probability, equal to $1$ for a
-unique deterministic successor; $\Succ$ contains only positive-probability
-successors. These are finite, well-defined recursions because the body
+Here $P(\gamma,\gamma')$ is the one-step transition probability from
+configuration $\gamma$ to configuration $\gamma'$, and
+$\Succ(\gamma)$ is the set of positive-probability successors of
+$\gamma$. These are finite, well-defined recursions because the body
 is acyclic. All nonterminal $V$- and $U$-values are at least $1$, and
 $U$ is natural-valued.
 
@@ -123,25 +158,33 @@ mass preservation give
 \[
  V(\ell_{\rm in},\sigma)
  =\sum_{\sigma'}\post{B}(\dirac{\sigma})(\sigma')
-                         (v(\sigma')+1)
+                         \cdot(v(\sigma')+1)
  \leq v(\sigma)+1=V(\ell_g,\sigma).
 \]
-For $U$, the source decrease premise supplies a feasible body path to
-some $\sigma'$ with $u(\sigma')\leq u(\sigma)-1$. Along \emph{any}
-body path of $n$ edges, the minimum recursion gives
-$U(\gamma_0)\leq U(\gamma_n)+n$. Thus, for this path, $n\leq L_B$
-and
+For $U$, the program-level decrease premise supplies a positive-mass
+outcome $\sigma'$ of $\post{B}(\dirac{\sigma})$ with
+$u(\sigma')\leq u(\sigma)-1$. By operational correspondence, there is
+a positive-probability path through the body in $\mathcal T[C]$ from
+$(\ell_{\rm in},\sigma)$ to $(\ell_g,\sigma')$.
+Along any body path $(\gamma_0,\ldots,\gamma_n)$ of $n$ edges up to
+its first guard visit, where $\gamma_i$ is the configuration after $i$
+edges and $\gamma_0,\ldots,\gamma_{n-1}$ are internal, the minimum
+recursion gives $U(\gamma_0)\leq U(\gamma_n)+n$.
+For the chosen path, $\gamma_0=(\ell_{\rm in},\sigma)$,
+$\gamma_n=(\ell_g,\sigma')$, and $n\leq L_B$, so
 \begin{align*}
  U(\ell_{\rm in},\sigma)
  &\leq a\,u(\sigma')+1+n\\
  &\leq a\,(u(\sigma)-1)+1+L_B
   =a\,u(\sigma)<U(\ell_g,\sigma).
 \end{align*}
-The extra unit in $a=L_B+1$ accounts precisely for the guard edge.
+Here $1+L_B=a$. The extra unit in $a=L_B+1$
+therefore ensures strict descent on the guard edge as well.
 
 \paragraph{Sublevel boundedness.}
-Fix $r\geq0$ and choose $H_r\in\mathbb N$ bounding $u$ on
-$\{\sigma\in\supp(I)\mid v(\sigma)\leq r\}$.
+Fix $r\geq0$. By the program-level boundedness premise, choose
+$H_r\in\mathbb N$ such that $u(\sigma)\leq H_r$ for every
+$\sigma\in\supp(I)$ with $v(\sigma)\leq r$.
 At guard configurations with $V\leq r$, we have $U\leq aH_r+1$;
 at the program exit, $U=0$. At an internal configuration $\gamma$,
 backward expansion expresses $V(\gamma)$ as the expectation of
@@ -152,12 +195,26 @@ The path inequality above yields
 \[
  U(\gamma)\leq a\,u(\sigma')+1+L_B\leq aH_r+1+L_B.
 \]
-This is a uniform bound over the entire pCFG sublevel set, including
-internal locations. All premises of \Cref{thm:pcfg-rule} now hold,
+Consequently, $U(\gamma)\leq aH_r+1+L_B$ for every configuration in
+the pCFG sublevel set
+\[
+ V_{\leq r}=\{\gamma\in\mathit{Inv}\mid V(\gamma)\leq r\}.
+\]
+The bound applies to guard, internal, and exit configurations alike.
+All premises of \Cref{thm:pcfg-rule} now hold,
 with the same progress constant $p_*$ for every sublevel set. Its
 soundness and AST preservation by the translation establish AST of
-$C$ on $M$. This argument is pointwise in initial states; it requires
-no finite expectation of $v$ under an arbitrary $\mu\in M$.
+$C$ from each $\sigma\in\supp(M)$, starting with the finite value
+$V(\ell_g,\sigma)=v(\sigma)+1$.
+For each $\mu\in M$, countable linearity then gives
+\[
+ \weight{\post{C}(\mu)}
+ =\sum_{\sigma\in\supp(\mu)}\mu(\sigma)\cdot
+       \weight{\post{C}(\dirac{\sigma})}
+ =\sum_{\sigma\in\supp(\mu)}\mu(\sigma)=\weight{\mu}.
+\]
+Thus $C$ is AST on $M$. This step averages termination probabilities,
+all equal to $1$, so it requires no finite expectation of $v$ under $\mu$.
 \end{proof}
 
 \subsection{Relative Completeness}
@@ -189,11 +246,14 @@ arithmetic assumptions, they are expressible in the assertion language,
 and the rule is relatively complete.
 \end{theorem}
 \begin{proof}
-Put $E=\supp(M)$. By AST preservation, $\mathcal T[C]$ is AST from
-every state in $E$. The pCFG completeness result supplies common
-certificates $\mathit{Inv},V,U$ for these initial states; the extension
-from one initial state to a set of initial states is justified in
-\Cref{app:initial-sets}. Set
+Put $E=\supp(M)$. By \eqref{eq:ast-preservation}, $\mathcal T[C]$ is
+AST from every initial configuration $(\ell_g,\sigma)$ with $\sigma\in E$.
+We translate pCFG certificates back to program-level certificates.
+The completeness result of Majumdar and
+Sathiyanarayana~\cite{DBLP:journals/pacmpl/MajumdarS25}, recalled in
+\Cref{thm:pcfg-rule}, supplies certificates $\mathit{Inv},V,U$;
+\Cref{app:initial-sets} justifies the extension from a single initial
+configuration to common certificates for this entire initial set. Set
 \begin{equation}
  \begin{split}
  S&=\{\sigma\mid(\ell_g,\sigma)\in\mathit{Inv}\},\qquad
@@ -204,18 +264,22 @@ from one initial state to a set of initial states is justified in
  \label{eq:project-certificates}
 \end{equation}
 Inductiveness of $\mathit{Inv}$ and the operational correspondence show
-that $S$ contains $E$ and is closed under enabled body executions.
-Support closure therefore makes $I$ a distributional invariant, with
+that $S$ contains $E$ and satisfies \eqref{eq:body-support-closure}.
+The support-closure argument therefore makes $I$ a distributional invariant, with
 $\supp(I)=S$.
 
 The projected functions have the required codomains and vanish on
 $S\cap\llbracket\neg b\rrbracket$; on enabled states $v$ is positive.
-For such a state $\sigma$, \Cref{lem:contract-v} and
-$v(\sigma')\leq V(\ell_g,\sigma')$ give
+The supermartingale and decrease premises concern only enabled source
+states $\sigma\in S\cap\llbracket b\rrbracket$. At such a state,
+$v(\sigma)=V(\ell_g,\sigma)$ and $u(\sigma)=U(\ell_g,\sigma)$.
+For every possible output state $\sigma'$, including those satisfying
+$\neg b$, we have $v(\sigma')\leq V(\ell_g,\sigma')$.
+Together with \Cref{lem:contract-v}, this gives
 \[
- \sum_{\sigma'}\post{B}(\dirac{\sigma})(\sigma')v(\sigma')
+ \sum_{\sigma'}\post{B}(\dirac{\sigma})(\sigma')\cdot v(\sigma')
  \leq\sum_{\sigma'}\post{B}(\dirac{\sigma})(\sigma')
-                         V(\ell_g,\sigma')
+                         \cdot V(\ell_g,\sigma')
  \leq V(\ell_g,\sigma)=v(\sigma).
 \]
 Similarly, every endpoint counted in \eqref{eq:contract-u} satisfies
@@ -230,18 +294,33 @@ $\varepsilon_B$. Finally, for every $r\geq0$,
  \subseteq\{0\}\cup
  \{U(\gamma)\mid\gamma\in\mathit{Inv},\ V(\gamma)\leq r\}.
 \]
-The right-hand side is bounded. This inclusion handles terminal states
-without incorrectly identifying their $v$- and $V$-sublevel membership.
+The right-hand side is bounded by the pCFG boundedness premise.
+For states with $\neg b$, the left-hand value is $u(\sigma)=0$;
+for enabled states, $u=U$ and $v=V$ at the guard.
 
 For expressibility, fixing the location variable in the formula for
 $\mathit{Inv}$ defines $S$, and hence its lifted support assertion.
-The graph of $u$ is obtained by a guard case distinction. If
-$\theta_V(\ell,\sigma,q)$ defines $q<V(\ell,\sigma)$, the cut of $v$
-is defined on $S$ by
+The graph of $u$ is obtained by a guard case distinction.
+Arithmetic expressibility of $V$ supplies a formula
+$\theta_V(\ell,\sigma,q)$ in the assertion language whose free
+variables encode a location $\ell$, a state $\sigma$, and a rational
+threshold $q$. For every $(\ell,\sigma)\in\mathit{Inv}$, it satisfies
 \[
+ \theta_V(\ell,\sigma,q)\quad\Longleftrightarrow\quad
+ q<V(\ell,\sigma)\qquad(q\in\mathbb Q).
+\]
+Thus $\theta_V$ represents the \emph{strict rational lower cut} of $V$:
+it specifies which rational numbers lie below the value of $V$, even
+when that value is irrational. \Cref{app:initial-sets} gives this
+arithmetic representation for the common certificates.
+Writing $b(\sigma)$ for the arithmetic predicate that the guard holds
+in $\sigma$, a formula for the corresponding cut of $v$ on $S$ is
+\[
+ \theta_v(\sigma,q)\;:=\;
  \bigl(b(\sigma)\land\theta_V(\ell_g,\sigma,q)\bigr)
  \lor\bigl(\neg b(\sigma)\land q<0\bigr).
 \]
+The second disjunct is the strict lower cut of the terminal value $0$.
 All premises reduce to arithmetic sentences: the body has finitely many
 symbolic paths with rational probabilities and computable updates, and
 \Cref{app:arithmetic-obligations} gives the cut encodings for their
@@ -259,5 +338,6 @@ validity therefore supplies a proof relative to true arithmetic.
 \end{proof}
 
 The two constructions preserve semantic proving power for this fragment.
-Users supply only the two source-state functions; the internal annotations
-are needed solely to justify the metatheory.
+Users supply a distributional invariant and the two source-state
+functions; the internal annotations are needed solely to justify the
+metatheory.

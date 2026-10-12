@@ -16,8 +16,9 @@
 
 \begin{document}
 
-\title{Program-Level Proof Rules for Almost-Sure Termination of Probabilistic Sampling Algorithms}
-\titlerunning{Program-Level Proof Rules for Almost-Sure Termination}
+\title{A Distribution-Based Proof Rule for Almost-Sure Termination}
+\subtitle{With Applications to Discrete Sampling}
+\titlerunning{A Distribution-Based Proof Rule for Almost-Sure Termination}
 
 \author{Anonymous author(s)}
 \authorrunning{Anonymous author(s)}
@@ -26,33 +27,36 @@
 \maketitle
 
 \begin{abstract}
-Almost-sure termination (AST) is essential to the correctness of exact
-samplers, but rejection and restart complicate progress arguments.
-We formulate a program-level version of the two-certificate AST rule of
-Majumdar and Sathiyanarayana for probabilistic while-loops with loop-free
-bodies and fixed choice probabilities. A natural-valued variant provides
-probabilistic progress; a non-negative supermartingale controls escape
-from regions where the variant is bounded. Both certificates concern
-complete iterations in distribution-transformer semantics. We prove
-soundness and relative completeness through translations to and from
-pCFG certificates, without requiring users to annotate internal locations.
+Almost-sure termination means that a probabilistic program terminates
+with probability one. For sampling algorithms, this property is essential
+to ensure that no probability mass is lost through nontermination.
+Rejection and restart, however, can make termination arguments difficult.
 
-We give proofs for the Fast Dice Roller (FDR), Fast Loaded Dice Roller
-(FLDR), and Han--Hoshi sampler, and compare FDR annotations at both levels.
-A shared counterexample-guided synthesis kernel searches for two guarded
-affine or fixed-piecewise-affine certificates from supplied invariants and
-iteration semantics. Reproduced instances include the unbounded random
-walk, symbolic FDR, a concrete FLDR tree, and a structural FLDR abstraction.
-Final SMT queries verify the certificate constraints throughout the input
-domains. The search is restricted by bounded integer coefficients and a
-sufficient domination condition; abstraction soundness remains a separate
-mathematical obligation. These examples demonstrate feasibility, including
-AST with infinite expected runtime, rather than a general performance
-advantage or synthesis completeness for AST programs.
+We present a distribution-based proof rule for almost-sure termination
+of fully probabilistic while-loops with loop-free bodies and fixed
+choice probabilities. The rule adapts an existing two-certificate
+approach from probabilistic control-flow graphs to complete loop
+iterations. A variant function captures probabilistic progress, while a
+nonnegative supermartingale function bounds the probability of
+reaching states in which the variant takes large values.
+Both certificates need to be specified only at the start of each
+loop iteration. The rule additionally requires a state-based invariant, which can
+be obtained from the support of a distributional invariant
+established to prove output correctness. We prove soundness and relative completeness
+and apply the rule to the Fast Dice Roller, the Fast Loaded Dice Roller,
+and Han--Hoshi sampling.
 
-\keywords{almost-sure termination \and probabilistic programs
-\and sampling algorithms \and distribution transformers
-\and supermartingales \and template-based synthesis}
+We further implement a prototype that synthesises guarded affine
+and piecewise-affine certificates from supplied invariants using
+the semantics of a single loop iteration. The prototype synthesizes certificates for
+random-walk and sampler examples, including an almost-surely terminating
+loop with infinite expected runtime.
+
+\keywords{Almost-sure termination \and
+Probabilistic programs \and
+Distribution transformers \and
+Sampling algorithms \and
+Template-based synthesis}
 \end{abstract}
 
 % Main text: eight sections, in reading order.

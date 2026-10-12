@@ -97,7 +97,7 @@
 
 %Transformer
 \newcommand{\reach}[1]{\mathsf{reach}\llbracket #1\rrbracket}
-\newcommand{\post}[1]{\mathsf{sp}\llbracket #1\rrbracket}
+\newcommand{\post}[1]{\den{#1}} % Legacy name for the same semantics
 \newcommand{\den}[1]{\mathsf{D}\llbracket #1\rrbracket}
 \renewcommand{\wp}[1]{\textnormal{pre}\llbracket #1\rrbracket} %Should be the same, just old and new macro
 \newcommand{\pre}[1]{\textnormal{pre}\llbracket #1\rrbracket} %Should be the same, just old and new macro
@@ -105,7 +105,7 @@
 
 %n for normal: für wenn du die Namen der Transformer im Text benutzen möchtest
 \newcommand{\reachn}{\mathsf{reach}}
-\newcommand{\postn}{\mathsf{sp}}
+\newcommand{\postn}{\denn}
 \newcommand{\postcupn}{\mathsf{sp}^{\cup}}
 \newcommand{\denn}{\mathsf{D}}
 \newcommand{\wpn}{\textnormal{pre}} %Should be the same, just old and new macro

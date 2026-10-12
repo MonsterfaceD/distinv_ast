@@ -13,6 +13,7 @@ The transformer domain $\mathcal{H}$ from \Cref{sec:prelims} has pointwise supre
 Composition and addition preserve $\omega$-continuity here, so $\Phi_{b,B}(f)\in\mathcal{H}$. Moreover, for every increasing chain $(f_n)_n$ in $\mathcal{H}$, pointwise evaluation gives $\Phi_{b,B}(\sup_n f_n)=\sup_n\Phi_{b,B}(f_n)$. Kleene's theorem therefore yields \Cref{eq:while-transformer-fixpoint}. Structural induction also establishes linearity on sums that are subdistributions: in the loop case, every approximant is linear, and its pointwise supremum remains linear. The countable-sum property follows from $\omega$-continuity.
 
 \paragraph{Operational correspondence.}
+We use the pCFG notation of \Cref{app:pcfg-rule}.
 The translation $\mathcal{T}$ assigns distinct entry and exit locations to each command, with fresh internal locations for its subcommands. Skip is a single identity edge. Assignments are single update edges. A conditional entry has guarded edges to the two branch entries; a probabilistic-choice entry instead has edges of probabilities $p$ and $1-p$. In either case the branch exits are identified with the command exit. Sequential composition identifies the first command's exit with the second command's entry. For a while-loop, its entry is the guard: the true edge enters the body, the false edge reaches the program exit, and the body exit is identified with the guard. Zero-probability edges are ignored, and the program exit is absorbing. Thus the loop-free body is acyclic and every path through it contains at least one edge.
 
 For the isolated body graph $\mathcal T[B]$, let $\ell_{\rm in}$ and
@@ -32,7 +33,7 @@ For loop-free $B$ and states $\sigma,\sigma'$,
 \]
 \end{lemma}
 \begin{proof}
-By structural induction on $B$. Skip and assignment have one path. Sequential composition sums over intermediate states. Conditional paths are partitioned by the guard. Probabilistic choice multiplies branch-path probabilities by $p$ and $1-p$, matching linearity of the post-transformer.
+By structural induction on $B$. Skip and assignment have one path. Sequential composition sums over intermediate states. Conditional paths are partitioned by the guard. Probabilistic choice multiplies branch-path probabilities by $p$ and $1-p$, matching linearity of the distribution transformer.
 \end{proof}
 
 For a loop $C=\while{b}{B}$ with loop-free body, induction on $j$ shows that $\Phi_{b,B}^{j}(\bot)(\mu)$ is the subdistribution of pCFG runs that exit within at most $j$ visits to the outer loop guard. The zeroth approximant is zero; for $j\geq1$, this means termination after at most $j-1$ completed body iterations. The induction step partitions runs into those that exit at the first guard test and those that execute $B$ and then terminate within the remaining guard visits. Taking pointwise suprema gives equality between post-distribution weight and pCFG reachability probability. Therefore $\weight{\post{C}(\dirac{\sigma})}=1$ iff the translated graph reaches its exit almost surely from the loop guard with valuation $\sigma$. For any initial subdistribution,
@@ -43,7 +44,8 @@ For a loop $C=\while{b}{B}$ with loop-free body, induction on $j$ shows that $\P
 \]
 Every summand is nonnegative, so the left-hand side vanishes exactly when
 $C$ is AST from every state in $\supp(\mu)$. Taking the union over
-$\mu\in M$ proves the claimed equivalence for arbitrary $M$.
+$\mu\in M$ proves the AST-preservation equivalence \eqref{eq:ast-preservation}
+for arbitrary $M$.
 
 \subsection{Common Certificates for Initial-State Sets}
 \label{app:initial-sets}

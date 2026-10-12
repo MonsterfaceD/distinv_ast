@@ -1,5 +1,103 @@
-\section{Proof-Obligation Comparison}
+\section{The pCFG AST Rule and Proof-Obligation Comparison}
 \label{app:comparison}
+
+We first recall the pCFG rule used in the metatheory, then give an
+explicit pCFG proof for FDR and compare its obligations with those of
+the program-level proof.
+
+\subsection{The pCFG Rule and Operational Correspondence}
+\label{sec:background}
+\label{app:pcfg-rule}
+
+Majumdar and Sathiyanarayana~\cite{DBLP:journals/pacmpl/MajumdarS25}
+give a sound and relatively complete AST rule for probabilistic
+control-flow graphs (pCFGs), including bounded demonic nondeterminism.
+We use its purely probabilistic specialization with fixed probabilities.
+We recall it here for the metatheory in \Cref{sec:metatheory} and the
+FDR comparison in \Cref{app:fdr-pcfg-proof}.
+A pCFG has a finite set $L$ of control locations. A configuration
+$\gamma=(\ell,\sigma)\in L\times\Sigma$ comprises a control location
+and a valuation. Assignment and conditional locations have one enabled
+successor; probabilistic locations choose among finitely many successors.
+Write $\ell_{\mathsf{init}}$ for the initial location and
+$\ell_{\mathsf{out}}$ for the absorbing exit. Write
+$\Succ(\gamma)$ for the positive-probability successors and
+$P(\gamma,\gamma')$ for their transition probabilities, with $P=1$ at
+deterministic steps. An invariant $\mathit{Inv}$ for initial valuations
+$E$ contains all $(\ell_{\mathsf{init}},\sigma)$ with $\sigma\in E$ and
+is closed under these transitions.
+Reachability always means reachability along a finite path of
+positive-probability transitions, including the path of length zero.
+AST from $E$ means reaching a configuration at $\ell_{\mathsf{out}}$
+with probability one from each $(\ell_{\mathsf{init}},\sigma)$,
+$\sigma\in E$; the terminal valuation is unrestricted.
+
+\begin{theorem}[pCFG AST rule, adapted from~\cite{DBLP:journals/pacmpl/MajumdarS25}]
+\label{thm:pcfg-rule}
+A pCFG is AST from $E$ if an inductive invariant $\mathit{Inv}$ admits
+$V:\mathit{Inv}\to\mathbb R_{\geq0}$ and
+$U:\mathit{Inv}\to\mathbb N$ such that:
+\begin{enumerate}
+ \item $V(\gamma)=U(\gamma)=0$ at terminal configurations, and
+       $V(\gamma)>0$ at every other configuration;
+ \item \emph{Local supermartingale inequalities:} for every nonterminal
+ $\gamma\in\mathit{Inv}$,
+ \[
+   \sum_{\gamma'\in\Succ(\gamma)}P(\gamma,\gamma')V(\gamma')
+   \leq V(\gamma);
+ \]
+ \item \emph{Probabilistic decrease:} for every $r\geq0$, some
+ $\varepsilon_r>0$ satisfies
+ \[
+   \sum_{\substack{\gamma'\in\Succ(\gamma)\\U(\gamma')<U(\gamma)}}
+      P(\gamma,\gamma')\geq\varepsilon_r
+ \]
+ for every nonterminal $\gamma\in V_{\leq r}$, where
+ $V_{\leq r}=\{\gamma\in\mathit{Inv}\mid V(\gamma)\leq r\}$;
+ \item \emph{Sublevel boundedness:} for every $r\geq0$, the values of
+ $U$ on $V_{\leq r}$ are bounded.
+\end{enumerate}
+Conversely, AST from $E$ implies the existence of these certificates.
+Under the arithmetic assumptions of \Cref{sec:metatheory}, they are
+representable in the assertion language.
+\end{theorem}
+At a deterministic step the probabilistic-decrease condition forces
+strict descent of $U$, so this unified notation includes the usual separate condition for
+assignments and guards. It also forces $U>0$ away from the exit.
+Soundness combines bounded-variant reasoning within each sublevel set
+with the nonnegative supermartingale bound on escape. For completeness,
+\Cref{app:initial-sets} adapts the published construction from a fixed
+initial configuration to a common pair of certificates for arbitrary
+initial sets $E$.
+
+\paragraph{AST preservation.}
+Consider a loop $C=\while{b}{B}$ with loop-free body $B$.
+The structural translation $\mathcal T[C]$ turns assignments into update
+edges, choices into branching locations, and the loop guard into a
+conditional location whose true successor enters the body. Sequential
+composition identifies adjacent exits and entries, and the body exit is
+identified with the loop guard. For a loop-free body, structural induction
+shows that $\den{B}(\dirac{\sigma})(\sigma')$ equals the total probability
+of body paths from entry valuation $\sigma$ to exit valuation $\sigma'$.
+Loop unrolling then gives
+\begin{equation}
+ C\text{ is AST on }M
+ \quad\Longleftrightarrow\quad
+ \mathcal T[C]\text{ is AST from }\supp(M).
+ \label{eq:ast-preservation}
+\end{equation}
+\Cref{app:translation} proves both facts. The program-level rule contracts
+these finite body paths into one semantic step; certificates need only
+annotate the valuations at loop entry.
+
+Unlike the program-level rule, the pCFG rule permits a different
+progress bound $\varepsilon_r$ on each sublevel set. For fixed choices
+and loop-free bodies, the uniform body-path bound in
+\Cref{eq:body-path-bound} allows the program-level rule to use one global
+$\varepsilon$ instead.
+
+\subsection{A Fully Annotated FDR Graph and Comparison}
+\label{app:fdr-pcfg-proof}
 
 The comparison below summarizes the forms of proof obligations used in the two FDR proofs. It is a qualitative comparison of their representation, not a measurement of proof-development or solver runtime.
 
@@ -147,7 +245,6 @@ For FDR, both columns are feasible and prove the same AST fact. This makes FDR a
 \end{figure}
 
 
-\subsection{A Fully Annotated FDR Graph}
 The pCFG rule of Majumdar and Sathiyanarayana is applicable to FDR and
 establishes the same AST statement as \Cref{thm:fdr}.  Unlike the
 program-level proof, however, it reasons about individual configurations
@@ -232,9 +329,11 @@ supermartingale obligations are immediate.  At nonterminal locations, $V\leq r$ 
 states may have arbitrary $n$, but their variant will be zero.
 
 The pCFG variant must instead account for the exact point within an iteration.
-One suitable choice is the following location-specific refinement of the
-iteration-level distance bound
-$\left\lceil\log_2\!\bigl(n/(v-c)\bigr)\right\rceil$:
+The affine certificates of \eqref{eq:fdr-affine-certificates} can also
+be extended to pCFG certificates using \Cref{sec:metatheory}.
+Here we spell out a location-specific refinement of the logarithmic
+alternative \eqref{eq:fdr-log-variant}, based on the iteration-level
+distance bound $\left\lceil\log_2\!\bigl(n/(v-c)\bigr)\right\rceil$:
 \[
 U(\ell,\sigma)\coloneqq
 \begin{cases}
@@ -340,10 +439,12 @@ The initialization values obey the same bound; terminal values are zero,
 also when $n>r$. For $r<1$ the sublevel contains only terminal
 configurations. Thus the pCFG rule applies with $\varepsilon_r=1/2$.
 
-In comparison, the program-level proof uses one support invariant, the two
-state functions displayed in \Cref{thm:fdr}, and the single body calculation
-\eqref{eq:fdr-post}.  It also directly reuses the invariant required for the
-uniform-output proof.  Both proof routes have the same proving power, but the
+In comparison, the program-level proof uses the support invariant
+$I_{\mathrm{FDR}}$, the affine functions in
+\eqref{eq:fdr-affine-certificates} or the logarithmic alternative in
+\eqref{eq:fdr-log-variant}, and the single body calculation
+\eqref{eq:fdr-post}. It retains the support information from the
+uniform-output invariant. Both proof routes have the same proving power, but the
 program-level rule expresses the algorithmic fact---progress over a complete
 loop iteration---without introducing locations, offsets, and intermediate
 state expressions solely for control-flow bookkeeping.

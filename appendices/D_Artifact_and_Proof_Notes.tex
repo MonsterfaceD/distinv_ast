@@ -2,8 +2,10 @@
 \label{app:artifact}
 
 The companion package implements the constraints of
-\Cref{sec:certificate-synthesis}. It trusts the supplied semantics and
-invariants, the mathematical FLDR abstraction argument, and Z3's answers.
+\Cref{sec:certificate-synthesis}. It trusts the supplied semantic encoding,
+the mathematical FLDR abstraction argument, and Z3's answers.
+Supplied invariants are checked for initialization and preservation
+against that encoding.
 It neither mechanizes the metatheory nor independently checks solver proof
 objects. The README gives file-level documentation, exact commands, and
 expected results. The shared kernel is in \texttt{engine.py};
