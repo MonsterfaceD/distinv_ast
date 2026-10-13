@@ -25,6 +25,119 @@ not merely the states reachable for one fixed $n$.
 The same difference identity also gives the logarithmic descent for
 \eqref{eq:fdr-log-variant}.
 
+\subsection{FDR: Shortest Paths and a Logarithmic Variant}
+\label{app:fdr-log-variant}
+The logarithmic variant used in the earlier FDR AST argument
+\cite{zilken2026verifyingsamplingalgorithmsdistributional} also fits
+the present rule. Keeping $I_{\mathrm{FDR}}$, $v$, and
+$\varepsilon=1/2$ fixed, we may choose
+\begin{equation}
+ u_{\log}(\sigma)=
+ \begin{cases}
+ \left\lceil\log_2\!\left(\dfrac{n}{v-c}\right)\right\rceil,&v<n,\\
+ 0,&v\geq n.
+ \end{cases}
+ \label{eq:fdr-log-variant}
+\end{equation}
+For an enabled state, $1\leq v-c<n$, so the logarithm is positive
+and finite; the ceiling makes $u_{\log}$ a positive integer.
+This variant is motivated by the number of complete iterations needed
+to reach a terminal state along a possible sequence of bits.
+Write $d_{\min}(\sigma)$ for the shortest such number: a step from
+an enabled state is one complete update $F_0$ or $F_1$, and the target
+is any state with $v\geq n$. Terminal states have distance zero.
+
+To see that a finite path to termination exists, put $\Delta=v-c$.
+Every zero-bit iteration doubles $\Delta$, including iterations that
+recycle. After
+$k=\lceil\log_2(n/\Delta)\rceil$ consecutive zero bits, either the loop
+has terminated or its difference would be $2^k\Delta\geq n$.
+The latter is impossible at an enabled loop head, where
+$\Delta\leq n-1$. This sequence therefore reaches a terminal state
+within $k$ iterations and has probability at least $2^{-k}>0$. Hence
+\begin{equation}
+ d_{\min}(\sigma)\leq u_{\log}(\sigma).
+ \label{eq:fdr-shortest-distance-bound}
+\end{equation}
+The bound need not be exact. For $n=6$ and $(v,c)=(4,2)$, it gives
+$u_{\log}=2$, but both successors $(8,4)$ and $(8,5)$ are terminal,
+so $d_{\min}=1$. \Cref{fig:fdr-iteration-variants} compares the
+logarithmic variant $u_{\log}$ with the exact distance $d_{\min}$.
+
+The zero-bit outcome proves descent of $u_{\log}$ directly: if it
+continues, then
+\[
+ u_{\log}(F_0(\sigma))
+ =\left\lceil\log_2\!\left(\frac{n}{2(v-c)}\right)\right\rceil
+ =u_{\log}(\sigma)-1;
+\]
+if it terminates, its value is zero. On enabled states with
+$v(\sigma)\leq r$, we have $n\leq r$ and therefore
+$u_{\log}\leq\lceil\log_2 n\rceil\leq\lceil\log_2 r\rceil$.
+For $r<1$, the sublevel contains only terminal states.
+Thus $u_{\log}$ satisfies the same rule.
+The distance $d_{\min}$ is another valid variant: the first bit of
+a shortest path decreases it by one with probability at least $1/2$,
+and \eqref{eq:fdr-shortest-distance-bound} supplies its sublevel bound.
+The affine variant avoids both a logarithm and a shortest-path
+calculation, which is why we use it for the main proof.
+
+% This new drawing contracts all recycling updates and shows actual
+% shortest distances alongside the terminal-normalized logarithmic variant.
+\begin{figure}[t]
+ \centering
+ \begin{tikzpicture}[
+   x=1.4cm,y=1cm,>=stealth,
+   fdrstate/.style={draw,rounded corners=2pt,minimum width=10.5mm,
+     minimum height=8mm,inner sep=2pt,align=center,font=\scriptsize},
+   fdrterminal/.style={fdrstate,fill=black!7,double,double distance=0.5pt},
+   fdrrecycled/.style={fdrstate,dashed,fill=blue!4},
+   fdrbit/.style={font=\scriptsize,fill=white,inner sep=1pt},
+   fdredge/.style={->,semithick}
+ ]
+ % Each node displays (v,c), then u_log | d_min.
+ \node[fdrstate] (s10) at (3.5,4.5)
+   {$(1,0)$\\$\textcolor{red!75!black}{3}\mid\textcolor{blue!75!black}{3}$};
+ \node[fdrstate] (s20) at (1.5,3)
+   {$(2,0)$\\$\textcolor{red!75!black}{2}\mid\textcolor{blue!75!black}{2}$};
+ \node[fdrstate] (s21) at (5.5,3)
+   {$(2,1)$\\$\textcolor{red!75!black}{3}\mid\textcolor{blue!75!black}{2}$};
+ \node[fdrstate] (s40) at (0.5,1.5)
+   {$(4,0)$\\$\textcolor{red!75!black}{1}\mid\textcolor{blue!75!black}{1}$};
+ \node[fdrstate] (s41) at (2.5,1.5)
+   {$(4,1)$\\$\textcolor{red!75!black}{1}\mid\textcolor{blue!75!black}{1}$};
+ \node[fdrstate] (s42) at (4.5,1.5)
+   {$(4,2)$\\$\textcolor{red!75!black}{2}\mid\textcolor{blue!75!black}{1}$};
+ \node[fdrstate] (s43) at (6.5,1.5)
+   {$(4,3)$\\$\textcolor{red!75!black}{3}\mid\textcolor{blue!75!black}{3}$};
+ \foreach \j in {0,...,5} {
+   \node[fdrterminal] (t\j) at (\j,0)
+     {$(8,\j)$\\$\textcolor{red!75!black}{0}\mid\textcolor{blue!75!black}{0}$};
+ }
+ \node[fdrrecycled] (r20) at (6,0)
+   {$(2,0)$\\$\textcolor{red!75!black}{2}\mid\textcolor{blue!75!black}{2}$};
+ \node[fdrrecycled] (r21) at (7,0)
+   {$(2,1)$\\$\textcolor{red!75!black}{3}\mid\textcolor{blue!75!black}{2}$};
+ \foreach \from/\to/\bit in {
+   s10/s20/0,s10/s21/1,
+   s20/s40/0,s20/s41/1,s21/s42/0,s21/s43/1,
+   s40/t0/0,s40/t1/1,s41/t2/0,s41/t3/1,
+   s42/t4/0,s42/t5/1,s43/r20/0,s43/r21/1} {
+   \draw[fdredge] (\from) -- node[fdrbit,pos=0.48] {$\bit$} (\to);
+ }
+ \node[font=\scriptsize,align=center] at (3.5,-0.85)
+   {$\textcolor{red!75!black}{u_{\log}}\mid\textcolor{blue!75!black}{d_{\min}}$
+    \quad Every edge has probability $1/2$.};
+ \end{tikzpicture}
+ \caption{Three-iteration unfolding of FDR for $n=6$. Each node gives
+ $(v,c)$ and, below it, the logarithmic variant $u_{\log}$ (red, left) and the
+ shortest distance $d_{\min}$ (blue, right). Edge labels are sampled bits.
+ Double borders mark terminal states, where both functions are zero.
+ Dashed leaves repeat earlier states after recycling; they are not
+ terminal. Each edge includes all updates of one loop iteration.}
+ \label{fig:fdr-iteration-variants}
+\end{figure}
+
 \subsection{FLDR: The Exact Tree Contract}
 Put $w_i=a_i$ for $1\leq i\leq n$ and $w_{n+1}=2^k-m$, so
 $\sum_iw_i=2^k$. For $0\leq c\leq k$, let $e_{i,c}\in\{0,1\}$ be
@@ -83,6 +196,7 @@ output mass. This direct argument also confirms that reordering leaves
 within a row does not alter the sampled distribution.
 
 \subsection{Han--Hoshi: Boundary Counting and a Tail Bound}
+\label{app:han-hoshi-tail}
 For a nonempty interval $J\subseteq[0,1)$, containment in a target
 interval is equivalent to having no internal target boundary strictly
 inside $J$. An endpoint coinciding with a target boundary creates no

@@ -1,226 +1,148 @@
 \section{Introduction}
 \label{sec:intro}
 
-Probabilistic programs make random choices during execution, so repeated
-runs on the same input may behave differently. A fundamental correctness property is \emph{almost-sure termination} (AST): a program is almost-surely terminating on a given input if
-it terminates with probability one~\cite{SahebDjahromi1978}.
-Infinite executions are permitted, provided that their total probability
-is zero. For example, repeatedly tossing a fair coin until the first
-heads terminates almost surely, although the infinite sequence consisting
-only of tails never leads to termination. Establishing AST is challenging: in general, deciding whether a
-probabilistic program terminates almost surely on a fixed input
-is as hard as the \emph{universal halting problem}, which asks
-whether a deterministic program terminates on every
+Probabilistic programs make random choices, so repeated runs on the same
+input may behave differently. A fundamental correctness property is
+\emph{almost-sure termination} (AST): a program terminates with probability
+one on a given input~\cite{SahebDjahromi1978}. Infinite executions are permitted, provided
+that their total probability is zero. For example, tossing a fair coin
+until the first heads is almost-surely terminating, although the infinite
+sequence of tails never terminates. Proving AST is challenging: deciding
+AST on a fixed input is as hard as the \emph{universal halting problem},
+which asks whether a deterministic program terminates on every
 input~\cite{KaminskiKM2019}.
-An important application is the verification of \emph{samplers},
-which use random choices to generate values according to a prescribed
-probability distribution and serve as building blocks of simulation
-and probabilistic programming. Verifying a sampler requires both
-establishing the intended distribution of its outputs and proving
-that it returns an output with probability one.
+An important application is the verification of \emph{samplers}, which
+generate values according to a prescribed probability distribution and
+underpin simulation and probabilistic programming. Their verification
+requires both the intended output distribution and termination with
+probability one.
 
 \paragraph{From control-flow graphs to loop iterations.}
-We develop an AST proof rule that can be applied within an existing
-framework for reasoning about probability distributions over
-program states~\cite{zilken2026verifyingsamplingalgorithmsdistributional}.
-This allows output correctness and almost-sure termination to be
-established within the same framework.
-
-McIver et al.~\cite{10.1145/3158121} provide an AST rule formulated
-directly in terms of program statements.
-Their rule uses a single function that assigns a nonnegative
-number to each program state and satisfies both a supermartingale
-condition and a probabilistic progress condition.
-Intuitively, the former prevents the function's value from
-increasing in expectation, while the latter ensures a positive
-probability of decreasing that value.
+We develop an AST rule within a framework for reasoning about probability
+distributions over program states~\cite{zilken2026verifyingsamplingalgorithmsdistributional},
+so that output correctness and termination can be established together.
+McIver et al.~\cite{10.1145/3158121} give a source-level AST rule using one
+nonnegative state function. It satisfies a \emph{supermartingale condition},
+which prevents an increase in expectation, and a \emph{progress condition},
+which ensures a positive probability of decrease.
 
 Majumdar and Sathiyanarayana~\cite{DBLP:journals/pacmpl/MajumdarS25}
-introduce an AST proof rule with separate variant and
-supermartingale functions and prove its soundness and relative
-completeness for imperative programs with discrete probabilistic
-choice and bounded nondeterminism.
-They also establish relative completeness of the earlier rule
-of McIver et al.~\cite{10.1145/3158121}, whose completeness had
-previously been open.
-Here, bounded nondeterminism means that only finitely many
-nondeterministic alternatives are available at each execution step.
-Relative completeness means that every AST program in their model
-has a proof, assuming access to all true arithmetic assertions.
-Their rule assigns the progress and supermartingale conditions
-to two separate functions, which serve as certificates of
-almost-sure termination.
+separate these roles into two functions, called certificates, and prove
+soundness and relative completeness for discrete probabilistic programs
+with bounded nondeterminism. Here, bounded nondeterminism permits only
+finitely many alternatives at each step, and relative completeness means
+that every AST program has a proof assuming access to all true arithmetic
+assertions. They also establish relative completeness of McIver et al.'s
+earlier rule, resolving its previously open completeness question.
 
-However, their rule is formulated over a probabilistic
-control-flow graph (pCFG): a graph whose nodes represent program
-locations and whose edges describe individual execution steps.
-Applying the rule requires an invariant and certificate values
-at each location.
-The certificates therefore depend on both the current program
-location and the values of the program variables.
-Even within a single loop iteration, assignments, tests, and
-random choices introduce intermediate locations at which the
-rule's conditions must be verified.
+Their two-certificate rule is formulated over a probabilistic control-flow
+graph (pCFG), whose nodes represent program locations and whose edges
+represent execution steps. Applying it requires an invariant and
+certificate values at every location, including the assignments, tests,
+and choices inside a loop body. The certificates therefore depend on
+both the program location and the values of the variables.
 
-We reformulate this two-certificate rule so that its conditions
-refer to complete loop iterations.
-Both certificates assign numbers to program states only at the
-point where the loop guard is evaluated.
-For each such state satisfying the guard, executing the loop
-body once produces a probability distribution over successor
-states.
-We use this distribution to express the certificate conditions
-for an entire iteration, combining assignments, tests, and random
-choices into a single semantic step.
-Thus, applying our rule requires certificates only where the
-loop guard is evaluated, with no additional certificate
-annotations inside the body.
-We establish soundness and relative completeness of the resulting
-distribution-based AST rule for the program class considered here.
+Our rule instead uses the probability distribution produced by one
+complete execution of the body. This combines its assignments, tests,
+and choices into one semantic step. Both certificates are specified only
+where the loop guard is evaluated; no intermediate annotations are needed.
+We establish soundness and relative completeness for loops with loop-free
+bodies and fixed choice probabilities by translating certificates between
+these two levels.
 
 \paragraph{Two certificates for almost-sure termination.}
-The two certificates play complementary roles.
-A \emph{variant function} assigns a nonnegative integer to each
-program state and expresses progress towards termination:
-whenever the loop guard holds, its value must decrease after
-one complete iteration with probability at least some fixed
-$\varepsilon>0$.
-On other outcomes, however, the variant may increase, for example
-after rejection.
-The progress condition alone therefore does not guarantee AST.
+A \emph{variant} assigns a nonnegative integer to each state. Whenever the
+guard holds, one iteration must decrease it with probability at least a
+fixed $\varepsilon>0$. Other outcomes may increase it, for example after
+rejection, so progress alone does not guarantee AST.
+A second, nonnegative \emph{supermartingale} function must not increase in
+expectation. We link the functions by requiring the variant to be bounded
+on every set where the supermartingale is bounded by a fixed constant;
+the variant's bound may depend on that constant. Both functions are
+positive while the guard holds and zero when it does not.
 
-To control these increases, we use a second certificate:
-a nonnegative \emph{supermartingale function}, whose expected
-value must not increase over an iteration.
-The two functions are linked by a boundedness requirement:
-on every set of states where the supermartingale is bounded
-by a fixed constant, the variant must also be bounded.
-The bound on the variant may depend on the chosen constant.
-Both functions are positive while the loop guard holds and
-zero when it does not.
-
-Intuitively, the supermartingale condition and the boundedness
-requirement ensure that the variant remains bounded along
-almost every execution.
-The progress condition then prevents it from remaining
-positive forever: within any fixed bound, sufficiently many
-consecutive decreases lead to termination.
-Together, these conditions establish AST.
-
-A distributional invariant describes how probability is
-distributed over program states.
-The states to which it assigns positive probability provide
-the state-based information needed to check the certificate
-conditions.
-Its quantitative information can additionally be used to
-establish the sampler's output distribution.
+Intuitively, the supermartingale condition ensures that almost every
+execution stays within some bounded range of its values. The coupling
+then bounds the variant along that execution. Within a fixed bound,
+sufficiently many consecutive decreases lead to termination, and the
+uniform progress probability prevents the variant from staying positive
+forever.
+A distributional invariant describes possible distributions at loop heads.
+It supplies the states on which these conditions must hold: those assigned positive mass by one of its distributions.
+Its quantitative information remains available for output correctness.
 
 \paragraph{Illustration: the Fast Dice Roller.}
 Lumbroso's Fast Dice Roller
-(FDR)~\cite{DBLP:journals/corr/abs-1304-1916}
-simulates a fair $n$-sided die using independent fair coin flips:
-it returns each integer in $\{0,\ldots,n-1\}$ with equal probability.
-Each coin flip supplies one random bit, either $0$ or $1$,
-each with probability $1/2$.
+(FDR)~\cite{DBLP:journals/corr/abs-1304-1916} simulates a fair $n$-sided
+die using independent fair bits, returning each integer in
+$\{0,\ldots,n-1\}$ with equal probability.
+It maintains a candidate $c$, initially zero, and a range size $v$,
+initially one. The candidate is uniform on $\{0,\ldots,v-1\}$.
+Each iteration draws a fresh bit $b\in\{0,1\}$ and updates
+$c\gets2c+b$ and $v\gets2v$: appending a bit doubles the candidate range.
+If $v<n$, another bit is needed. Once $v\geq n$, the algorithm returns
+$c$ if $c<n$; otherwise it subtracts $n$ from both $c$ and $v$ and
+continues. This \emph{recycling} retains randomness from rejected candidates.
 
-The algorithm maintains a candidate $c$ and a range size $v$.
-The candidate is uniformly distributed over $\{0,\ldots,v-1\}$;
-initially, $c=0$ and $v=1$.
-Each iteration draws a fresh bit $b$ and updates
-$c\gets 2c+b$ and $v\gets 2v$.
-This appends a bit to the candidate's binary representation and
-doubles the number of possible candidate values.
-If $v<n$, the algorithm continues with another iteration.
-Once $v\ge n$, it returns $c$ if $c<n$.
-Otherwise, it subtracts $n$ from both $c$ and $v$ and continues.
-This step is called \emph{recycling}: it preserves the randomness
-still present in the rejected candidate.
+For $n=6$, the first three bits produce eight equally likely candidates.
+The values $0,\ldots,5$ are accepted. Conditional on rejection, $c$ is
+uniform on $\{6,7\}$; subtracting six leaves a uniform candidate in
+$\{0,1\}$ with range size two. This retains one fair bit, so only two
+additional flips are needed to obtain eight equally likely candidates again.
 
-For example, let $n=6$.
-The first three coin flips produce eight equally likely
-candidates, $0,\ldots,7$.
-Candidates $0,\ldots,5$ are accepted.
-Conditional on rejection, the candidate is equally likely to
-be $6$ or $7$.
-Subtracting six therefore leaves a candidate that is equally
-likely to be $0$ or $1$, with range size two.
-This remaining choice contains one fair random bit.
-Consequently, only two additional coin flips are needed to
-obtain eight equally likely candidates again.
-
-For our termination argument, range expansion, the random
-choice, and possible recycling form one complete loop iteration.
-We compare the certificate values before and after this
-iteration, using the probability distribution over its
-successor states.
-A pCFG proof additionally requires certificate annotations
-at the intermediate program locations
-(\Cref{fig:fdr-iteration-variants,fig:fdr-pcfg}).
-The distribution of successor states must still be derived
-from the loop body; our reformulation simplifies the
-certificate annotations required to prove AST.
+Our termination proof treats range expansion, the random choice, and
+possible recycling as one iteration. Its successor distribution must
+still be derived from the body, but certificate values are compared only
+at loop heads. The explicit pCFG proof in \Cref{app:fdr-pcfg-proof}
+shows the additional annotations at intermediate locations.
 
 \paragraph{Contributions.}
 The main contributions of this paper are:
 \begin{enumerate}
 \item \textbf{An AST proof rule using distribution transformers.}
-We formulate a two-certificate AST proof rule for probabilistic
-while-loops with loop-free bodies (\Cref{sec:rule}). The rule combines
-a natural-valued variant with a non-negative supermartingale to reason
-about complete loop iterations.
-We establish soundness and relative completeness by exploiting
-the pCFG result of Majumdar and
+We formulate a two-certificate rule for probabilistic loops with loop-free
+bodies (\Cref{sec:rule}) and prove soundness and relative completeness
+by translating certificates to and from the pCFG rule of Majumdar and
 Sathiyanarayana~\cite{DBLP:journals/pacmpl/MajumdarS25}
 (\Cref{sec:metatheory}).
 
 \item \textbf{AST proofs for discrete sampling algorithms.}
-We apply the proof rule to three challenging sampling algorithms:
-the Fast Dice Roller (FDR), the Fast Loaded Dice Roller (FLDR),
-and the Han--Hoshi sampler (\Cref{sec:case-studies}).
-For FDR and FLDR, these proofs reuse existing distributional
+We apply the rule to FDR, the Fast Loaded Dice Roller (FLDR), and
+Han--Hoshi sampling
+(\Cref{sec:case-studies}). Prior work already establishes AST of FDR
+and FLDR using pCFG certificates alongside distributional
 invariants~\cite{zilken2026verifyingsamplingalgorithmsdistributional}.
-For FDR, an explicit comparison with the pCFG rule shows how
-reasoning about complete iterations yields a simpler proof without
-requiring certificate annotations at intermediate control locations.
+We revisit these arguments through the general iteration-level rule
+and make their support assertions explicit. For FDR, we compare the
+same logarithmic progress argument at both levels; a simpler affine
+variant is also available at either level. Han--Hoshi adds an application
+based on interval refinement.
 
 \item \textbf{Template-based certificate synthesis.}
-We investigate automated synthesis of the variant and supermartingale
-using guarded affine and piecewise affine templates
-(\Cref{sec:certificate-synthesis}).
-Our implementation requires supplied invariants and iteration semantics.
-The search is restricted to bounded integer coefficients and fixed
-partitions for piecewise affine templates, making the procedure
-incomplete for AST programs.
-Case studies on the unbounded symmetric random walk, symbolic FDR,
-a concrete FLDR tree, and a structural FLDR abstraction demonstrate
-the feasibility of synthesizing both certificates.
-The random walk illustrates synthesis for a program with infinite
-expected runtime.
+Our prototype searches guarded affine and piecewise affine templates
+using supplied invariants and iteration semantics
+(\Cref{sec:certificate-synthesis}). Bounded integer coefficients and
+fixed partitions make the search incomplete for AST programs.
+Experiments on an unbounded random walk, symbolic FDR, a concrete FLDR
+tree, and a structural FLDR abstraction demonstrate synthesis of both
+certificates, including for a loop with infinite expected runtime.
 \end{enumerate}
 
 \paragraph{Scope.}
-Our AST proof rule considers programs with fixed-probability discrete
-choices and no nondeterminism. It applies to unnested while-loops,
-i.e., loops with loop-free bodies. Such bodies have bounded execution
-path length; together with fixed probabilities, this yields a uniform
-positive lower bound on the probability of every feasible body path.
-The sampling loops considered here have this form, with terminating
-preprocessing treated separately. Extending the metatheory to nested
-loops or nondeterminism is beyond the scope of this paper. Relative
-completeness concerns the existence of suitable certificates; our
-template-based synthesis searches only a restricted class of such
-certificates.
+We consider fixed-probability discrete choices without nondeterminism
+and unnested while-loops, i.e., loops with loop-free bodies. Bounded body
+path length and fixed probabilities give a uniform positive lower bound
+on every feasible body path. The sampling loops have this form, with
+terminating preprocessing treated separately. Nested loops and
+nondeterminism are beyond the present metatheory. Relative completeness
+concerns the existence of a suitable invariant and certificates; it does
+not imply completeness of the restricted template search.
 
 \paragraph{Organisation of the Paper.}
-\Cref{sec:prelims} introduces the program semantics and distributional
-invariants.
-\Cref{sec:rule} presents our program-level AST rule and illustrates it
-on the symmetric random walk.
-\Cref{sec:metatheory} establishes soundness and relative completeness.
-\Cref{sec:case-studies} applies the rule to FDR, FLDR, and Han--Hoshi
-sampling, including a comparison of program-level and pCFG-based
-certificates for FDR.
-\Cref{sec:certificate-synthesis} develops template-based certificate
-synthesis and reports the experimental results.
-Finally, \Cref{sec:relwork} discusses related work, and
-\Cref{sec:conclusion} concludes.
+\Cref{sec:prelims} introduces the semantics and distributional invariants.
+\Cref{sec:rule} presents our rule with random-walk and FDR illustrations.
+\Cref{sec:metatheory} recalls the complete pCFG rule, compares the two
+interfaces, and proves soundness and relative completeness.
+\Cref{sec:case-studies} develops the sampler proofs;
+\Cref{sec:certificate-synthesis} presents synthesis and its results.
+\Cref{sec:relwork,sec:conclusion} discuss related work and conclude.

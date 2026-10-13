@@ -24,12 +24,23 @@ obligation checks, bounds, and measured wall times. Solver-selected
 certificates, candidate counts, and timings may vary across systems. No performance
 comparison is claimed. Failure of
 the unpartitioned two-sided walk excludes only the tested bounds; the
-all-bounds impossibility is proved analytically in Section~6.
+all-bounds impossibility is proved analytically in \Cref{sec:synthesis-examples}.
+
+Unknown solver results and resource limits are reported as inconclusive,
+including in the negative experiment. The JSON retains the solver reason,
+phase, current coefficient bound, samples, candidate trace, and completed
+checks whenever available. A pair is marked verified only after all
+individual rechecks succeed. Any inconclusive experiment makes the runner
+exit with nonzero status, even if all positive inputs were verified.
 
 \paragraph{Optional partitions and negative checks.}
-The artifact also uses the supplied splits $2v<n$ for FDR and $c<k-1$
-for FLDR. Successful coefficient bounds are $1,2,1$ for FDR, fixed FLDR,
-and abstract FLDR. The recorded fixed-tree certificate uses $c-2d+2$
+For the optional sampler splits the caller supplies both predicates:
+$2v<n$ and $2v\geq n$, or $c<k-1$ and $c\geq k-1$.
+The latter expression depends on the read-only input $k$; its syntax is
+fixed, although the numerical threshold varies between inputs.
+Only coefficients within the regions are synthesized.
+The successful coefficient bounds are $1,2,1$ for FDR, fixed FLDR,
+and abstract FLDR, respectively. The recorded fixed-tree certificate uses $c-2d+2$
 below depth $3$ and the constant $1$ at depth $3$. Abstract FLDR uses $V=k$ and
 $U=k-c$, represented by $1$ in the final active region. No extra split
 is necessary for the baseline sampler results.
@@ -39,6 +50,15 @@ and overlapping, incomplete, or ill-scoped partitions. A signed countdown
 crosses the partition boundary in both directions and verifies $|x|$
 universally. The FDR drift inequality and alternative abstract pair
 $V=k$, $U=k-c$ are separately SMT-checked.
+
+\paragraph{The depth-only shared-template obstruction.}
+In the fixed FLDR tree for $(4,5)$, suppose a shared affine function
+omits the node index $d$. At $k=4$ it has the enabled expression
+$W(c)=A+Dc$. Both root successors have depth one, so progress forces
+$D<0$. At $(c,d)=(2,0)$ the successors have depths three and zero,
+giving expected change $-D/2>0$, contrary to the supermartingale
+condition. The full template includes $d$ and admits $c-2d+2$.
+The obstruction therefore concerns only this restricted template class.
 
 \paragraph{An exact audit of the concrete FLDR certificate.}
 For weights $(4,5)$ the shared certificate $W=c-2d+2$ gives:

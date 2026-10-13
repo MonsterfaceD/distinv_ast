@@ -39,10 +39,11 @@ sufficient coupling $U\leq V$. The random
 walk illustrates qualitative termination with infinite expected runtime.
 Neither CEGIS nor affine or piecewise affine templates are new here.
 The contribution is their explicit instantiation for these two
-iteration-level certificate roles. Invariants, transition summaries,
-feature bases, and partitions remain supplied inputs; bounded search is
-incomplete even though successful candidates are checked universally
-over the encoded states.
+iteration-level certificate roles. State components, invariants, transition summaries, and partitions
+remain supplied inputs; the affine basis is generated from all declared
+integer components and the constant term. Bounded search is incomplete
+even though successful candidates are checked universally over the
+encoded states.
 
 Haase et al.~\cite{haase2026generatingfunctionsmeetoccupation} synthesize
 occupation invariants represented by generating functions. Such
@@ -58,17 +59,22 @@ Lumbroso's FDR~\cite{DBLP:journals/corr/abs-1304-1916}, Saad et al.'s
 FLDR~\cite{DBLP:conf/aistats/SaadFRM20}, and Han and Hoshi's interval
 algorithm~\cite{HanHoshi1997}. Zilken et
 al.~\cite{zilken2026verifyingsamplingalgorithmsdistributional} already
-verify partial and total correctness of FDR and FLDR using
-distributional invariants. We reuse those invariants and revisit AST
-through the two-certificate rule. Han--Hoshi supplies a different
-termination argument, rather than a new output-correctness proof.
+verify partial and total correctness of FDR and FLDR, combining
+distributional invariants with the pCFG two-certificate AST rule.
+The present paper formulates and proves a general iteration-level rule,
+then revisits these AST arguments through that interface. We make the
+required support assertions explicit; for FLDR, we establish the
+valid-node assertion for the tree convention used here.
+Han--Hoshi supplies a different termination argument, rather than
+a new output-correctness proof.
 Bagnall et al.'s Zar compiler~\cite{DBLP:journals/pacmpl/Bagnall0023}
 verifies compilation of probabilistic programs into random-bit samplers
 in Coq. Our handwritten proofs and solver-backed prototype do not
 provide that level of mechanization.
 
 \paragraph{Nondeterminism.}
-Both AST rules above support demonic nondeterminism. Our current
+The rules of McIver et al. and Majumdar and Sathiyanarayana support
+demonic nondeterminism. Our current
 transformer assigns one post-distribution to each input. Extending the
 rule to universal scheduler quantification requires corresponding
 semantic and progress obligations. Programmatic strategy

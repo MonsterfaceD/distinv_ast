@@ -95,6 +95,15 @@ solvers and no resource limits, each counterexample excludes its candidate,
 so finite-template CEGIS terminates. This is not completeness for all AST
 programs or all affine certificates.
 
+Inconclusive results retain the reason, execution phase, current coefficient
+bound, accumulated samples and candidate trace, and completed input/certificate
+checks when available. The runner applies this handling to positive inputs and
+the negative template experiment alike, saves their JSON results, and exits with
+a nonzero status if any experiment is inconclusive or has an unexpected outcome.
+In particular, a negative experiment cannot time out silently after all positive
+inputs succeeded. A candidate is marked `verified` only after the combined
+verifier and every individual obligation recheck return UNSAT.
+
 ## Recorded synthesis results
 
 Expressions below hold on active states; terminal values are zero.

@@ -10,6 +10,21 @@ from engine import synthesize, Inconclusive
 from examples import base_examples, piecewise_examples, random_walk
 
 
+def run_experiment(loop, args):
+    """Apply the same resource-failure handling to positive and negative inputs."""
+    started = perf_counter()
+    try:
+        return synthesize(loop, tuple(args.bounds), args.timeout_ms, args.max_candidates)
+    except Inconclusive as exc:
+        result = {"name": loop.name, "phase": "synthesis", "current_bound": None,
+                  "bounds": list(args.bounds), "timeout_ms": args.timeout_ms,
+                  "max_candidates": args.max_candidates, "trace": [], "samples": [],
+                  "bound_attempts": [], "wall_seconds": perf_counter()-started}
+        result.update(exc.context)
+        result.update(status="inconclusive", reason=str(exc))
+        return result
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output",type=Path,default=Path("results.json"))
@@ -25,10 +40,7 @@ def main():
             "timing_note":"wall-clock seconds in this run; not a benchmark", "examples":[]}
     failed=False
     for loop in loops:
-        try:
-            result=synthesize(loop,tuple(args.bounds),args.timeout_ms,args.max_candidates)
-        except Inconclusive as exc:
-            result={"name":loop.name,"status":"inconclusive","reason":str(exc)}
+        result=run_experiment(loop,args)
         output["examples"].append(result)
         print(f"{loop.name}: {result['status']}, candidates={len(result.get('trace',[]))}, bound={result.get('coefficient_bound')}",flush=True)
         failed |= result["status"] != "verified"
@@ -36,11 +48,13 @@ def main():
     # This only excludes bounded templates; the all-bounds impossibility proof
     # for the two-sided affine walk is mathematical, in Section 6.
     if args.suite=="all":
-        output["negative_template_experiment"]=synthesize(random_walk(two_sided=True),tuple(args.bounds),args.timeout_ms,args.max_candidates)
+        negative=run_experiment(random_walk(two_sided=True),args)
+        output["negative_template_experiment"]=negative
+        failed |= negative["status"] != "no_certificate_in_bounded_template"
     output["total_wall_seconds"]=perf_counter()-started
     args.output.write_text(json.dumps(output,indent=2)+"\n")
     if failed:
-        raise SystemExit("At least one requested synthesis result is not verified; see JSON")
+        raise SystemExit("At least one experiment is inconclusive or did not have its expected outcome; see JSON")
 
 if __name__=="__main__":
     main()

@@ -78,8 +78,9 @@ have a smaller natural-valued certificate.
 The fourth condition allows the bound on $u$ to depend on $r$; a global
 bound over $S$ is not required. For example, $u=v=x$ on nonnegative
 integer states satisfies $u\leq r$ whenever $v\leq r$, although $u$
-is unbounded over all states. \Cref{sec:walk} uses these certificates
-to prove AST of a loop with infinite expected runtime.
+is unbounded over all states. The random-walk example in
+\Cref{sec:rule-examples} uses these certificates to prove AST of a loop
+with infinite expected runtime.
 
 \paragraph{Why the rule works.}
 Fix an initial state $\sigma_0\in\supp(M)$ and consider executions of
@@ -116,7 +117,10 @@ of the semantics then yields AST on $M$, without requiring a finite
 expectation of $v$ under the initial subdistributions.
 The formal proof in \Cref{sec:metatheory} establishes the same result
 by constructing certificates for the pCFG rule recalled in
-\Cref{app:pcfg-rule}.
+\Cref{sec:pcfg-rule}.
+
+\subsection{Illustrations}
+\label{sec:rule-examples}
 
 \paragraph{Symmetric random walk.}
 Consider the following program, where $k\in\mathbb N_{>0}$:
@@ -208,84 +212,3 @@ Only its support information is needed for AST; additional relations
 between probability masses can be retained for output correctness.
 \Cref{sec:fdr} develops this reuse for FDR, proves AST for arbitrary
 $n$, and compares the program-level and pCFG certificates.
-
-\subsection{Iteration-Level Reasoning and Modularity}
-\label{sec:iteration-level}
-
-The pCFG rule of Majumdar and
-Sathiyanarayana~\cite{DBLP:journals/pacmpl/MajumdarS25} reasons about
-individual execution steps. Its certificates $V,U$ depend on a
-configuration $\gamma=(\ell,\sigma)$, consisting of a control location
-and a program state. Write $\Succ(\gamma)$ for the positive-probability
-successors and $P(\gamma,\gamma')$ for their transition probabilities.
-We compare only the supermartingale and decrease conditions here;
-\Cref{app:pcfg-rule} gives the complete rule.
-
-\paragraph{One step versus one loop iteration.}
-For a nonterminal configuration $\gamma$ admitted by the pCFG invariant
-and an enabled loop-head state $\sigma\in S\cap\llbracket b\rrbracket$, the respective
-supermartingale conditions are
-\[
- \begin{aligned}
-  \text{pCFG step:}\quad &
-  \sum_{\gamma'\in\Succ(\gamma)}
-    P(\gamma,\gamma')V(\gamma')\leq V(\gamma),\\
-  \text{Loop iteration:}\quad &
-  \sum_{\sigma'}\den{B}(\dirac{\sigma})(\sigma')v(\sigma')
-    \leq v(\sigma).
- \end{aligned}
-\]
-Both bound an expected value. The first inspects one graph step;
-the second combines all assignments, tests, and choices of the body.
-Consequently, our certificates need no separate values at intermediate
-control locations.
-
-For each $r\geq0$, the pCFG rule requires some $\varepsilon_r>0$
-such that the first decrease inequality below holds at every such nonterminal
-$\gamma$ with $V(\gamma)\leq r$. Our rule requires a single
-$\varepsilon>0$ such that the second holds at every enabled $\sigma$:
-\[
- \begin{aligned}
-  \text{pCFG step:}\quad &
-  \sum_{\substack{\gamma'\in\Succ(\gamma)\\U(\gamma')<U(\gamma)}}
-    P(\gamma,\gamma')\geq\varepsilon_r,\\
-  \text{Loop iteration:}\quad &
-  \sum_{\sigma':\,u(\sigma')<u(\sigma)}
-    \den{B}(\dirac{\sigma})(\sigma')\geq\varepsilon.
- \end{aligned}
-\]
-At a deterministic pCFG step, the first condition forces strict descent
-of $U$. Our rule imposes no descent condition on individual assignments;
-only the probability of a net decrease after the complete iteration is
-constrained.
-
-Because $B$ is loop-free and its choice probabilities are fixed, all
-positive-probability body paths have a common positive probability lower bound
-$\varepsilon_B$ (\Cref{eq:body-path-bound}). Thus, once a decreasing
-body path is established for every enabled state, one may choose
-$\varepsilon=\varepsilon_B$. This supplies a uniform probability bound;
-finding the certificates and establishing these decreasing paths remain
-separate tasks. Summing the probabilities of all decreasing outcomes may
-give a larger bound.
-
-\paragraph{Reusing the invariant.}
-A distributional invariant $I$ supplies the domain $S=\supp(I)$ on
-which the certificate conditions are checked. Its initialization and
-preservation ensure that $S$ contains the initial states and is closed
-under enabled loop iterations. Once $I$ has been established, the AST
-certificate conditions use only this support. Relations between
-probability masses expressed by $I$ remain available for output-correctness
-proofs. Thus a sampler's existing distributional invariant can support
-both proofs without introducing location-specific invariants for its AST
-argument.
-
-\paragraph{Separating preprocessing from the loop.}
-The outputs of a preprocessing program are the inputs to the loop.
-Formally, if $A$ is AST on $M_0$, define the loop-entry set
-\[
- M=\{\den{A}(\mu)\mid\mu\in M_0\}.
-\]
-If our rule establishes AST of $C$ on $M$, then semantic composition and
-preservation of probability mass establish AST of $\comp{A}{C}$ on
-$M_0$. The initialization and the sampling loop can therefore be verified
-separately.

@@ -1,0 +1,57 @@
+Überarbeitung der AST-Fassung 1310 — 13.10.2026
+
+INSTALLATION
+Alle Dateien dieses ZIPs unter Beibehaltung der Ordnerstruktur in das
+bestehende Projekt aus 1310.zip kopieren und die gleichnamigen Dateien
+ersetzen. Es sind vollständige Dateien, keine einzusetzenden Fragmente.
+Section 2, macros.tex, packages.tex, references.bib und die LNCS-Dateien
+bleiben aus dem bisherigen Projekt erhalten.
+
+Neu kompilieren:
+latexmk -pdf -gg -interaction=nonstopmode -halt-on-error main_esop.tex
+In Overleaf gegebenenfalls „Recompile from scratch“ verwenden.
+
+UMGESETZT
+- Defekte Verweise repariert, vollständige pCFG-Regel vor Vergleich/Transfers.
+- Beitragsabgrenzung und Invariantenwahl präzisiert; n>=1 ausdrücklich.
+- Introduction, Synthese und Conclusion gestrafft. Ausführliche FDR-Logvariante
+  samt Figur nach Anhang B; optionale Synthesedetails nach Anhang D.
+- Han–Hoshi-Listing bleibt auf einer Seite; keinerlei Verkleinerung von
+  Grundschrift oder Seitenrändern.
+- P3: Inconclusive beim negativen Artefaktexperiment abgefangen;
+  Grund/Phase/Bound/Teilresultate bleiben erhalten, Exitstatus entsprechend.
+- README und Quellenkarte aktualisiert.
+
+PRÜFUNG
+32 Haupttextseiten einschließlich Titel/Abstract (vorher 35),
+46 Gesamtseiten mit Anhängen und Literatur (vorher 49).
+Keine undefinierten Referenzen/Zitate, keine doppelten Labels, keine
+Overfull-Boxen. Alle 174 internen PDF-Links haben gültige Ziele.
+Alle 46 Seiten visuell geprüft. Acht positive Synthesebeispiele erfolgreich;
+negatives Experiment erwartungsgemäß ohne Zertifikat im begrenzten Suchraum.
+Gezielte Inconclusive-Regressionsprüfung und echter Timeoutlauf bestanden.
+
+ARTEFAKTZUGANG
+Die separat mitgelieferte AST_Synthesis_Artifact.zip ist das im
+Data-availability-Absatz benannte anonyme Reproduktionspaket. Dieses Paket
+bei der Weitergabe an Reviewer mitgeben. Es wurde nichts extern eingereicht
+oder veröffentlicht. Die ursprünglichen aufgezeichneten Solverresultate
+bleiben erhalten; neue Läufe können andere gültige Kandidaten finden.
+
+GEÄNDERTE PROJEKTDATEIEN
+1_Introduction.tex
+3_Program_Level_AST_Rule.tex
+4_Soundness_and_Completeness.tex
+5_Sampling_Algorithms.tex
+6_Certificate_Synthesis.tex
+7_Related_Work.tex
+8_Conclusion.tex
+AST_Synthesis_Artifact/README.md
+AST_Synthesis_Artifact/engine.py
+AST_Synthesis_Artifact/synthesis_examples.py
+README.md
+appendices/A_Translation_and_AST_Preservation.tex
+appendices/B_One_Iteration_Calculations.tex
+appendices/C_Proof_Obligation_Comparison.tex
+appendices/D_Artifact_and_Proof_Notes.tex
+main_esop.tex

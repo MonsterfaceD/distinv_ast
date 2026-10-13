@@ -13,7 +13,7 @@ The transformer domain $\mathcal{H}$ from \Cref{sec:prelims} has pointwise supre
 Composition and addition preserve $\omega$-continuity here, so $\Phi_{b,B}(f)\in\mathcal{H}$. Moreover, for every increasing chain $(f_n)_n$ in $\mathcal{H}$, pointwise evaluation gives $\Phi_{b,B}(\sup_n f_n)=\sup_n\Phi_{b,B}(f_n)$. Kleene's theorem therefore yields \Cref{eq:while-transformer-fixpoint}. Structural induction also establishes linearity on sums that are subdistributions: in the loop case, every approximant is linear, and its pointwise supremum remains linear. The countable-sum property follows from $\omega$-continuity.
 
 \paragraph{Operational correspondence.}
-We use the pCFG notation of \Cref{app:pcfg-rule}.
+We use the pCFG notation of \Cref{sec:pcfg-rule}.
 The translation $\mathcal{T}$ assigns distinct entry and exit locations to each command, with fresh internal locations for its subcommands. Skip is a single identity edge. Assignments are single update edges. A conditional entry has guarded edges to the two branch entries; a probabilistic-choice entry instead has edges of probabilities $p$ and $1-p$. In either case the branch exits are identified with the command exit. Sequential composition identifies the first command's exit with the second command's entry. For a while-loop, its entry is the guard: the true edge enters the body, the false edge reaches the program exit, and the body exit is identified with the guard. Zero-probability edges are ignored, and the program exit is absorbing. Thus the loop-free body is acyclic and every path through it contains at least one edge.
 
 For the isolated body graph $\mathcal T[B]$, let $\ell_{\rm in}$ and

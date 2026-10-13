@@ -1,105 +1,11 @@
-\section{The pCFG AST Rule and Proof-Obligation Comparison}
+\section{FDR pCFG Annotations and Proof-Obligation Comparison}
 \label{app:comparison}
-
-We first recall the pCFG rule used in the metatheory, then give an
-explicit pCFG proof for FDR and compare its obligations with those of
-the program-level proof.
-
-\subsection{The pCFG Rule and Operational Correspondence}
-\label{sec:background}
-\label{app:pcfg-rule}
-
-Majumdar and Sathiyanarayana~\cite{DBLP:journals/pacmpl/MajumdarS25}
-give a sound and relatively complete AST rule for probabilistic
-control-flow graphs (pCFGs), including bounded demonic nondeterminism.
-We use its purely probabilistic specialization with fixed probabilities.
-We recall it here for the metatheory in \Cref{sec:metatheory} and the
-FDR comparison in \Cref{app:fdr-pcfg-proof}.
-A pCFG has a finite set $L$ of control locations. A configuration
-$\gamma=(\ell,\sigma)\in L\times\Sigma$ comprises a control location
-and a valuation. Assignment and conditional locations have one enabled
-successor; probabilistic locations choose among finitely many successors.
-Write $\ell_{\mathsf{init}}$ for the initial location and
-$\ell_{\mathsf{out}}$ for the absorbing exit. Write
-$\Succ(\gamma)$ for the positive-probability successors and
-$P(\gamma,\gamma')$ for their transition probabilities, with $P=1$ at
-deterministic steps. An invariant $\mathit{Inv}$ for initial valuations
-$E$ contains all $(\ell_{\mathsf{init}},\sigma)$ with $\sigma\in E$ and
-is closed under these transitions.
-Reachability always means reachability along a finite path of
-positive-probability transitions, including the path of length zero.
-AST from $E$ means reaching a configuration at $\ell_{\mathsf{out}}$
-with probability one from each $(\ell_{\mathsf{init}},\sigma)$,
-$\sigma\in E$; the terminal valuation is unrestricted.
-
-\begin{theorem}[pCFG AST rule, adapted from~\cite{DBLP:journals/pacmpl/MajumdarS25}]
-\label{thm:pcfg-rule}
-A pCFG is AST from $E$ if an inductive invariant $\mathit{Inv}$ admits
-$V:\mathit{Inv}\to\mathbb R_{\geq0}$ and
-$U:\mathit{Inv}\to\mathbb N$ such that:
-\begin{enumerate}
- \item $V(\gamma)=U(\gamma)=0$ at terminal configurations, and
-       $V(\gamma)>0$ at every other configuration;
- \item \emph{Local supermartingale inequalities:} for every nonterminal
- $\gamma\in\mathit{Inv}$,
- \[
-   \sum_{\gamma'\in\Succ(\gamma)}P(\gamma,\gamma')V(\gamma')
-   \leq V(\gamma);
- \]
- \item \emph{Probabilistic decrease:} for every $r\geq0$, some
- $\varepsilon_r>0$ satisfies
- \[
-   \sum_{\substack{\gamma'\in\Succ(\gamma)\\U(\gamma')<U(\gamma)}}
-      P(\gamma,\gamma')\geq\varepsilon_r
- \]
- for every nonterminal $\gamma\in V_{\leq r}$, where
- $V_{\leq r}=\{\gamma\in\mathit{Inv}\mid V(\gamma)\leq r\}$;
- \item \emph{Sublevel boundedness:} for every $r\geq0$, the values of
- $U$ on $V_{\leq r}$ are bounded.
-\end{enumerate}
-Conversely, AST from $E$ implies the existence of these certificates.
-Under the arithmetic assumptions of \Cref{sec:metatheory}, they are
-representable in the assertion language.
-\end{theorem}
-At a deterministic step the probabilistic-decrease condition forces
-strict descent of $U$, so this unified notation includes the usual separate condition for
-assignments and guards. It also forces $U>0$ away from the exit.
-Soundness combines bounded-variant reasoning within each sublevel set
-with the nonnegative supermartingale bound on escape. For completeness,
-\Cref{app:initial-sets} adapts the published construction from a fixed
-initial configuration to a common pair of certificates for arbitrary
-initial sets $E$.
-
-\paragraph{AST preservation.}
-Consider a loop $C=\while{b}{B}$ with loop-free body $B$.
-The structural translation $\mathcal T[C]$ turns assignments into update
-edges, choices into branching locations, and the loop guard into a
-conditional location whose true successor enters the body. Sequential
-composition identifies adjacent exits and entries, and the body exit is
-identified with the loop guard. For a loop-free body, structural induction
-shows that $\den{B}(\dirac{\sigma})(\sigma')$ equals the total probability
-of body paths from entry valuation $\sigma$ to exit valuation $\sigma'$.
-Loop unrolling then gives
-\begin{equation}
- C\text{ is AST on }M
- \quad\Longleftrightarrow\quad
- \mathcal T[C]\text{ is AST from }\supp(M).
- \label{eq:ast-preservation}
-\end{equation}
-\Cref{app:translation} proves both facts. The program-level rule contracts
-these finite body paths into one semantic step; certificates need only
-annotate the valuations at loop entry.
-
-Unlike the program-level rule, the pCFG rule permits a different
-progress bound $\varepsilon_r$ on each sublevel set. For fixed choices
-and loop-free bodies, the uniform body-path bound in
-\Cref{eq:body-path-bound} allows the program-level rule to use one global
-$\varepsilon$ instead.
-
-\subsection{A Fully Annotated FDR Graph and Comparison}
 \label{app:fdr-pcfg-proof}
 
-The comparison below summarizes the forms of proof obligations used in the two FDR proofs. It is a qualitative comparison of their representation, not a measurement of proof-development or solver runtime.
+We give an explicit pCFG proof for FDR using \Cref{thm:pcfg-rule}
+and compare its obligations with those of the program-level proof.
+The comparison concerns their representation, not proof-development
+or solver runtime.
 
 \begin{center}
 \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.25\linewidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
@@ -115,7 +21,9 @@ Reuse from partial correctness & requires projection/lifting & direct\\
 \end{tabularx}
 \end{center}
 
-For FDR, both columns are feasible and prove the same AST fact. This makes FDR a controlled comparison of proof style. The program-level proofs of FLDR and Han--Hoshi further demonstrate how progress is expressed using non-reset outcomes and interval boundaries, respectively; they are not additional comparisons against explicitly constructed pCFG certificates.
+Both proofs establish the same AST fact for FDR. The FLDR and Han--Hoshi
+case studies illustrate further program-level arguments; we do not
+construct their pCFG certificates here.
 
 \begin{figure}[t]
     \centering

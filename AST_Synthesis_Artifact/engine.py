@@ -12,7 +12,11 @@ from z3.z3util import get_vars
 
 
 class Inconclusive(RuntimeError):
-    pass
+    """A solver returned no decision; context contains available partial checks."""
+
+    def __init__(self, reason, **context):
+        super().__init__(reason)
+        self.context = context
 
 
 @dataclass(frozen=True)
@@ -116,7 +120,12 @@ def check_input(loop, timeout_ms):
         checks[f"support_preservation_{i}"] = z.And(admitted, z.Not(loop.support(update(state, descriptors))))
     results = {}
     for name, condition in checks.items():
-        status, solver = query(condition, timeout_ms)
+        try:
+            status, solver = query(condition, timeout_ms)
+        except Inconclusive as exc:
+            exc.context.update(phase="input_validation", check=name,
+                               input_checks=dict(results))
+            raise
         results[name] = str(status)
         if status != z.unsat:
             raise ValueError(f"Invalid input {loop.name}: {name}; counterexample {solver.model()}")
@@ -131,7 +140,12 @@ def verify_candidate(loop, vc, uc, timeout_ms=10000):
         raise ValueError("Integer coefficients required")
     results = {}
     for name, condition in obligations(loop, vc, uc, loop.variables, loop.descriptors).items():
-        status, solver = query(z.And(domain(loop, loop.variables, loop.descriptors), z.Not(condition)), timeout_ms)
+        try:
+            status, solver = query(z.And(domain(loop, loop.variables, loop.descriptors), z.Not(condition)), timeout_ms)
+        except Inconclusive as exc:
+            exc.context.update(phase="certificate_recheck", check=name,
+                               certificate_checks=dict(results))
+            raise
         results[name] = str(status)
         if status != z.unsat:
             raise ValueError(f"Invalid certificate {loop.name}: {name}; counterexample {solver.model()}")
@@ -140,71 +154,93 @@ def verify_candidate(loop, vc, uc, timeout_ms=10000):
 
 def synthesize(loop, bounds=(1, 2, 4, 8, 16), timeout_ms=10000, max_candidates=500):
     started = perf_counter()
-    checks = check_input(loop, timeout_ms)
     state, descriptors = loop.variables, loop.descriptors
-    enabled = domain(loop, state, descriptors)
-    status, seed_solver = query(enabled, timeout_ms)
-    basic = {
+    samples, trace, attempts = [], [], []
+    data = {
         "name": loop.name, "semantics": loop.semantics,
         "state_order": [str(x) for x in state],
         "descriptor_order": [str(x) for x in descriptors],
         "coefficient_order": [str(state[i]) for i in loop.feature_indices] + ["constant"],
-        "regions": [p.name for p in loop.regions], "input_checks": checks,
+        "regions": [p.name for p in loop.regions], "input_checks": {},
         "bounds": list(bounds), "timeout_ms": timeout_ms, "max_candidates": max_candidates,
-        "epsilon": str(min(p for p, _ in loop.outcomes)),
+        "samples": samples, "trace": trace, "bound_attempts": attempts,
+        "phase": "input_validation", "current_bound": None,
     }
-    if status == z.unsat:
-        return dict(basic, status="no_enabled_states", wall_seconds=perf_counter() - started)
+
+    def finish(status, **extra):
+        return dict(data, status=status, wall_seconds=perf_counter()-started, **extra)
+
     def sample_from(model):
         return {"state": tuple(concrete(model.eval(x, model_completion=True)) for x in state),
                 "descriptors": tuple(concrete(model.eval(x, model_completion=True)) for x in descriptors)}
-    samples = [sample_from(seed_solver.model())]
-    trace, attempts = [], []
-    dimension = len(loop.feature_indices) + 1
-    vc = [[z.Int(f"{loop.name}_V_{j}_{i}") for i in range(dimension)] for j in range(len(loop.regions))]
-    uc = [[z.Int(f"{loop.name}_U_{j}_{i}") for i in range(dimension)] for j in range(len(loop.regions))]
-    coefficients = [a for c in (vc, uc) for block in c for a in block]
-    result_data = dict(basic, samples=samples, trace=trace, bound_attempts=attempts)
-    for bound in bounds:
-        if bound < 0:
-            raise ValueError("Coefficient bounds must be nonnegative")
-        learner = z.Optimize()
-        learner.set(timeout=timeout_ms)
-        learner.add(*(z.And(a >= -bound, a <= bound) for a in coefficients))
-        learner.minimize(sum(z.If(a >= 0, a, -a) for a in coefficients))
-        for sample in samples:
-            learner.add(*obligations(loop, vc, uc, sample["state"], sample["descriptors"]).values())
-        attempt = {"bound": bound, "candidates": 0}
-        attempts.append(attempt)
-        while len(trace) < max_candidates:
-            outcome = learner.check()
-            if outcome == z.unsat:
-                attempt["status"] = "no_certificate_in_bounded_template"
-                break
-            if outcome != z.sat:
-                attempt["status"] = "inconclusive"
-                return dict(result_data, status="inconclusive", reason=learner.reason_unknown(), wall_seconds=perf_counter()-started)
-            model = learner.model()
-            va = [[model.eval(a).as_long() for a in block] for block in vc]
-            ua = [[model.eval(a).as_long() for a in block] for block in uc]
-            conditions = obligations(loop, va, ua, state, descriptors)
-            status, verifier = query(z.And(enabled, z.Not(z.And(*conditions.values()))), timeout_ms)
-            entry = {"candidate": len(trace)+1, "bound": bound, "V_coefficients": va, "U_coefficients": ua}
-            attempt["candidates"] += 1
-            trace.append(entry)
-            if status == z.unsat:
-                entry["result"] = "verified"
-                attempt["status"] = "verified"
-                return dict(result_data, status="verified", coefficient_bound=bound,
-                            V_coefficients=va, U_coefficients=ua,
-                            certificate_checks=verify_candidate(loop, va, ua, timeout_ms),
-                            wall_seconds=perf_counter()-started)
-            model = verifier.model()
-            sample = sample_from(model)
-            entry.update(result="counterexample", counterexample=sample,
-                         violations=[name for name, condition in conditions.items() if z.is_false(model.eval(condition, model_completion=True))])
-            samples.append(sample)
-            learner.add(*obligations(loop, vc, uc, sample["state"], sample["descriptors"]).values())
-        else:
-            return dict(result_data, status="candidate_limit_inconclusive", wall_seconds=perf_counter()-started)
-    return dict(result_data, status="no_certificate_in_bounded_template", wall_seconds=perf_counter()-started)
+
+    try:
+        data["input_checks"] = check_input(loop, timeout_ms)
+        data["epsilon"] = str(min(p for p, _ in loop.outcomes))
+        enabled = domain(loop, state, descriptors)
+        data["phase"] = "seed_selection"
+        status, seed_solver = query(enabled, timeout_ms)
+        if status == z.unsat:
+            return finish("no_enabled_states")
+        samples.append(sample_from(seed_solver.model()))
+        dimension = len(loop.feature_indices) + 1
+        vc = [[z.Int(f"{loop.name}_V_{j}_{i}") for i in range(dimension)] for j in range(len(loop.regions))]
+        uc = [[z.Int(f"{loop.name}_U_{j}_{i}") for i in range(dimension)] for j in range(len(loop.regions))]
+        coefficients = [a for c in (vc, uc) for block in c for a in block]
+        for bound in bounds:
+            if bound < 0:
+                raise ValueError("Coefficient bounds must be nonnegative")
+            data["current_bound"] = bound
+            learner = z.Optimize()
+            learner.set(timeout=timeout_ms)
+            learner.add(*(z.And(a >= -bound, a <= bound) for a in coefficients))
+            learner.minimize(sum(z.If(a >= 0, a, -a) for a in coefficients))
+            for sample in samples:
+                learner.add(*obligations(loop, vc, uc, sample["state"], sample["descriptors"]).values())
+            attempt = {"bound": bound, "candidates": 0}
+            attempts.append(attempt)
+            while len(trace) < max_candidates:
+                data["phase"] = "learner"
+                outcome = learner.check()
+                if outcome == z.unsat:
+                    attempt["status"] = "no_certificate_in_bounded_template"
+                    break
+                if outcome != z.sat:
+                    raise Inconclusive(learner.reason_unknown())
+                model = learner.model()
+                va = [[model.eval(a).as_long() for a in block] for block in vc]
+                ua = [[model.eval(a).as_long() for a in block] for block in uc]
+                entry = {"candidate": len(trace)+1, "bound": bound,
+                         "V_coefficients": va, "U_coefficients": ua, "result": "pending"}
+                attempt["candidates"] += 1
+                trace.append(entry)
+                conditions = obligations(loop, va, ua, state, descriptors)
+                data["phase"] = "verifier"
+                status, verifier = query(z.And(enabled, z.Not(z.And(*conditions.values()))), timeout_ms)
+                if status == z.unsat:
+                    # A successful combined query does not bypass the individual rechecks.
+                    data["phase"] = "certificate_recheck"
+                    checks = verify_candidate(loop, va, ua, timeout_ms)
+                    entry["result"] = "verified"
+                    attempt["status"] = "verified"
+                    return finish("verified", coefficient_bound=bound,
+                                  V_coefficients=va, U_coefficients=ua,
+                                  certificate_checks=checks)
+                model = verifier.model()
+                sample = sample_from(model)
+                entry.update(result="counterexample", counterexample=sample,
+                             violations=[name for name, condition in conditions.items() if z.is_false(model.eval(condition, model_completion=True))])
+                samples.append(sample)
+                learner.add(*obligations(loop, vc, uc, sample["state"], sample["descriptors"]).values())
+            else:
+                data["phase"] = "candidate_limit"
+                attempt["status"] = "candidate_limit_inconclusive"
+                return finish("candidate_limit_inconclusive", reason="Maximum candidate count reached")
+        return finish("no_certificate_in_bounded_template")
+    except Inconclusive as exc:
+        data.update(exc.context)
+        if attempts:
+            attempts[-1]["status"] = "inconclusive"
+        if trace and trace[-1]["result"] == "pending":
+            trace[-1]["result"] = "inconclusive"
+        return finish("inconclusive", reason=str(exc))

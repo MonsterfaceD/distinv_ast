@@ -2,35 +2,158 @@
 \label{sec:metatheory}
 
 We prove soundness and relative completeness by translating certificates
-between our program-level rule and the pCFG rule of Majumdar and
+between the program-level rule and the pCFG rule of Majumdar and
 Sathiyanarayana~\cite{DBLP:journals/pacmpl/MajumdarS25}.
-The complete pCFG rule is recalled in \Cref{app:pcfg-rule};
-\Cref{sec:iteration-level} compares its supermartingale and decrease
-conditions with ours. We first relate one body execution to its pCFG
-paths and establish support closure. For soundness, we extend the
-program-level certificates to all reachable pCFG configurations and
-apply the pCFG soundness result. For relative completeness, we use the
-pCFG completeness result and restrict its certificates to loop-head
-states. Thus the two proofs translate certificates in opposite directions.
-The extension uses a bound on the number of edges in one body execution
-and a backward recursion for the internal locations.
-All sums below range over the positive-mass outcomes of their distributions.
+We first recall the complete pCFG rule and compare its obligations
+with ours. We then relate one body execution to its pCFG paths and
+establish support closure. For soundness, we extend program-level
+certificates to reachable pCFG configurations. For completeness, we
+restrict pCFG certificates to loop-head states. The two directions use
+the bounded length and fixed probabilities of body paths.
+All sums below range over positive-mass outcomes of their distributions.
+
+\subsection{The pCFG Rule and Operational Correspondence}
+\label{sec:pcfg-rule}
+
+Majumdar and Sathiyanarayana~\cite{DBLP:journals/pacmpl/MajumdarS25}
+give a sound and relatively complete AST rule for probabilistic
+control-flow graphs (pCFGs), including bounded demonic nondeterminism.
+We use its purely probabilistic specialization with fixed probabilities
+for the certificate transfers below and the FDR comparison in
+\Cref{app:fdr-pcfg-proof}.
+A pCFG has a finite set $L$ of control locations. A configuration
+$\gamma=(\ell,\sigma)\in L\times\Sigma$ comprises a control location
+and a valuation. Assignment and conditional locations have one enabled
+successor; probabilistic locations choose among finitely many successors.
+Write $\ell_{\mathsf{init}}$ for the initial location and
+$\ell_{\mathsf{out}}$ for the absorbing exit. Write
+$\Succ(\gamma)$ for the positive-probability successors and
+$P(\gamma,\gamma')$ for their transition probabilities, with $P=1$ at
+deterministic steps. An invariant $\mathit{Inv}$ for initial valuations
+$E$ contains all $(\ell_{\mathsf{init}},\sigma)$ with $\sigma\in E$ and
+is closed under these transitions.
+Reachability always means reachability along a finite path of
+positive-probability transitions, including the path of length zero.
+AST from $E$ means reaching a configuration at $\ell_{\mathsf{out}}$
+with probability one from each $(\ell_{\mathsf{init}},\sigma)$,
+$\sigma\in E$; the terminal valuation is unrestricted.
+
+\begin{theorem}[pCFG AST rule, adapted from~\cite{DBLP:journals/pacmpl/MajumdarS25}]
+\label{thm:pcfg-rule}
+A pCFG is AST from $E$ if an inductive invariant $\mathit{Inv}$ admits
+$V:\mathit{Inv}\to\mathbb R_{\geq0}$ and
+$U:\mathit{Inv}\to\mathbb N$ such that:
+\begin{enumerate}
+ \item $V(\gamma)=U(\gamma)=0$ at terminal configurations, and
+       $V(\gamma)>0$ at every other configuration;
+ \item \emph{Local supermartingale inequalities:} for every nonterminal
+ $\gamma\in\mathit{Inv}$,
+ \[
+   \sum_{\gamma'\in\Succ(\gamma)}P(\gamma,\gamma')V(\gamma')
+   \leq V(\gamma);
+ \]
+ \item \emph{Probabilistic decrease:} for every $r\geq0$, some
+ $\varepsilon_r>0$ satisfies
+ \[
+   \sum_{\substack{\gamma'\in\Succ(\gamma)\\U(\gamma')<U(\gamma)}}
+      P(\gamma,\gamma')\geq\varepsilon_r
+ \]
+ for every nonterminal $\gamma\in V_{\leq r}$, where
+ $V_{\leq r}=\{\gamma\in\mathit{Inv}\mid V(\gamma)\leq r\}$;
+ \item \emph{Sublevel boundedness:} for every $r\geq0$, the values of
+ $U$ on $V_{\leq r}$ are bounded.
+\end{enumerate}
+Conversely, AST from $E$ implies the existence of these certificates.
+Under the arithmetic assumptions of \Cref{sec:relative-completeness},
+they are representable in the assertion language.
+\end{theorem}
+At a deterministic step the probabilistic-decrease condition forces
+strict descent of $U$, thus including the separate conditions for
+assignments and guards. It also forces $U>0$ away from the exit.
+Soundness combines bounded-variant reasoning within each sublevel set
+with the nonnegative supermartingale bound on escape. For completeness,
+\Cref{app:initial-sets} adapts the published construction from a fixed
+initial configuration to a common pair of certificates for arbitrary
+initial sets $E$.
+
+\paragraph{AST preservation.}
+Consider a loop $C=\while{b}{B}$ with loop-free body $B$.
+The structural translation $\mathcal T[C]$ turns assignments into update
+edges, choices into branching locations, and the loop guard into a
+conditional location whose true successor enters the body. Sequential
+composition identifies adjacent exits and entries, and the body exit is
+identified with the loop guard. For a loop-free body, structural induction
+shows that $\den{B}(\dirac{\sigma})(\sigma')$ equals the total probability
+of body paths from entry valuation $\sigma$ to exit valuation $\sigma'$.
+Loop unrolling then gives
+\begin{equation}
+ C\text{ is AST on }M
+ \quad\Longleftrightarrow\quad
+ \mathcal T[C]\text{ is AST from }\supp(M).
+ \label{eq:ast-preservation}
+\end{equation}
+\Cref{app:translation} proves both facts. The program-level rule contracts
+these finite body paths into one semantic step; certificates need only
+annotate the valuations at loop entry.
+
+\subsection{Iteration-Level Reasoning and Modularity}
+\label{sec:iteration-level}
+
+\paragraph{One step versus one loop iteration.}
+The supermartingale conditions in \Cref{thm:pcfg-rule,thm:program-rule}
+both bound an expected successor value. At pCFG level, this expectation
+concerns one transition from a configuration $(\ell,\sigma)$; at program
+level, it combines all assignments, tests, and choices of the body.
+Thus the program-level certificates need no separate values at
+intermediate control locations.
+
+The progress requirements differ in two respects. First, a deterministic
+pCFG step must strictly decrease $U$, whereas our rule constrains only
+the net change of $u$ over a complete iteration. Second, the pCFG rule
+permits a separate progress bound $\varepsilon_r>0$ on each $V$-sublevel;
+our rule requires one $\varepsilon>0$ for every enabled state.
+For a loop-free body with fixed choice probabilities, every feasible
+body path has a common positive probability lower bound $\varepsilon_B$
+(\Cref{eq:body-path-bound}). Once a decreasing body path exists from
+each enabled state, this bound supplies $\varepsilon=\varepsilon_B$.
+Establishing these paths remains a certificate obligation; summing all
+decreasing outcomes may give a larger bound.
+
+The expected-value condition also has the familiar backward formulation:
+for each enabled $\sigma\in S$,
+\[
+ \sum_{\sigma'}\den{B}(\dirac{\sigma})(\sigma')v(\sigma')
+ =\operatorname{wp}\llbracket B\rrbracket(v)(\sigma),
+\]
+where $\operatorname{wp}\llbracket B\rrbracket$ is the weakest
+preexpectation transformer~\cite{DBLP:series/mcs/McIverM05}.
+An arbitrary nonnegative extension of $v$ outside $S$
+does not affect this equality, by the support closure proved below.
+Our distribution-based formulation uses the forward semantics already
+available in distributional-invariant proofs.
+
+\paragraph{Reusing the invariant.}
+The initialization and preservation of $I$ ensure that $S=\supp(I)$
+contains the initial states and is closed under enabled iterations.
+Only this support enters the AST conditions; the relations between
+probability masses in $I$ remain available for output correctness.
+
+\paragraph{Separating preprocessing from the loop.}
+If a preprocessing program $A$ is AST on $M_0$, let
+\[
+ M=\{\den{A}(\mu)\mid\mu\in M_0\}.
+\]
+AST of $C$ on this loop-entry set implies AST of $\comp{A}{C}$ on
+$M_0$, by semantic composition and preservation of probability mass.
+Initialization and the sampling loop can therefore be verified separately.
 
 \subsection{One Iteration and Its Support}
 
-Fix $C=\while{b}{B}$ with loop-free $B$. The structural translation
-$\mathcal T[C]$ represents the program as a pCFG: assignments become
-update edges, conditionals select edges by their guards, and probabilistic
-choices select edges with their stated probabilities. A configuration
-$\gamma=(\ell,\sigma)$ records the control location and the current
-valuation. Sequential composition identifies adjacent exits and entries;
-\Cref{app:translation} gives the full construction and proves its
-correspondence with the distribution semantics.
-Write $\ell_g$ for the loop guard,
+Fix $C=\while{b}{B}$ with loop-free $B$ and its translation
+$\mathcal T[C]$. Write $\ell_g$ for the loop guard,
 $\ell_{\rm in}$ for the body entry, and $\ell_{\rm exit}$ for the program
 exit. Thus $\ell_{\mathsf{init}}=\ell_g$ and
-$\ell_{\mathsf{out}}=\ell_{\rm exit}$ in the notation of
-\Cref{app:pcfg-rule}. In $\mathcal T[C]$, the body exit is identified with $\ell_g$;
+$\ell_{\mathsf{out}}=\ell_{\rm exit}$. The body exit is identified with $\ell_g$;
 there is no additional back edge. Skip is represented by one identity
 edge. Let $L_B\geq1$ bound the number of \emph{edges} in any complete body
 path. Every such path is finite, and from a fixed state there are only
@@ -141,10 +264,7 @@ by backward recursion, stopping at the next guard visit:
  U(\gamma)=1+\min_{\gamma'\in\Succ(\gamma)}U(\gamma').
  \label{eq:lift-recursion}
 \end{equation}
-Here $P(\gamma,\gamma')$ is the one-step transition probability from
-configuration $\gamma$ to configuration $\gamma'$, and
-$\Succ(\gamma)$ is the set of positive-probability successors of
-$\gamma$. These are finite, well-defined recursions because the body
+These are finite, well-defined recursions because the body
 is acyclic. All nonterminal $V$- and $U$-values are at least $1$, and
 $U$ is natural-valued.
 
@@ -218,6 +338,7 @@ all equal to $1$, so it requires no finite expectation of $v$ under $\mu$.
 \end{proof}
 
 \subsection{Relative Completeness}
+\label{sec:relative-completeness}
 
 \paragraph{Assertion language.}
 For relative completeness, we use first-order arithmetic with addition,
@@ -241,9 +362,13 @@ structure, not to a decision procedure or to the templates of
 \begin{theorem}[Relative completeness]
 \label{thm:complete}
 Let $C=\while{b}{B}$ have loop-free body. If $C$ is AST on $M$, then
-certificates satisfying \Cref{thm:program-rule} exist. Under the preceding
-arithmetic assumptions, they are expressible in the assertion language,
-and the rule is relatively complete.
+there exist a distributional invariant $I$ for $C$ and $M$,
+functions $v:\supp(I)\to\mathbb R_{\geq0}$ and
+$u:\supp(I)\to\mathbb N$, and a constant $\varepsilon>0$
+satisfying all premises of \Cref{thm:program-rule}.
+Under the preceding arithmetic assumptions, the invariant and
+certificates are expressible in the assertion language, and the rule
+is relatively complete.
 \end{theorem}
 \begin{proof}
 Put $E=\supp(M)$. By \eqref{eq:ast-preservation}, $\mathcal T[C]$ is
@@ -336,6 +461,13 @@ by an integer. Invariant initialization and preservation reduce
 to $E\subseteq S$ and the support-closure condition. Their established
 validity therefore supplies a proof relative to true arithmetic.
 \end{proof}
+
+Completeness includes the choice of the invariant $I$. It does not
+assert that certificates exist for every supplied invariant: an
+overapproximation may include states unreachable from $M$ from which
+termination is not almost sure. The synthesis procedure in
+\Cref{sec:certificate-synthesis},
+by contrast, searches for certificates on the supplied state invariant.
 
 The two constructions preserve semantic proving power for this fragment.
 Users supply a distributional invariant and the two source-state

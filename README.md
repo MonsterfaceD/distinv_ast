@@ -1,4 +1,4 @@
-# Program-Level AST — supervisor draft, 9 October 2026
+# Distribution-Based AST — revised draft, 13 October 2026
 
 This project contains the program-level AST manuscript, sampler certificates,
 and an executable shared certificate-synthesis artifact. The synthesis results
@@ -45,17 +45,17 @@ The complete delivered draft is therefore not yet a 25-page camera-ready paper.
 | File | Content |
 | --- | --- |
 | `1_Introduction.tex` | Motivation, contributions, provenance and scope |
-| `2_Preliminaries_and_Background.tex` | Semantics, invariants and pCFG rule |
-| `3_Program_Level_AST_Rule.tex` | Rule and random walk |
-| `4_Soundness_and_Completeness.tex` | Both certificate translations |
+| `2_Preliminaries_and_Background.tex` | Semantics and distributional invariants |
+| `3_Program_Level_AST_Rule.tex` | Program-level rule, random walk and short FDR illustration |
+| `4_Soundness_and_Completeness.tex` | Complete pCFG rule, interface comparison and both certificate translations |
 | `5_Sampling_Algorithms.tex` | FDR, FLDR and Han–Hoshi |
 | `6_Certificate_Synthesis.tex` | Exact implemented synthesis procedure and results |
 | `7_Related_Work.tex` | Focused comparison with prior work |
 | `8_Conclusion.tex` | Results and limits |
 | `appendices/A_Translation_and_AST_Preservation.tex` | Semantics, common initial-set certificates and arithmetic representation |
-| `appendices/B_One_Iteration_Calculations.tex` | FDR support, FLDR preprocessing proof and Han–Hoshi bound |
+| `appendices/B_One_Iteration_Calculations.tex` | FDR support and logarithmic variant, FLDR preprocessing proof and Han–Hoshi bound |
 | `appendices/C_Proof_Obligation_Comparison.tex` | Full FDR pCFG certificate and edge checks |
-| `appendices/D_Artifact_and_Proof_Notes.tex` | Reproduction and scope of computational checks |
+| `appendices/D_Artifact_and_Proof_Notes.tex` | Reproduction, optional supplied partitions and scope of computational checks |
 
 ## Reproduce the artifact
 
@@ -76,5 +76,12 @@ The code trusts supplied semantic encodings and Z3. It checks fixed candidates
 universally on their supplied domains; finite coefficient search is incomplete.
 Neither the AST metatheory nor the FLDR preprocessing theorem is mechanized.
 
-Update the data availability statement to the actual review or archival access
-route once that route is established.
+The data availability statement identifies `AST_Synthesis_Artifact.zip`,
+provided separately with this revision. Include that anonymous package with
+the manuscript when making it available to reviewers; it contains no build
+logs or local path metadata. For a proceedings version, replace this access
+route with the permanent archival identifier.
+
+When sharing LaTeX sources, include only the `.tex`, `.bib`, class and style
+files required to build the manuscript. Exclude `.aux`, `.log`, SyncTeX,
+Python caches and other machine-generated files.
