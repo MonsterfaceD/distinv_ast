@@ -79,6 +79,12 @@ supplied synthesis obligations.
 \ifappendixversion
 \clearpage
 \appendix
+
+% Eindeutige PDF-Linkziele für den Appendix:
+\renewcommand*{\theHsection}{appendix.\Alph{section}}
+\renewcommand*{\theHsubsection}{\theHsection.\arabic{subsection}}
+\renewcommand*{\theHsubsubsection}{\theHsubsection.\arabic{subsubsection}}
+
 \input{appendices/A_Translation_and_AST_Preservation}
 \input{appendices/B_One_Iteration_Calculations}
 \input{appendices/C_Proof_Obligation_Comparison}

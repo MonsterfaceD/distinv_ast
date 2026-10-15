@@ -19,7 +19,7 @@ fragment. The implementation accepts manually supplied Python/Z3
 encodings of complete iterations; it does not parse source programs
 or derive their semantics or invariants.
 
-The search uses counterexample-guided inductive synthesis (CEGIS):
+We use counterexample-guided inductive synthesis (CEGIS):
 a learner proposes coefficients, and a verifier either validates them
 over the entire invariant domain or returns a state that rules them out.
 The random walk, FDR, and FLDR instantiate the same input interface and
