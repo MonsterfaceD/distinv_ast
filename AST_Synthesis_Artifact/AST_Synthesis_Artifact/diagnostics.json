@@ -1,0 +1,168 @@
+{
+  "z3_version": "4.15.4",
+  "symbolic": {
+    "constant_variant_refuted": true,
+    "positive_drift_refuted": true,
+    "vacuous_transition_contract_rejected": true,
+    "overlapping_partition_rejected": true,
+    "incomplete_partition_rejected": true,
+    "undeclared_partition_symbol_rejected": true,
+    "descriptor_partition_rejected": true,
+    "cross_region_countdown_input": {
+      "initialization": "unsat",
+      "transition_coverage": "unsat",
+      "partition_coverage": "unsat",
+      "partition_disjoint_0_1": "unsat",
+      "support_preservation_0": "unsat"
+    },
+    "cross_region_countdown_abs_x": {
+      "V_positive": "unsat",
+      "U_positive": "unsat",
+      "U_le_V": "unsat",
+      "supermartingale": "unsat",
+      "progress": "unsat"
+    },
+    "fdr_expected_U_decreases_by_half": "unsat",
+    "abstract_alternative_V_k_U_k_minus_c": {
+      "V_positive": "unsat",
+      "U_positive": "unsat",
+      "U_le_V": "unsat",
+      "supermartingale": "unsat",
+      "progress": "unsat"
+    }
+  },
+  "fldr_exact_rational_audit": {
+    "weights": [
+      4,
+      5
+    ],
+    "rows": [
+      {
+        "state": [
+          0,
+          0
+        ],
+        "W": 2,
+        "successors": [
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "successor_values": [
+          3,
+          1
+        ],
+        "mean": "2"
+      },
+      {
+        "state": [
+          1,
+          0
+        ],
+        "W": 3,
+        "successors": [
+          [
+            2,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ],
+        "successor_values": [
+          4,
+          2
+        ],
+        "mean": "3"
+      },
+      {
+        "state": [
+          1,
+          1
+        ],
+        "W": 1,
+        "successors": [
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        "successor_values": [
+          0,
+          0
+        ],
+        "mean": "0"
+      },
+      {
+        "state": [
+          2,
+          0
+        ],
+        "W": 4,
+        "successors": [
+          [
+            3,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ],
+        "successor_values": [
+          5,
+          2
+        ],
+        "mean": "7/2"
+      },
+      {
+        "state": [
+          3,
+          0
+        ],
+        "W": 5,
+        "successors": [
+          [
+            0,
+            0
+          ],
+          [
+            4,
+            1
+          ]
+        ],
+        "successor_values": [
+          2,
+          0
+        ],
+        "mean": "1"
+      }
+    ],
+    "depth_variant_at_2_0": {
+      "U": 2,
+      "expected_next_U": "5/2"
+    }
+  },
+  "tree_regression": {
+    "weight_vectors_checked": 1554,
+    "enabled_nodes_checked": 9935,
+    "scope": "1..4 outcomes, each weight 1..6; finite regression, not universal preprocessing proof",
+    "properties": [
+      "exact binary leaf masses",
+      "abstract transition contract",
+      "finite height",
+      "d < 2n",
+      "root-terminal cases"
+    ]
+  }
+}

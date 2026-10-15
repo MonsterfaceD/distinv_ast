@@ -47,11 +47,11 @@ Morgan~\cite{DBLP:series/mcs/McIverM05}:
 Here $x\in\vars$, $a$ is an arithmetic expression, $b$ is a Boolean
 expression, and $p\in[0,1]\cap\mathbb Q$ is a constant.
 The commands $\ski$, $\ass{x}{a}$, and $\comp{C_1}{C_2}$ denote
-termination without changing the state, assignment, and sequential
+doing nothing, assignment, and sequential
 composition, respectively. The probabilistic choice
 $\pchoice{C_1}{p}{C_2}$ executes $C_1$ with probability $p$ and $C_2$
 with probability $1-p$. A conditional selects its branch according to
-$b$, and $\while{b}{B}$ repeatedly executes $B$ while $b$ holds.
+$b$, and $\while{b}{B}$ repeatedly executes program $B$ while $b$ holds.
 Unlike full pGCL, this fragment has no nondeterministic choice.
 
 A \emph{subdistribution} over $\Sigma$ is a function
@@ -65,13 +65,13 @@ $\sigma$ and $0$ to every other state. For a set
 $M\subseteq\subdists$, let
 $\supp(M)=\bigcup_{\mu\in M}\supp(\mu)$.
 We restrict a subdistribution to states satisfying $b$ by pointwise
-multiplication: $([b]\mu)(\sigma)=[b](\sigma)\mu(\sigma)$.
+multiplication: $([b]\mu)(\sigma)=[b](\sigma) \cdot \mu(\sigma)$.
 Subdistributions are ordered pointwise:
 $\mu\leq\nu$ iff $\mu(\sigma)\leq\nu(\sigma)$ for every $\sigma$;
 $0$ denotes the zero subdistribution.
 
 \paragraph{Denotational semantics.}
-The semantics of $C$ is a \emph{distribution transformer}
+The semantics of program $C$ is a \emph{distribution transformer}
 $\den{C}:\subdists\to\subdists$.
 Given an input subdistribution $\mu$, the value
 $\den{C}(\mu)(\sigma)$ is the probability mass of executions that
@@ -100,7 +100,7 @@ mass-nonincreasing maps $\subdists\to\subdists$, ordered pointwise,
 with least element $\bot=\lambda\eta.0$.
 Here $\omega$-continuity means monotonicity and preservation of suprema
 of increasing countable chains. Define the functional
-$\Phi_{b,B}:\mathcal H\to\mathcal H$ and the loop semantics by
+$\Phi_{b,B}:\mathcal H\to\mathcal H$ and the loop semantics by:
 \begin{equation}
  \begin{aligned}
  \Phi_{b,B}(f)(\eta)&=[\neg b]\eta+f\bigl(\den{B}([b]\eta)\bigr),\\
@@ -121,10 +121,9 @@ The mass lost during execution,
 $\weight{\mu}-\weight{\den{C}(\mu)}$, accounts for nontermination;
 for an input distribution, it is the probability of nontermination.
 
-Every transformer $\den{C}$ is mass-nonincreasing, $\omega$-continuous,
-and linear on nonnegative linear combinations that are subdistributions
-(see \Cref{app:translation}). In particular, linearity and
-$\omega$-continuity of $\den{C}$ give
+The transformer $\den{C}$ is mass-nonincreasing,
+$\omega$-continuous, and linear on nonnegative linear combinations that are subdistributions (see \Cref{app:translation}) for every program $C$. In particular, linearity and
+$\omega$-continuity of $\den{C}$ give:
 \[
  \den{C}\Bigl(\sum_i p_i \cdot \dirac{\sigma_i}\Bigr)
    =\sum_i p_i \cdot \den{C}(\dirac{\sigma_i})
@@ -203,12 +202,12 @@ The invariant additionally records that the probability masses
 of the two terminating outputs are equal.
 
 This example illustrates the two steps required to establish
-a distributional invariant: initialization and preservation.
+a distributional invariant: initialization and inductivity.
 After $k$ iterations, the accumulated distribution is
 $\mu_{2^{-k}}$.
 The probability mass remaining in the loop therefore tends
 to zero, establishing AST, and the distributions converge to
 $\frac12\delta_1+\frac12\delta_2$.
 Hence both possible outputs occur with probability $1/2$.
-The sampler proofs in \Cref{sec:case-studies} reuse distributional
+The AST proofs of the samplers in \Cref{sec:case-studies} reuse distributional
 invariants established for output correctness.

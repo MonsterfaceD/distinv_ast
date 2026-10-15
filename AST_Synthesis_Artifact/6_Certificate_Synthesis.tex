@@ -1,0 +1,282 @@
+\section{Automatic Template-Based Certificate Synthesis}
+\label{sec:certificate-synthesis}
+
+We automatically search for AST certificates for probabilistic while
+loops with loop-free bodies. Given a body encoding and an invariant,
+our prototypical implementation constructs \emph{guarded affine}
+or \emph{guarded piecewise affine} templates with integer coefficients
+for the certificate functions $u$ and $v$.
+The piecewise templates use a supplied finite partition.
+Both classes assign zero when the loop guard is false.
+
+The supported encodings use integer and Boolean state components.
+Loop guards and conditional tests are Boolean combinations of linear
+integer comparisons and Boolean flags. Right-hand sides of numerical
+assignments are integer-valued piecewise affine expressions, whose
+conditions use the same predicate fragment.
+The supplied invariant and partition predicates also belong to this
+fragment. The implementation accepts manually supplied Python/Z3
+encodings of complete iterations; it does not parse source programs
+or derive their semantics or invariants.
+
+The search uses counterexample-guided inductive synthesis (CEGIS):
+a learner proposes coefficients, and a verifier either validates them
+over the entire invariant domain or returns a state that rules them out.
+The random walk, FDR, and FLDR instantiate the same input interface and
+algorithm, using exact or abstract descriptions of complete iterations.
+
+\subsection{Loop Models, Templates, and Verification Conditions}
+\label{sec:synthesis-constraints}
+
+\paragraph{Supplied loop model.}
+The input consists of integer and Boolean state components, a guard $b$,
+an initial-state description, an invariant predicate $S$, and an encoding
+of the possible outcomes of one complete body execution.
+Initialization may be specified by an update; for FDR, this is
+$(n,v,c)\mapsto(n,1,0)$ under $n\geq1$.
+
+The predicates in the encoding are Boolean combinations of linear
+integer comparisons and Boolean state components.
+Integer components are updated by integer-valued piecewise affine
+expressions: on each of finitely many regions defined by such
+predicates, the update is affine.
+
+We identify $S$ with the set of states satisfying it.
+It is assumed to contain all initialized states and to be preserved
+by every body outcome from an enabled state.
+Thus, $S$ induces the distributional invariant
+\[
+ I=\{\mu\in\subdists\mid \operatorname{supp}(\mu)\subseteq S\}.
+\]
+This representation restricts the possible states in the support of
+a distribution; it imposes no further constraints on their probabilities.
+
+An exact body encoding specifies a finite number $h\geq1$ of
+probabilistic outcomes, represented by update functions
+$T_1,\ldots,T_h$ and fixed positive rational weights
+$p_1,\ldots,p_h$ with $\sum_{j=1}^{h}p_j=1$.
+Each $T_j$ maps the state before an iteration to its final state,
+accounting for all assignments, tests, and choices, including any reset.
+For every enabled state $\sigma\in S$, the encoding satisfies
+\[
+ \den{B}(\dirac{\sigma})
+ =\sum_{j=1}^{h}p_j\,\dirac{T_j(\sigma)}.
+\]
+Different outcomes may yield the same final state.
+
+The model is supplied as Python/Z3 expressions.
+The implementation neither parses source programs nor derives
+their semantics or invariants.
+
+Read-only program parameters are state components that the updates leave
+unchanged. For example, the FDR input $n$ remains unchanged during a run,
+but can range over all positive integers in one synthesis problem.
+These parameters are distinct from the unknown coefficients of a
+certificate template. A fixed numerical input, such as the FLDR weights
+$(4,5)$, is substituted into the model; an unspecified integer input
+remains a symbolic state component.
+
+\paragraph{Certificate templates.}
+Let $x_1,\ldots,x_d$ be all declared integer components, including
+symbolic read-only inputs, and write $x_i(\sigma)=\sigma(x_i)$ for
+their values. The automatically constructed affine basis is
+$(x_1,\ldots,x_d,1)$. Boolean flags may occur in the guard and in
+partition predicates, but are not numerical basis elements.
+For the supermartingale $v$ and variant $u$ of \Cref{thm:program-rule},
+the single-region templates are
+\[
+ \begin{aligned}
+ V_{\mathbf a}(\sigma)&=[b](\sigma)
+   \left(a_0+\sum_{i=1}^{d}a_i x_i(\sigma)\right),\\
+ U_{\mathbf u}(\sigma)&=[b](\sigma)
+   \left(u_0+\sum_{i=1}^{d}u_i x_i(\sigma)\right).
+ \end{aligned}
+\]
+Here $[b](\sigma)$ is $1$ when the loop is enabled and $0$ otherwise.
+The integers in $\mathbf a=(a_0,\ldots,a_d)$ and
+$\mathbf u=(u_0,\ldots,u_d)$ are the unknown template coefficients:
+one coefficient vector defines a function for all states and all
+admitted values of the symbolic inputs. The two vectors are independent
+unknowns, although the constraints below couple the resulting functions.
+We use $V,U$ for these program-level certificates in this section;
+they instantiate $v,u$ and carry no control-location argument.
+
+For example, the FDR variant template is
+$[v<n](u_0+u_n n+u_v v+u_c c)$. The procedure searches for the
+four coefficients; the program input $n$ remains universally quantified.
+The active expression $n-v+c$ is obtained by setting
+$(u_0,u_n,u_v,u_c)=(0,1,-1,1)$.
+
+\paragraph{Verification conditions.}
+For given $V,U$, require the following at every
+$\sigma\models S\land b$:
+\begin{gather}
+ V(\sigma)\geq1,\qquad U(\sigma)\geq1,
+ \label{eq:syn-positive}\\
+ \sum_{j=1}^{h}p_j V(T_j(\sigma))\leq V(\sigma),
+ \label{eq:syn-supermartingale}\\
+ \bigvee_{j=1}^{h}\bigl(U(T_j(\sigma))\leq U(\sigma)-1\bigr),
+ \label{eq:syn-progress}\\
+ U(\sigma)\leq V(\sigma).
+ \label{eq:syn-domination}
+\end{gather}
+These conditions impose positivity, the supermartingale inequality,
+probabilistic decrease, and sublevel boundedness, respectively.
+A decreasing outcome has probability at least $\varepsilon=\min_jp_j>0$,
+computed from the supplied weights. Since $U$ is integer-valued,
+$U\leq V$ implies $U\leq\lfloor r\rfloor$ whenever $V\leq r$.
+Every experiment below has two fair-bit outcomes, denoted $T_0,T_1$.
+There the expectation condition becomes
+$V(T_0(\sigma))+V(T_1(\sigma))\leq2V(\sigma)$ and
+$\varepsilon=1/2$.
+Requiring $U\leq V$ and integer-coefficient templates restricts the
+search beyond the general rule, which permits real-valued
+supermartingales and more general sublevel bounds.
+
+\begin{proposition}[Soundness of the synthesis constraints]
+\label{prop:synthesis-soundness}
+Suppose $S$ contains the initial loop-head states and is preserved by
+every outcome of an exact body encoding from enabled states.
+Every template instantiation
+satisfying \eqref{eq:syn-positive}--\eqref{eq:syn-domination} supplies
+certificates for \Cref{thm:program-rule} with
+$\varepsilon=\min_jp_j$.
+\end{proposition}
+\begin{proof}
+Take $I=\{\mu\in\subdists\mid\supp(\mu)\subseteq S\}$, which is
+a distributional invariant by the assumptions on $S$.
+The guarded templates vanish on terminal states; on enabled states,
+$V$ is positive and $U$ is a positive integer. The weighted inequality
+is the required expectation bound. At least one outcome of weight
+at least $\min_jp_j$ decreases $U$, and $U\leq V$ bounds $U$ by
+$\lfloor r\rfloor$ on each $V$-sublevel. Thus all premises hold.
+\end{proof}
+
+\paragraph{Supplied abstractions of the body.}
+The synthesis model need not represent a data structure used by the
+loop body explicitly. For FLDR, an abstract model records whether
+each fair-bit outcome continues, resets, or accepts, without encoding
+the full sampling tree. It retains structural restrictions, such as
+the fact that the two outcomes cannot both reset. Each bit outcome
+still has probability $1/2$.
+
+More generally, auxiliary variables $\xi$ describe possible successor
+updates, and $A(\sigma,\xi)$ specifies their permitted combinations.
+For each enabled state $\sigma\in S$ and each $\xi$ satisfying
+$A(\sigma,\xi)$, the updates and their fixed probabilities define
+the successor distribution
+\[
+ \sum_{j=1}^{h}p_j\cdot\dirac{T_j(\sigma,\xi)}.
+\]
+The verifier checks the certificate conditions for every such
+distribution.
+
+To establish AST of the concrete program, every concrete successor
+distribution, expressed in the model's state variables, must belong
+to this family. This inclusion must be justified separately;
+for FLDR, it follows from the sampling-tree properties established
+in Appendix~\ref{app:calculations}.
+The automated checks below ensure that every enabled state admits
+at least one description and that all represented outcomes preserve
+the invariant.
+
+\subsection{Counterexample-Guided Search and Fixed Partitions}
+\label{sec:synthesis-cegis}
+
+Before synthesis, the implementation checks that the supplied invariant
+contains the initialized states and is preserved by every represented
+outcome. An abstract model must also admit at least one successor
+description at every enabled state.
+
+For a fixed integer coefficient bound, the CEGIS learner proposes
+coefficients satisfying \eqref{eq:syn-positive}--\eqref{eq:syn-domination}
+on a finite set of samples. The verifier then searches the entire
+invariant domain for a violating state, together with an admissible
+transition description for abstract models. A counterexample extends the
+sample set; an unsatisfiable query validates the pair universally.
+The implementation accepts it only after rechecking each condition
+separately. The coefficient bound restricts the candidate expressions,
+not the states or symbolic program inputs over which they are verified.
+
+\paragraph{Supplied partitions.}
+\label{sec:synthesis-piecewise}
+For piecewise affine certificates, the caller supplies a finite partition
+of the enabled states. The implementation checks coverage and disjointness
+and creates separate affine coefficient blocks for each region and
+certificate. At a successor state, the applicable region is evaluated
+again, so transitions between regions are checked as well.
+Only the coefficients are synthesized; the partition predicates are fixed.
+
+\Cref{app:synthesis-search} gives the search algorithm, coefficient
+schedule, and template construction. Resource limits and unknown solver
+answers are inconclusive. An unsuccessful search does not refute AST:
+the finite coefficient schedule, templates, domination condition, and
+supplied invariant restrict the search beyond
+\Cref{thm:program-rule}.
+
+\subsection{Instantiations and Experimental Results}
+\label{sec:synthesis-examples}
+
+\Cref{tab:synthesis-results} reports the automatically synthesized
+certificates for five loop models. All coefficients were found by the
+same engine from the supplied models and, in the last row, a supplied
+partition. Each pair was verified over its entire invariant domain;
+symbolic inputs were not restricted to finitely many numerical values.
+The recorded run uses Z3~4.15.4 with ten seconds per solver call.
+Detailed encodings and certificate analyses are in
+\Cref{app:synthesis-models}; commands, logs, and additional checks are
+described in \Cref{app:synthesis-checks}.
+
+\begin{table}[t]
+\centering\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}llllr@{}}
+\toprule
+Loop model & $V$ & $U$ & $B$ & Candidates\\
+\midrule
+Random walk & $x$ & $x$ & 1 & 2\\
+FDR, symbolic $n$ & $n$ & $n-v+c$ & 1 & 3\\
+FLDR, weights $(4,5)$ & $c-2d+2$ & $c-2d+2$ & 2 & 4\\
+FLDR, abstract family & $m$ & $k-c$ & 1 & 3\\
+Two-sided walk, supplied split & $|x|$ & $|x|$ & 1 & 3\\
+\bottomrule
+\end{tabular}
+\caption{Synthesized expressions on active states, with terminal values zero.
+$B$ is the successful coefficient bound; candidate counts include earlier
+bounds. The exact and abstract loop models are specified in
+\Cref{app:synthesis-models}.}
+\label{tab:synthesis-results}
+\end{table}
+
+\paragraph{Affine certificates.}
+For the unbounded random walk, synthesis recovers $V=U=x$ from
+\Cref{sec:rule-examples}. For FDR, it recovers $V=n$ and $U=n-v+c$
+from \Cref{thm:fdr}, uniformly for all positive integer inputs $n$.
+For the exact FLDR tree with weights $(4,5)$, the synthesized function
+$c-2d+2$ serves as both certificates. Its expected value at the root
+is unchanged after one iteration, illustrating that the constraints
+do not require a uniformly negative expected drift.
+
+\paragraph{FLDR with symbolic inputs.}
+The abstract FLDR model represents arbitrary weight vectors through the
+structural properties of their sampling trees. It retains the total
+weight $m$, height bound $k$, and depth $c$ as symbolic components;
+synthesis finds the pair $V=m$, $U=k-c$. The depth variant can increase in
+expectation because of possible resets, while the separate supermartingale satisfies
+the expectation bound. Verification covers every transition admitted
+by the abstraction; its connection to concrete FLDR follows from the
+tree argument in \Cref{app:calculations}. The fixed-tree result above
+shows that distinct functions are not intrinsically necessary.
+
+\paragraph{The benefit of a supplied partition.}
+For the symmetric walk on all of $\mathbb Z$, terminating at $0$, the
+split $x<0$ versus $x\geq0$ yields $V=U=|x|$. No single affine variant
+can be both positive on the two unbounded tails and satisfy progress,
+regardless of its coefficient bound
+(\Cref{app:synthesis-models}). Thus the partition makes a certificate
+expressible that a single affine template cannot represent.
+
+These experiments demonstrate automatic coefficient search and universal
+verification for supplied loop models. Semantics, invariants, abstraction
+arguments, and partitions remain inputs. We do not compare performance
+with existing tools.

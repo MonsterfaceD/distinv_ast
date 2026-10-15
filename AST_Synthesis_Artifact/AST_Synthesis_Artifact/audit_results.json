@@ -1,0 +1,50 @@
+{
+  "guarantee": "bounded arithmetic diagnostic only; not an infinite-state proof",
+  "fdr_pcfg": {
+    "status": "passed",
+    "checked_location_states": 247721,
+    "domain": {
+      "n": [
+        1,
+        40
+      ],
+      "v": "1 <= v < 2*n",
+      "c": "0 <= c < 2*n"
+    },
+    "checks": [
+      "invariant_preservation",
+      "defined_natural_variant",
+      "terminal_zero",
+      "deterministic_descent",
+      "zero_bit_descent",
+      "sublevel_bound",
+      "V_supermartingale"
+    ]
+  },
+  "han_hoshi": {
+    "status": "passed",
+    "weight_vectors": 84,
+    "checked_intervals": 11424,
+    "domain": {
+      "weight_vector_length": [
+        1,
+        3
+      ],
+      "weight_entries": [
+        1,
+        4
+      ],
+      "v": [
+        1,
+        16
+      ],
+      "c": "0 <= c < v"
+    },
+    "checks": [
+      "half_open_classification",
+      "boundary_partition",
+      "half_expectation_bound",
+      "progress"
+    ]
+  }
+}

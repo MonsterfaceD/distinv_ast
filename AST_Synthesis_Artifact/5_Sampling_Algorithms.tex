@@ -1,0 +1,538 @@
+\section{Almost-Sure Termination of Discrete Samplers}
+\label{sec:case-studies}
+
+We apply the program-level AST rule to three discrete samplers:
+the Fast Dice Roller (FDR)~\cite{DBLP:journals/corr/abs-1304-1916},
+the Fast Loaded Dice Roller (FLDR)~\cite{DBLP:conf/aistats/SaadFRM20},
+and the Han--Hoshi sampler~\cite{HanHoshi1997}. For each, we give a distributional invariant,
+the two certificate functions, and a progress probability before
+checking the rule. FDR also illustrates the relation to pCFG proofs;
+FLDR and Han--Hoshi demonstrate progress through restart and interval
+refinement, respectively. Throughout, program variables in formulas
+abbreviate their values in the current state $\sigma$. In particular,
+the program variable $v$ is distinct from the certificate $v(\sigma)$.
+
+For each fixed sampler input, the variants below are globally bounded
+and decrease with uniformly positive probability. A bounded-variant
+argument therefore suffices for AST and yields a
+finite expected number of iterations. These case studies illustrate how our rule establishes AST by
+reasoning about one complete execution of the loop body and
+specifying certificates only where the loop guard is evaluated. The unbounded random walk in
+\Cref{sec:rule-examples} illustrates the broader scope of the rule:
+it is AST despite infinite expected runtime, with the same function
+serving as both certificates.
+
+\subsection{Fast Dice Roller: Certificates at Two Levels}
+\label{sec:fdr}
+
+\paragraph{Program and invariant.}
+We extend the FDR example for $n=3$ in \Cref{sec:rule-examples} to
+arbitrary $n\in\mathbb N_{>0}$. The program, given in
+\Cref{sec:intro}, samples uniformly from $\{0,\ldots,n-1\}$
+using fair coin flips~\cite{DBLP:journals/corr/abs-1304-1916}.
+
+The distributional-invariant proof
+of~\cite{zilken2026verifyingsamplingalgorithmsdistributional} establishes
+uniformity of the terminating output. Its support information suffices
+for our AST proof. Let $S_{\mathrm{FDR}}$ be the states with integer
+$n,v,c$ satisfying
+\begin{equation}
+ 0\leq c<\min(v,n),\qquad 0<v<2n,\qquad n>0.
+ \label{eq:fdr-support}
+\end{equation}
+For loop-entry states, allowing every positive integer $n$, take
+\[
+ \begin{aligned}
+ M_{\mathrm{FDR}}
+ &=\{\dirac{\sigma}\mid n\in\mathbb N_{>0},\ v=1,\ c=0\},\\
+ I_{\mathrm{FDR}}
+ &=\{\mu\in\subdists\mid\supp(\mu)\subseteq S_{\mathrm{FDR}}\}.
+ \end{aligned}
+\]
+Let $B_{\mathrm{FDR}}$ denote the body. For a bit $\beta\in\{0,1\}$,
+write $t_\beta=2c+\beta$ and define the complete update
+\[
+ F_\beta(\sigma)=
+ \begin{cases}
+   \sigma[v/2v-n,c/t_\beta-n],&t_\beta\geq n,\\
+   \sigma[v/2v,c/t_\beta],&t_\beta<n.
+ \end{cases}
+\]
+All expressions on the right are evaluated in the input state $\sigma$.
+Thus one complete iteration, including any recycling, has distribution
+\begin{equation}
+ \den{B_{\mathrm{FDR}}}(\dirac{\sigma})
+ =\tfrac12\dirac{F_0(\sigma)}+\tfrac12\dirac{F_1(\sigma)}.
+ \label{eq:fdr-post}
+\end{equation}
+Initialization satisfies \eqref{eq:fdr-support}, and both complete
+updates preserve it from enabled states; \Cref{app:calculations}
+checks the two cases. Terminal mass is retained unchanged, so
+$I_{\mathrm{FDR}}$ is a distributional invariant.
+
+\paragraph{Program-level AST Proof.}
+We first use guarded affine certificates. Together with $I_{\mathrm{FDR}}$,
+choose
+\begin{equation}
+\begin{aligned}
+v(\sigma)&=\begin{cases}n,&v<n,\\0,&v\geq n,\end{cases}
+&u(\sigma)&=\begin{cases}n-v+c,&v<n,\\0,&v\geq n,\end{cases}
+&\text{and}\quad \varepsilon&=\tfrac12.
+\end{aligned}
+ \label{eq:fdr-affine-certificates}
+\end{equation}
+These functions are defined on $S_{\mathrm{FDR}}$. The supermartingale
+records the fixed input size while the loop is enabled; the variant
+measures the gap between $n$ and the difference $v-c$.
+
+\begin{theorem}[AST of FDR]
+\label{thm:fdr}
+For every $n\in\mathbb N_{>0}$, FDR terminates almost surely.
+\end{theorem}
+\begin{proof}
+We check \Cref{thm:program-rule} for the invariant and certificates
+above. Both functions vanish on terminal states. On enabled states,
+integrality and \eqref{eq:fdr-support} give
+$1\leq v-c\leq n-1$, hence $1\leq u(\sigma)\leq n-1$;
+also $v(\sigma)=n>0$. In particular, $u$ is natural-valued.
+
+The input $n$ is unchanged by the body, so each successor has
+supermartingale value either $n$ or $0$. Its expected value is
+therefore at most $n=v(\sigma)$.
+For progress, choose the zero-bit outcome $\sigma'=F_0(\sigma)$.
+Doubling $v$ and $c$ doubles their difference, and recycling subtracts
+the same $n$ from both. Thus the final difference is $2(v-c)$.
+If $\sigma'$ remains enabled,
+\[
+ u(\sigma')=n-2(v-c)=u(\sigma)-(v-c)\leq u(\sigma)-1.
+\]
+Otherwise $u(\sigma')=0<u(\sigma)$. The zero-bit outcome has mass
+$1/2$ in \eqref{eq:fdr-post}, giving the stated progress bound.
+Finally, $u(\sigma)\leq v(\sigma)$ everywhere on the invariant
+support. Thus $u\leq\lfloor r\rfloor$ on every sublevel set
+$v_{\leq r}$, uniformly even when $n$ varies. All four conditions hold.
+\end{proof}
+
+The active-state expression $n-v+c$ is affine in the program variables
+and input parameter. \Cref{sec:synthesis-examples} recovers these same
+certificates automatically using affine templates.
+
+A logarithmic alternative and its relation to shortest terminating paths
+are developed in \Cref{app:fdr-log-variant}. We use this alternative
+for the explicit pCFG comparison below; the affine certificates suffice
+for the program-level proof and its synthesis.
+
+\paragraph{pCFG-level proof and comparison.}
+The pCFG rule of \Cref{sec:pcfg-rule} can also be used to prove
+AST of FDR. The affine certificates in
+\eqref{eq:fdr-affine-certificates} can be extended to pCFG certificates
+by the construction in \Cref{sec:metatheory}.
+The pCFG rule additionally requires annotations at the guard,
+assignments, fair choice, conditional, and recycling updates.
+The location where the loop guard is evaluated carries
+\eqref{eq:fdr-support}; intermediate locations carry the corresponding
+facts after partially executed updates.
+
+For a fully explicit comparison, Appendix~\ref{app:fdr-pcfg-proof}
+expands the logarithmic variant \eqref{eq:fdr-log-variant} into
+annotations for the pCFG. It uses $V=n$ at nonterminal locations
+and $V=0$ at the exit, and scales the logarithmic variant by $7$,
+the maximum number of transitions per iteration, before adding
+location offsets.
+After doubling $v$, the old difference is expressed as $v/2-c$;
+the local invariant records the required integrality and parity.
+Appendix~\ref{app:fdr-pcfg-proof} checks strict descent on deterministic
+edges and descent with probability $1/2$ at the fair choice.
+
+Both the affine and the logarithmic certificates yield AST proofs
+at both the program and pCFG levels.
+The explicit pCFG variant $U$ requires eleven separate cases,
+one for each program location.
+Our AST rule compares certificate values only at the point where
+the loop guard is evaluated and requires no annotations for
+locations inside the loop body.
+The successor distribution in \eqref{eq:fdr-post} combines all
+intermediate effects, so the supplied certificates need no location
+offsets. In particular, the program-level logarithmic variant
+\eqref{eq:fdr-log-variant} has only two cases, distinguishing
+enabled from terminal states.
+
+\subsection{Fast Loaded Dice Roller: Rejection and Restart}
+\label{sec:fldr}
+
+Let $n\geq1$. The Fast Loaded Dice Roller (FLDR) samples outcome $i$
+with probability $a_i/m$, where $a_1,\ldots,a_n$ are positive integers
+and $m=\sum_{i=1}^n a_i$~\cite{DBLP:conf/aistats/SaadFRM20}.
+Fix such a weight vector; the weights and the tree constructed from them
+are read-only parameters of the sampling loop. Put
+$k=\lceil\log_2m\rceil$ and add a rejecting outcome $n+1$ of weight
+$2^k-m$. The binary expansions of these $n+1$ weights determine a finite
+fair-bit decision tree: a set bit at position $k-c$ gives one leaf with
+the corresponding label at depth $c$. Thus each label occurs at most
+once per level and no internal node has two rejecting children.
+
+We use a row-indexed presentation of this tree. Internal nodes come first
+in each row, followed by leaves in decreasing label order. Write
+$\phi_h(c)$ for the number of internal nodes in row $c$, and let
+$H[d,c]$ be zero at an internal node and its output label at a leaf.
+The two children of internal node $(c,d)$ have indices $2d$ and $2d+1$
+in row $c+1$. This convention is also used by the concrete synthesis
+example; it is an explicit tree presentation of FLDR, rather than the
+array indexing of the original implementation. We set both lookup
+functions to zero outside their valid table indices, making them total;
+these additional values are not used on the invariant below.
+
+Once the finite tree has been constructed, the sampling loop is:
+\begin{lstlisting}[basicstyle=\ttfamily\small,mathescape=true,frame=single]
+$c := 0;\ d := 0;$
+while ($d < \phi_h(c)$) do
+  $c := c+1;$
+  $d := 2d$ [1/2] $d := 2d+1;$
+  if ($H[d,c]=n+1$) then $c:=0;\ d:=0$ else skip
+end
+\end{lstlisting}
+On termination it returns $H[d,c]$. If the root is already an accepting
+leaf, the loop is skipped; this includes the single weight $a_1=2^k$,
+in particular $m=1$. Otherwise the root is internal.
+
+\paragraph{Initial distributions and invariant.}
+Let $S_{\mathrm{FLDR}}$ be the set of states in which $(c,d)$ is a
+valid node of this fixed tree and $H[d,c]\ne n+1$; thus the node is
+internal or accepting. In particular, its integer coordinates satisfy
+\begin{equation}
+ 0\le c\le k,\qquad 0\le d<2n,
+ \qquad d<\phi_h(c)\ \Longrightarrow\ c<k.
+ \label{eq:fldr-support}
+\end{equation}
+The last implication excludes enabled states at maximal depth.
+The row construction and these bounds are justified in
+\Cref{app:calculations}. Validity as a tree node is part of the
+invariant, not merely a consequence of the displayed numerical bounds.
+Define
+\[
+ \begin{aligned}
+ M_{\mathrm{FLDR}}
+   &=\{\dirac{\sigma}\mid\sigma\in S_{\mathrm{FLDR}},
+                         \sigma(c)=\sigma(d)=0\},\\
+ I_{\mathrm{FLDR}}
+   &=\{\mu\in\subdists\mid\supp(\mu)\subseteq S_{\mathrm{FLDR}}\}.
+ \end{aligned}
+\]
+Initialization selects the root, which is internal or accepting, so
+$M_{\mathrm{FLDR}}\subseteq I_{\mathrm{FLDR}}$. From an internal node,
+both children are valid tree nodes. A rejecting child is replaced by
+the root; a non-rejecting child remains internal or accepts. Thus every
+complete body execution from an enabled state preserves $S_{\mathrm{FLDR}}$. Retaining the
+mass of already accepting states proves that $I_{\mathrm{FLDR}}$ is a
+distributional invariant.
+
+\paragraph{Certificates.}
+Together with $I_{\mathrm{FLDR}}$, let $b$ be the guard
+$d<\phi_h(c)$ and, for $\sigma\in S_{\mathrm{FLDR}}$, choose
+\[
+ v(\sigma)=\begin{cases}0&\sigma\not\models b,\\m&\sigma\models b,\end{cases}
+ \qquad
+ u(\sigma)=\begin{cases}0&\sigma\not\models b,\\k-c&\sigma\models b,\end{cases}
+ \qquad\text{and}\qquad
+ \varepsilon=\tfrac12.
+\]
+\begin{theorem}[AST of FLDR]
+\label{thm:fldr}
+For every nonempty finite vector of positive integer weights, the FLDR
+sampling loop terminates almost surely.
+\end{theorem}
+\begin{proof}
+We check \Cref{thm:program-rule} on $M_{\mathrm{FLDR}}$ with the
+invariant and certificates above.
+Both certificates are zero on terminal states, and $v$ is positive on
+enabled states because $m>0$. Neither the weights nor $m$ are modified.
+Every post-state has $v$ equal to $m$ if the loop remains enabled and
+$0$ otherwise, proving the supermartingale inequality.
+
+Consider an enabled node. By \eqref{eq:fldr-support}, $c<k$, so
+$u=k-c\geq1$. A non-rejecting child either continues at depth $c+1$,
+decreasing $u$ by one, or accepts, decreasing $u$ to zero. At most one
+child rejects, so the total probability of decreasing outcomes is at
+least $\varepsilon=1/2$. A rejecting outcome resets $(c,d)$ and may
+increase $u$ back to $k$.
+
+Finally, for $r\geq1$, every enabled state with $v\leq r$ satisfies
+$m\leq r$, hence $u\leq k\leq\lceil\log_2r\rceil$.
+For $0\leq r<1$ there are only terminal states and $u=0$.
+This bound also covers a family of inputs with varying weights.
+Thus \Cref{thm:program-rule} applies.
+\end{proof}
+
+The proof uses three structural facts: $m$ is unchanged, depth is bounded
+by $k$, and at least one child avoids rejection.
+\Cref{sec:synthesis-examples} synthesizes the displayed certificates
+from this abstraction and also finds a common certificate for weights
+$(4,5)$, using both depth and node index. Separate functions thus give
+a direct account of restart, but are not intrinsically necessary for FLDR.
+
+\paragraph{From AST to total correctness.}
+Distributional-invariant reasoning establishes the required output
+proportions for FDR and FLDR~\cite{zilken2026verifyingsamplingalgorithmsdistributional}.
+The AST proofs use only support information and are therefore also
+compatible with invariants retaining these probability relations.
+For the row-indexed FLDR tree used here, \Cref{app:calculations} additionally
+derives the output probabilities directly from its leaves and restart
+step. Together with \Cref{thm:fdr,thm:fldr}, which ensure total output
+mass one from each initialized input, these arguments establish total
+correctness: FDR is uniform, and FLDR returns $i$ with probability $a_i/m$.
+
+
+
+\subsection{Han--Hoshi Sampling: Dyadic Refinement}
+\label{sec:HanHoshi}
+
+Let $n\geq1$. The fair-bit, finite-output instance of Han--Hoshi interval
+sampling~\cite{HanHoshi1997} draws from a distribution with positive
+integer weights $a_1,\ldots,a_n$ and total weight
+$m=\sum_{i=1}^n a_i$. Fix these weights as read-only parameters.
+Write $S_i=\sum_{j=1}^i a_j$, with $S_0=0$.
+The algorithm repeatedly refines a dyadic interval until it lies entirely
+inside one of the target intervals
+\[
+ I_i=\left[\frac{S_{i-1}}m,\frac{S_i}m\right),
+ \qquad 1\le i\le n.
+\]
+\noindent\begin{minipage}{\linewidth}
+Its sampling loop is:
+\begin{lstlisting}[basicstyle=\ttfamily\small,mathescape=true,frame=single]
+$v := 1;\ c := 0;\ r := 0;$
+while ($r=0$) do
+  $v := 2v;$
+  $c := 2c$ [1/2] $c := 2c+1;$
+  $r := \idx(c,v)$
+end
+\end{lstlisting}
+\end{minipage}
+
+For $v>0$, define
+\[
+ \idx(c,v)
+ \coloneqq
+ \begin{cases}
+ i,
+ & \text{if }S_{i-1}v\le cm\text{ and }(c+1)m\le S_iv
+   \text{ for some }i\in\{1,\ldots,n\},\\
+ 0,&\text{if no such }i\text{ exists}.
+ \end{cases}
+\]
+For $v\leq0$, set $\idx(c,v)=0$; these values are not used by the loop.
+The pair $(c,v)$ represents the interval
+\[
+ J(c,v)=\left[\frac cv,\frac{c+1}v\right).
+\]
+\paragraph{Initial distributions and invariant.}
+Let $S_{\mathrm{HH}}$ be the set of states with integer coordinates
+$v,c,r$ satisfying
+\begin{equation}
+ v>0,\qquad 0\le c<v,\qquad 0\le r\le n.
+ \label{eq:han-hoshi-support}
+\end{equation}
+Use the initialized states and the lifted support invariant
+\[
+ \begin{aligned}
+ M_{\mathrm{HH}}
+   &=\{\dirac{\sigma}\mid\sigma\in S_{\mathrm{HH}},
+       \sigma(v)=1,\ \sigma(c)=\sigma(r)=0\},\\
+ I_{\mathrm{HH}}
+   &=\{\mu\in\subdists\mid\supp(\mu)\subseteq S_{\mathrm{HH}}\}.
+ \end{aligned}
+\]
+Clearly $M_{\mathrm{HH}}\subseteq I_{\mathrm{HH}}$. From an enabled
+state, doubling $v$ and replacing $c$ by $2c$ or $2c+1$ preserve
+$v>0$ and $0\leq c<v$; the assignment to $r$ gives an integer in
+$\{0,\ldots,n\}$. Hence complete body executions preserve
+$S_{\mathrm{HH}}$, and $I_{\mathrm{HH}}$ is a distributional invariant.
+No consistency condition between $r$ and $\idx(c,v)$ is needed for this
+support invariant. After each iteration they agree; initially, when
+$n=1$, the program nevertheless starts with $r=0$ and performs one
+refinement before returning its sole outcome.
+
+Let $B_{\mathrm{HH}}$ denote the loop body. For $\beta\in\{0,1\}$, set
+\[
+ c_\beta=2c+\beta,\qquad v'=2v,\qquad r_\beta=\idx(c_\beta,v').
+\]
+For a Dirac input $\dirac{\sigma}$,
+\begin{equation}
+ \post{B_{\mathrm{HH}}}(\dirac{\sigma})
+ =\tfrac12\dirac{\sigma[v/v',c/c_0,r/r_0]}
+ +\tfrac12\dirac{\sigma[v/v',c/c_1,r/r_1]}.
+ \label{eq:han-hoshi-post}
+\end{equation}
+Thus one complete program-level step is precisely a fair choice between
+the left and right halves of $J(c,v)$. Below, a prime on a certificate
+denotes its value in the successor sampled from
+\eqref{eq:han-hoshi-post}; $\mathbb E_\sigma$ and $\Pr\nolimits_\sigma$
+denote expectation and probability for this one-step distribution.
+
+\paragraph{Certificates.}
+For $\sigma\in S_{\mathrm{HH}}$, let
+\[
+ N(\sigma)
+ =\left|\left\{i\in\{1,\ldots,n-1\}\,\middle|\,
+ \frac cv<\frac{S_i}{m}<\frac{c+1}{v}\right\}\right|
+\]
+be the number of internal target boundaries lying strictly inside
+$J(c,v)$. Together with $I_{\mathrm{HH}}$, choose
+\[
+ v(\sigma)=u(\sigma)=
+ \begin{cases}
+ 0,&r\ne0,\\
+ \max\{1,N(\sigma)\},&r=0,
+ \end{cases}
+ \qquad\text{and}\qquad \varepsilon=\tfrac12.
+\]
+The maximum with $1$ ensures that both certificates are positive
+whenever $r=0$, including states with $N(\sigma)=0$, such as the
+initialized state when $n=1$.
+
+\begin{theorem}[AST of Han--Hoshi]
+ \label{thm:han-hoshi}
+For every nonempty finite vector of positive integer weights, the
+Han--Hoshi sampling loop terminates almost surely.
+\end{theorem}
+\begin{proof}
+We check \Cref{thm:program-rule} on $M_{\mathrm{HH}}$ with the
+invariant and certificates above. Both functions vanish exactly on
+terminal states, and $\mathsf U$ is natural-valued.
+Consider an enabled state and write $q=N(\sigma)$.  Splitting $J(c,v)$
+into its two children cannot create an internal target boundary.  Every
+boundary counted in a child is counted in the parent, while a boundary at
+the common endpoint of the children is counted in neither.  If $N_\beta$
+denotes the number of boundaries strictly inside child $\beta$, then
+\begin{equation}
+ N_0+N_1\le q.
+ \label{eq:han-hoshi-boundary-split}
+\end{equation}
+Since the target intervals partition $[0,1)$ and every child lies in
+$[0,1)$, a child is contained in one target interval exactly when its
+interior contains no target boundary. This also handles boundaries at
+endpoints, which are not counted. Thus a child remains enabled exactly
+when its interior contains a target boundary. Its post-state certificate
+is therefore exactly $N_\beta$, including the value zero when it terminates. Using \eqref{eq:han-hoshi-post} and
+\eqref{eq:han-hoshi-boundary-split}, for $q>0$ we obtain
+\[
+ \mathbb E_\sigma[\mathsf V']
+ =\tfrac12(N_0+N_1)
+ \le\tfrac q2
+ \le \mathsf V(\sigma).
+\]
+If $q=0$, both children are terminal and the expectation is zero.  This
+proves the supermartingale obligation of \Cref{thm:program-rule}.
+
+For the decrease obligation, if $q>0$, at least one of $N_0,N_1$ is
+strictly smaller than $q$: otherwise their sum would be at least $2q$,
+contradicting \eqref{eq:han-hoshi-boundary-split}.  The corresponding
+post-state therefore has strictly smaller $\mathsf U$.  It is selected
+with probability $1/2$, so the decrease condition holds with
+$\varepsilon=1/2$.  If $q=0$, both children terminate and decrease
+$\mathsf U$ from $1$ to $0$, so the same bound applies.
+
+Finally, $\mathsf U=\mathsf V$ on all of $S_{\mathrm{HH}}$.  Consequently,
+on each sublevel set $\mathsf V_{\le R}$ we have
+$\mathsf U\le R$.  All obligations of \Cref{thm:program-rule} hold, and
+the loop is AST.
+\end{proof}
+
+\paragraph{Illustrating the two certificate roles.}
+For weights $(a_1,a_2)=(1,2)$, the only internal target boundary is
+$1/3$.  Hence every enabled state has $\mathsf V=\mathsf U=1$.
+\Cref{fig:han-hoshi-certificates} shows the first two refinements.
+Exactly one child still straddles $1/3$ and retains value $1$; the
+other is contained in a target interval and has value $0$.
+Thus, at either enabled state shown,
+\[
+ \underbrace{\mathbb E_\sigma[\mathsf V']
+ =\tfrac12\cdot1+\tfrac12\cdot0
+ =\tfrac12\le\mathsf V(\sigma)}_{\text{supermartingale obligation}},
+ \qquad
+ \underbrace{\Pr\nolimits_\sigma\!\left(\mathsf U'<\mathsf U(\sigma)\right)
+ =\tfrac12}_{\text{variant decrease}}.
+\]
+The continuing branch need not decrease the variant, and the decreasing
+bit changes between refinements. The same function meets two different
+obligations: non-increase in expectation and strict decrease with
+uniformly positive probability.
+
+\begin{figure}[tbp]
+ \centering
+ % Uses only TikZ and xcolor, already loaded in packages.tex.
+ % Horizontal positions are fractions of the unit interval.
+ \begin{tikzpicture}[
+   x=8.8cm,y=1cm,
+   every node/.style={font=\small},
+   active/.style={draw=black!75,fill=black!5,line width=.7pt},
+   first/.style={draw=blue!65!black,fill=blue!9,line width=.5pt},
+   second/.style={draw=orange!70!black,fill=orange!14,line width=.5pt},
+   bit/.style={font=\scriptsize,fill=white,inner sep=1.5pt},
+   rowlabel/.style={anchor=east,font=\scriptsize,align=right}
+ ]
+  % The target distribution, with its unique internal boundary.
+  \path[first]  (0,0) rectangle (1/3,.48);
+  \path[second] (1/3,0) rectangle (1,.48);
+  \node at (1/6,.24) {$I_1$};
+  \node at (2/3,.24) {$I_2$};
+  \node[rowlabel] at (-.025,.24) {target\ intervals};
+  \node[above,font=\scriptsize] at (0,.48) {$0$};
+  \node[above,font=\scriptsize] at (1/3,.48) {$\tfrac13$};
+  \node[above,font=\scriptsize] at (1,.48) {$1$};
+
+  % Put the guide behind the arrows and their probability labels.
+  \draw[densely dashed,black!55] (1/3,0) -- (1/3,-.55);
+  \draw[densely dashed,black!55] (1/3,-1.15) -- (1/3,-1.90);
+  \draw[densely dashed,black!55] (1/3,-2.60) -- (1/3,-3.35);
+
+  % The initial interval J(0,1).
+  \path[active] (0,-1.15) rectangle (1,-.55);
+  \node at (.5,-.85) {$\mathsf V=\mathsf U=1$};
+  \node[rowlabel] at (-.025,-.85) {initial};
+
+  % First fair bit: left child continues, right child returns outcome 2.
+  \path[active] (0,-2.60) rectangle (.5,-1.90);
+  \path[second] (.5,-2.60) rectangle (1,-1.90);
+  \node at (.25,-2.25) {$\mathsf V=\mathsf U=1$};
+  \node[align=center] at (.75,-2.25)
+    {$\mathsf V=\mathsf U=0$\\[-1pt]\scriptsize return $2$};
+  \node[rowlabel] at (-.025,-2.25) {first\ bit};
+  \draw[->] (.5,-1.15) -- node[bit,above left] {$\tfrac12$} (.25,-1.90);
+  \draw[->] (.5,-1.15) -- node[bit,above right] {$\tfrac12$} (.75,-1.90);
+  \node[below,font=\scriptsize,inner sep=2pt] at (.5,-2.60) {$\tfrac12$};
+
+  % Refine only the still-enabled left child.
+  \path[first]  (0,-4.05) rectangle (.25,-3.35);
+  \path[active] (.25,-4.05) rectangle (.5,-3.35);
+  \node[align=center] at (.125,-3.70)
+    {$\mathsf V=\mathsf U=0$\\[-1pt]\scriptsize return $1$};
+  \node at (.375,-3.70) {$\mathsf V=\mathsf U=1$};
+  \node[rowlabel] at (-.025,-3.70) {second\ bit};
+  \draw[->] (.25,-2.60) -- node[bit,above left] {$\tfrac12$} (.125,-3.35);
+  \draw[->] (.25,-2.60) -- node[bit,above right] {$\tfrac12$} (.375,-3.35);
+  \node[below,font=\scriptsize,inner sep=2pt] at (0,-4.05) {$0$};
+  \node[below,font=\scriptsize,inner sep=2pt] at (.25,-4.05) {$\tfrac14$};
+  \node[below,font=\scriptsize,inner sep=2pt] at (.5,-4.05) {$\tfrac12$};
+
+  % Short boundary ticks at the top of each enabled interval.
+  \draw[black!65,line width=.6pt] (1/3,-.55) -- (1/3,-.67);
+  \draw[black!65,line width=.6pt] (1/3,-1.90) -- (1/3,-2.02);
+  \draw[black!65,line width=.6pt] (1/3,-3.35) -- (1/3,-3.47);
+  \node[align=center,font=\scriptsize,text=black!70] at (.77,-3.70)
+    {Gray: enabled interval\\Color: terminal interval};
+ \end{tikzpicture}
+ \caption{Han--Hoshi for weights $(1,2)$.  Bars represent half-open
+ intervals at their actual horizontal positions; the dashed guide marks
+ the target boundary $1/3$.  A gray interval straddles this boundary and
+ has $\mathsf V=\mathsf U=1$; a colored interval is contained in $I_1$ or
+ $I_2$ and has value $0$.  Arrows show conditional probabilities for one
+ complete loop iteration.  Only the enabled child is refined further.}
+ \label{fig:han-hoshi-certificates}
+\end{figure}
+
+
+Interval-boundary counting thus supplies both certificates, complementing
+the difference- and depth-based arguments for FDR and FLDR.
+\Cref{app:han-hoshi-tail} derives a geometric tail bound from the same
+one-iteration estimate.

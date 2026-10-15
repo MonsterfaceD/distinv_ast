@@ -1,0 +1,87 @@
+\section{Related Work}
+\label{sec:relwork}
+
+\paragraph{AST proof rules.}
+Bounded variants establish AST through a uniformly positive probability
+of descent in a bounded natural-valued range~\cite{DBLP:series/mcs/McIverM05}.
+McIver et al.~\cite{10.1145/3158121} give a source-level rule, including
+demonic choice, in which a single real-valued function satisfies both
+supermartingale and probabilistic progress obligations. Majumdar and
+Sathiyanarayana~\cite{DBLP:journals/pacmpl/MajumdarS25} separate these roles
+at pCFG level and prove relative completeness in arithmetic, also
+establishing completeness of the earlier single-function rule.
+Our contribution concerns the representation of certificates and their
+transfer to whole iterations, rather than greater semantic proving power.
+Separating the roles allows a resetting variant without requiring that
+particular variant to be a supermartingale; it does not show that every
+single-function certificate must fail.
+
+\paragraph{Distribution transformers and program logics.}
+Kozen's semantics~\cite{DBLP:conf/focs/Kozen79,DBLP:conf/stoc/Kozen83}
+provides the denotational foundation for our post-distribution
+transformers. Expectation-transformer reasoning~\cite{DBLP:series/mcs/McIverM05}
+and distributional program logics, including den Hartog and de
+Vink~\cite{DBLP:journals/ijfcs/HartogV02} and
+Ellora~\cite{DBLP:conf/esop/BartheEGGHS18}, support broader probabilistic
+correctness properties. Our AST rule complements such reasoning:
+distributional invariants can carry output information, while termination
+uses their support and two state functions. Thus, the rule does not
+replace distributional output-correctness arguments.
+
+\paragraph{Certificate and invariant synthesis.}
+Constraint-based methods synthesize martingale and ranking-supermartingale
+certificates~\cite{ChakarovSankaranarayanan2013}. Batz et
+al.~\cite{BatzEtAl2023} synthesize piecewise linear quantitative invariants
+that certify bounds on expected outcomes and finite expected runtime.
+Their counterexample-guided approach operates at source level and also
+supports infinite-state programs.
+We instantiate this search pattern with two AST certificates and the
+sufficient coupling $U\leq V$. The random
+walk illustrates qualitative termination with infinite expected runtime.
+Neither CEGIS nor affine or piecewise affine templates are new here.
+The contribution is their explicit instantiation for these two
+iteration-level certificate roles. State components, invariants, transition summaries, and partitions
+remain supplied inputs; the affine basis is generated from all declared
+integer components and the constant term. Bounded search is incomplete
+even though successful candidates are checked universally over the
+encoded states.
+
+Haase et al.~\cite{haase2026generatingfunctionsmeetoccupation} generalize
+probability generating functions to occupation measures and synthesize
+occupation invariants in this representation. The coefficients bound
+expected visit counts and need not sum to one.
+These invariants support exact inference,
+with positive AST obtainable under suitable finiteness conditions.
+Their unknowns and verification conditions therefore differ from our
+state-function certificates for qualitative AST. Template instantiation
+is common to both approaches, but their results are not interchangeable.
+
+\paragraph{Exact samplers and their verification.}
+The algorithms studied here are established constructions:
+Lumbroso's FDR~\cite{DBLP:journals/corr/abs-1304-1916}, Saad et al.'s
+FLDR~\cite{DBLP:conf/aistats/SaadFRM20}, and Han and Hoshi's interval
+algorithm~\cite{HanHoshi1997}. Zilken et
+al.~\cite{zilken2026verifyingsamplingalgorithmsdistributional}
+verify partial and total correctness of FDR and FLDR, combining
+distributional invariants with the pCFG two-certificate AST rule.
+The present paper formulates and proves a general iteration-level rule,
+then revisits these AST arguments through that interface. We make the
+required support assertions explicit; for FLDR, we establish the
+valid-node assertion for the tree convention used here.
+Han--Hoshi supplies a different termination argument, rather than
+a new output-correctness proof.
+Bagnall et al.'s Zar compiler~\cite{DBLP:journals/pacmpl/Bagnall0023}
+verifies compilation of probabilistic programs into random-bit samplers
+in Coq. Our handwritten proofs and solver-backed prototype do not
+provide that level of mechanization.
+
+\paragraph{Nondeterminism.}
+The rules of McIver et al.~\cite{10.1145/3158121} and Majumdar and
+Sathiyanarayana~\cite{DBLP:journals/pacmpl/MajumdarS25} support
+demonic nondeterminism. Our current
+transformer assigns one post-distribution to each input. Extending the
+rule to universal scheduler quantification requires corresponding
+semantic and progress obligations. Programmatic strategy
+synthesis~\cite{DBLP:journals/pacmpl/BatzBKW24} instead resolves
+nondeterminism to obtain a selected program; it addresses a different
+quantification over choices.

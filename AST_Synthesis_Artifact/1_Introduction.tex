@@ -1,0 +1,195 @@
+\section{Introduction}
+\label{sec:intro}
+
+Probabilistic programs make random choices, so repeated runs on the same
+input may behave differently. A fundamental correctness property is
+\emph{almost-sure termination} (AST): a program terminates with probability
+one on a given input~\cite{SahebDjahromi1978}. Infinite executions are permitted, provided
+that their total probability is zero. For example, tossing a fair coin
+until the first heads is almost-surely terminating, although the infinite
+sequence of tails never terminates. Proving AST is challenging: deciding
+AST on a fixed input is as hard as the \emph{universal halting problem},
+which asks whether a deterministic program terminates on every
+input~\cite{KaminskiKM2019}.
+An important application is the verification of \emph{samplers}, which
+generate values according to a prescribed probability distribution and
+underpin simulation and probabilistic programming. Their verification requires both the intended output distribution
+and termination with probability one.
+Distributional invariants provide a framework for reasoning about
+the output distributions of such samplers%
+~\cite{zilken2026verifyingsamplingalgorithmsdistributional}.
+
+\paragraph{From control-flow graphs to loop iterations.}
+We develop an AST rule within a framework for reasoning about probability
+distributions over program states~\cite{zilken2026verifyingsamplingalgorithmsdistributional},
+so that output correctness and termination can be established together.
+McIver et al.~\cite{10.1145/3158121} give a source-level AST rule using one
+nonnegative state function. It satisfies a \emph{supermartingale condition},
+which prevents an increase in expectation, and a \emph{progress condition},
+which ensures a positive probability of decrease.
+
+In their AST proof rule, Majumdar and
+Sathiyanarayana~\cite{DBLP:journals/pacmpl/MajumdarS25}
+separate these roles into two functions, called certificates.
+They prove soundness and relative completeness of this rule for
+discrete probabilistic programs with bounded nondeterminism. Here, bounded nondeterminism permits only
+finitely many alternatives at each step, and relative completeness means
+that every AST program has a proof assuming access to all true arithmetic
+assertions. They also establish relative completeness of McIver et al.'s
+rule~\cite{10.1145/3158121}, resolving its previously open completeness
+question.
+
+Their two-certificate rule is formulated over a probabilistic control-flow
+graph (pCFG), whose nodes represent program locations and whose edges
+represent execution steps. Applying it requires an invariant and
+certificate values at every location, including the assignments, tests,
+and choices inside a loop body. The certificates therefore depend on
+both the program location and the values of the variables.
+
+Our AST rule instead uses the probability distribution produced by one
+entire execution of the loop body. This combines its assignments, tests,
+and choices into one semantic step. Both certificates are specified only
+where the loop guard is evaluated; no intermediate annotations are needed.
+We establish soundness and relative completeness for loops with loop-free
+bodies and fixed choice probabilities by translating certificates between
+the program and pCFG levels.
+
+Distributional invariants describe properties of the probability
+distributions at loop heads and have been used to prove output correctness
+of discrete sampling algorithms%
+~\cite{zilken2026verifyingsamplingalgorithmsdistributional}.
+Our AST rule allows these invariants to be reused for termination proofs.
+Their support consists of all states assigned positive probability by
+at least one distribution in the invariant. Preservation of the
+distributional invariant ensures that this set is closed under
+positive-probability successors of enabled loop iterations.
+It therefore supplies a state invariant on which to check the
+termination certificates, without requiring a separate proof of
+state invariance. Output correctness and almost-sure termination
+can thus be established using the same distributional invariant.
+
+\paragraph{Two certificates for almost-sure termination.}
+A \emph{variant function} assigns a nonnegative integer to each state.
+Whenever the guard holds, one iteration must decrease its value with
+probability at least a fixed $\varepsilon>0$.
+Other outcomes may increase the variant, as can happen when
+Lumbroso's Fast Dice Roller recycles a rejected candidate (see below).
+Thus, a positive probability of decrease alone does not guarantee AST.
+A second, nonnegative \emph{supermartingale} function must not increase
+in expectation over one loop iteration.
+Inspired by Majumdar and
+Sathiyanarayana~\cite{DBLP:journals/pacmpl/MajumdarS25},
+we link the two functions by requiring the variant to be bounded
+on every set where the supermartingale is bounded by a fixed constant;
+the variant's bound may depend on that constant.
+Both functions are positive while the guard holds and are taken
+to be zero when it does not.
+
+Intuitively, along almost every program run, the values of the
+supermartingale function at successive evaluations of the loop guard
+remain bounded. The bound may depend on the run.
+The coupling then also bounds the variant along that run.
+For any fixed bound on the variant, sufficiently many consecutive
+decreases force it to reach zero and hence the loop to terminate.
+Since each enabled iteration decreases the variant with probability
+at least $\varepsilon$, the probability of remaining in the loop
+forever while the variant stays within that bound is zero. These conditions are checked on states in the support of the
+distributional invariant%
+~\cite{zilken2026verifyingsamplingalgorithmsdistributional}.
+The invariant's quantitative information remains available for
+output correctness.
+
+\paragraph{Illustration: the Fast Dice Roller.}
+Lumbroso's Fast Dice Roller
+(FDR)~\cite{DBLP:journals/corr/abs-1304-1916} simulates a fair $n$-sided
+die using independent fair bits, returning each integer in
+$\{0,\ldots,n-1\}$ with equal probability.
+It maintains a candidate $c$, initially zero, and a range size $v$,
+initially one. The candidate is uniform on $\{0,\ldots,v-1\}$.
+Each iteration draws a fresh bit $b\in\{0,1\}$ and updates
+$c\gets2c+b$ and $v\gets2v$: appending a bit doubles the candidate range.
+If $v<n$, another bit is needed. Once $v\geq n$, the algorithm returns
+$c$ if $c<n$; otherwise it subtracts $n$ from both $c$ and $v$ and
+continues. This \emph{recycling} retains randomness from rejected candidates.
+
+The corresponding program is shown below, where $[1/2]$ denotes a fair
+probabilistic choice between the two adjacent assignments:
+\begin{lstlisting}[basicstyle=\ttfamily\small,mathescape=true,frame=single]
+$v := 1;\ c := 0;$
+while ($v<n$) do
+  $v := 2v;$
+  $c := 2c$ [1/2] $c := 2c+1;$
+  if ($c\ge n$) then $v:=v-n;\ c:=c-n$ else skip
+end
+\end{lstlisting}
+
+For $n=6$, the first three bits produce eight equally likely candidates.
+The values $0,\ldots,5$ are accepted. Conditional on rejection, $c$ is
+uniform on $\{6,7\}$; subtracting six leaves a uniform candidate in
+$\{0,1\}$ with range size two. This retains one fair bit, so only two
+additional flips are needed to obtain eight equally likely candidates again.
+
+Our termination proof of FDR using our AST rule treats range expansion,
+the random choice, and possible recycling as one loop iteration.
+The successor distribution is derived from the loop body, while the
+values of the variant and supermartingale functions are compared only
+at loop heads. The resulting proof is more succinct and simpler than
+a direct application of the pCFG rule of Majumdar and
+Sathiyanarayana~\cite{DBLP:journals/pacmpl/MajumdarS25}
+(see \Cref{app:fdr-pcfg-proof}).
+
+\paragraph{Contributions.}
+The main contributions of this paper are:
+\begin{enumerate}
+\item \textbf{An AST proof rule using distribution transformers.}
+We formulate a two-certificate rule for probabilistic loops with loop-free
+bodies (\Cref{sec:rule}) and prove soundness and relative completeness
+by translating certificates to and from the pCFG rule of Majumdar and
+Sathiyanarayana~\cite{DBLP:journals/pacmpl/MajumdarS25}
+(\Cref{sec:metatheory}).
+
+\item \textbf{AST proofs for discrete sampling algorithms.}
+We apply our rule to FDR, the Fast Loaded Dice Roller (FLDR), and
+Han--Hoshi sampling
+(\Cref{sec:case-studies}).\footnote{%
+Prior work already establishes AST of FDR and FLDR using pCFG
+certificates alongside distributional
+invariants~\cite{zilken2026verifyingsamplingalgorithmsdistributional}.
+We revisit these arguments through the general iteration-level rule
+and make their support assertions explicit.}
+For FDR, we compare the same logarithmic progress argument at the
+iteration and pCFG levels; a simpler affine variant is also available
+at either level. Han--Hoshi adds an application based on interval
+refinement.
+
+\item \textbf{Template-based certificate synthesis.}
+Our prototype implementation searches guarded affine and piecewise
+affine templates using supplied invariants and iteration semantics
+(\Cref{sec:certificate-synthesis}). Bounded integer coefficients and
+fixed partitions make the search incomplete for AST programs.
+Experiments on an unbounded random walk, symbolic FDR, a concrete FLDR
+tree, and a structural FLDR abstraction demonstrate synthesis of both
+certificates, including for a loop with infinite expected runtime.
+\end{enumerate}
+
+\paragraph{Scope.}
+We consider programs with fixed-probability discrete choices, no
+nondeterminism, and unnested while-loops, i.e., loops with loop-free
+bodies.
+Relative completeness concerns the existence of a suitable invariant
+and certificates; it does not imply completeness of the restricted
+template search.
+
+\paragraph{Organisation of the paper.}
+\Cref{sec:prelims} introduces the program semantics and the concept
+of distributional invariants.
+\Cref{sec:rule} presents our AST proof rule with random-walk and
+FDR examples.
+\Cref{sec:metatheory} recalls the pCFG rule%
+~\cite{DBLP:journals/pacmpl/MajumdarS25}, compares the two proof rules,
+and proves soundness and relative completeness of our AST rule.
+\Cref{sec:case-studies} develops AST proofs for the sampling algorithms;
+\Cref{sec:certificate-synthesis} presents certificate synthesis and
+its results.
+\Cref{sec:relwork,sec:conclusion} discuss related work and conclude,
+respectively.

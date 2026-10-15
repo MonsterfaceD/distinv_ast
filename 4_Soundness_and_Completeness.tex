@@ -2,9 +2,8 @@
 \label{sec:metatheory}
 
 We prove soundness and relative completeness by translating certificates
-between the program-level rule and the pCFG rule of Majumdar and
-Sathiyanarayana~\cite{DBLP:journals/pacmpl/MajumdarS25}.
-We first recall the complete pCFG rule and compare its obligations
+between the program-level rule and the pCFG rule in~\cite{DBLP:journals/pacmpl/MajumdarS25}.
+We first recall the pCFG rule and compare its obligations
 with ours. We then relate one body execution to its pCFG paths and
 establish support closure. For soundness, we extend program-level
 certificates to reachable pCFG configurations. For completeness, we
@@ -22,8 +21,8 @@ We use its purely probabilistic specialization with fixed probabilities
 for the certificate transfers below and the FDR comparison in
 \Cref{app:fdr-pcfg-proof}.
 A pCFG has a finite set $L$ of control locations. A configuration
-$\gamma=(\ell,\sigma)\in L\times\Sigma$ comprises a control location
-and a valuation. Assignment and conditional locations have one enabled
+$\gamma=(\ell,\sigma)\in L\times\Sigma$ comprises a control location $l$
+and a valuation $\sigma$. Assignment and conditional locations have one enabled
 successor; probabilistic locations choose among finitely many successors.
 Write $\ell_{\mathsf{init}}$ for the initial location and
 $\ell_{\mathsf{out}}$ for the absorbing exit. Write
@@ -49,7 +48,7 @@ $U:\mathit{Inv}\to\mathbb N$ such that:
  \item \emph{Local supermartingale inequalities:} for every nonterminal
  $\gamma\in\mathit{Inv}$,
  \[
-   \sum_{\gamma'\in\Succ(\gamma)}P(\gamma,\gamma')V(\gamma')
+   \sum_{\gamma'\in\Succ(\gamma)}P(\gamma,\gamma') \cdot V(\gamma')
    \leq V(\gamma);
  \]
  \item \emph{Probabilistic decrease:} for every $r\geq0$, some
@@ -71,21 +70,22 @@ At a deterministic step the probabilistic-decrease condition forces
 strict descent of $U$, thus including the separate conditions for
 assignments and guards. It also forces $U>0$ away from the exit.
 Soundness combines bounded-variant reasoning within each sublevel set
-with the nonnegative supermartingale bound on escape. For completeness,
-\Cref{app:initial-sets} adapts the published construction from a fixed
-initial configuration to a common pair of certificates for arbitrary
-initial sets $E$.
+with the nonnegative supermartingale bound on escape. For completeness, \Cref{app:initial-sets} adapts the construction
+of Majumdar and
+Sathiyanarayana~\cite{DBLP:journals/pacmpl/MajumdarS25}
+from a fixed initial configuration to a common pair of certificates
+for arbitrary initial sets $E$.
 
 \paragraph{AST preservation.}
 Consider a loop $C=\while{b}{B}$ with loop-free body $B$.
-The structural translation $\mathcal T[C]$ turns assignments into update
+The structural translation $\mathcal T[C]$ of $C$ onto its pCFG turns assignments into update
 edges, choices into branching locations, and the loop guard into a
 conditional location whose true successor enters the body. Sequential
 composition identifies adjacent exits and entries, and the body exit is
 identified with the loop guard. For a loop-free body, structural induction
 shows that $\den{B}(\dirac{\sigma})(\sigma')$ equals the total probability
 of body paths from entry valuation $\sigma$ to exit valuation $\sigma'$.
-Loop unrolling then gives
+Loop unrolling then gives:
 \begin{equation}
  C\text{ is AST on }M
  \quad\Longleftrightarrow\quad
@@ -104,12 +104,12 @@ The supermartingale conditions in \Cref{thm:pcfg-rule,thm:program-rule}
 both bound an expected successor value. At pCFG level, this expectation
 concerns one transition from a configuration $(\ell,\sigma)$; at program
 level, it combines all assignments, tests, and choices of the body.
-Thus the program-level certificates need no separate values at
+Thus the program-level certificates do not need to consider
 intermediate control locations.
 
 The progress requirements differ in two respects. First, a deterministic
 pCFG step must strictly decrease $U$, whereas our rule constrains only
-the net change of $u$ over a complete iteration. Second, the pCFG rule
+the net change of $u$ over a complete loop iteration. Second, the pCFG rule
 permits a separate progress bound $\varepsilon_r>0$ on each $V$-sublevel;
 our rule requires one $\varepsilon>0$ for every enabled state.
 For a loop-free body with fixed choice probabilities, every feasible
@@ -122,7 +122,7 @@ decreasing outcomes may give a larger bound.
 The expected-value condition also has the familiar backward formulation:
 for each enabled $\sigma\in S$,
 \[
- \sum_{\sigma'}\den{B}(\dirac{\sigma})(\sigma')v(\sigma')
+ \sum_{\sigma'}\den{B}(\dirac{\sigma})(\sigma') \cdot v(\sigma')
  =\operatorname{wp}\llbracket B\rrbracket(v)(\sigma),
 \]
 where $\operatorname{wp}\llbracket B\rrbracket$ is the weakest
@@ -197,7 +197,7 @@ state in $S$, or from terminal mass retained unchanged.
 \begin{lemma}[Contracting an iteration]
 \label{lem:contract-v}
 \label{lem:contract-u}
-Suppose $\mathit{Inv},V,U$ satisfy the pCFG premises in
+Let $\mathit{Inv},V,U$ satisfy the pCFG premises in
 \Cref{thm:pcfg-rule} for $\mathcal T[C]$. At every enabled guard
 configuration $(\ell_g,\sigma)\in\mathit{Inv}$,
 \begin{align}
@@ -232,7 +232,7 @@ requiring the path to remain in any fixed sublevel set.
 
 \begin{theorem}[Soundness]
 \label{thm:soundness}
-The program-level rule in \Cref{thm:program-rule} is sound.
+The program-level AST rule in \Cref{thm:program-rule} is sound.
 \end{theorem}
 \begin{proof}
 Assume that $I,v,u$ satisfy all premises of \Cref{thm:program-rule}.
@@ -361,7 +361,7 @@ structure, not to a decision procedure or to the templates of
 
 \begin{theorem}[Relative completeness]
 \label{thm:complete}
-Let $C=\while{b}{B}$ have loop-free body. If $C$ is AST on $M$, then
+Let $C=\while{b}{B}$ have loop-free body $B$. If $C$ is AST on $M$, then
 there exist a distributional invariant $I$ for $C$ and $M$,
 functions $v:\supp(I)\to\mathbb R_{\geq0}$ and
 $u:\supp(I)\to\mathbb N$, and a constant $\varepsilon>0$
@@ -383,8 +383,8 @@ configuration to common certificates for this entire initial set. Set
  \begin{split}
  S&=\{\sigma\mid(\ell_g,\sigma)\in\mathit{Inv}\},\qquad
  I=\{\mu\in\subdists\mid\supp(\mu)\subseteq S\},\\
- v(\sigma)&=[b](\sigma)V(\ell_g,\sigma),\qquad
- u(\sigma)=[b](\sigma)U(\ell_g,\sigma)\quad(\sigma\in S).
+ v(\sigma)&=[b](\sigma) \cdot V(\ell_g,\sigma),\qquad
+ u(\sigma)=[b](\sigma) \cdot U(\ell_g,\sigma)\quad(\sigma\in S).
  \end{split}
  \label{eq:project-certificates}
 \end{equation}

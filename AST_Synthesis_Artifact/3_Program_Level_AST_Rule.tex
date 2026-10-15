@@ -1,0 +1,215 @@
+\section{A Program-Level Rule for AST}
+\label{sec:rule}
+
+Consider $C=\while{b}{B}$ with loop-free body $B$ and a set
+$M\subseteq\subdists$ of initial subdistributions.
+We follow the two-certificate approach of Majumdar and
+Sathiyanarayana~\cite{DBLP:journals/pacmpl/MajumdarS25}
+to reason about complete loop iterations.
+Their rule requires certificate values at each program location
+in a probabilistic control-flow graph.
+
+In our formulation, both certificates need to be specified
+only at the point where the loop guard is evaluated.
+Their conditions use the distribution transformer $\den{B}$,
+which maps an input subdistribution to the subdistribution
+obtained after executing the loop body $B$ once.
+This allows us to reason about the combined effect of the
+body's assignments, tests, and choices in a single semantic step.
+
+Let $I$ be a distributional invariant for $C$ and $M$, and let
+$S=\supp(I)$, which contains all reachable loop-head states.
+A natural-valued \emph{variant} $u:S\to\mathbb N$ describes progress:
+whenever the guard holds, one iteration must decrease $u$ with probability
+at least some fixed $\varepsilon>0$. Other outcomes may increase $u$,
+as happens when a rejected sample (as in FDR) restarts the computation.
+
+A nonnegative \emph{supermartingale} $v:S\to\mathbb R_{\geq0}$
+provides the complementary condition: its expected value after an
+enabled iteration is at most its current value. Similar to~\cite{DBLP:journals/pacmpl/MajumdarS25}, we connect the two
+functions by requiring $u$ to be bounded on every \emph{sublevel set}
+\[
+ v_{\leq r}=\{\sigma\in S\mid v(\sigma)\leq r\}
+ \qquad(r\geq0).
+\]
+Intuitively, $u$ provides progress within each sublevel set, while $v$
+ensures that almost every execution stays within some such set.
+Together, these properties establish AST.
+
+\subsection{The AST Proof Rule}
+
+All sums below range over positive-mass outcomes in $S$; support closure
+is proved in \Cref{sec:metatheory}.
+
+\begin{theorem}[Program-level AST rule]
+\label{thm:program-rule}
+The loop $C=\while{b}{B}$ is AST on $M$ if a distributional invariant $I$ for $C$
+and $M$ admits functions $v:S\to\mathbb R_{\geq0}$ and
+$u:S\to\mathbb N$, where $S=\supp(I)$, with the following properties:
+\begin{enumerate}
+ \item \emph{Terminal states:} for every $\sigma\in S$,
+ $v(\sigma)=0$ exactly when $\sigma\models\neg b$, and
+ $u(\sigma)=0$ whenever $\sigma\models\neg b$;
+ \item \emph{Supermartingale condition:} for every
+ $\sigma\in S\cap\llbracket b\rrbracket$,
+ \[
+   \sum_{\sigma'}\den{B}(\dirac{\sigma})(\sigma')\cdot v(\sigma')
+     \leq v(\sigma);
+ \]
+ \item \emph{Probabilistic decrease:} there exists $\varepsilon>0$
+ such that, for every $\sigma\in S\cap\llbracket b\rrbracket$,
+ \[
+   \sum_{\sigma':\,u(\sigma')<u(\sigma)}
+      \den{B}(\dirac{\sigma})(\sigma')\geq\varepsilon;
+   \tag{Decrease}
+ \]
+ \item \emph{Sublevel boundedness:} for every $r\geq0$, there exists
+ $K_r\in\mathbb N$ such that $u(\sigma)\leq K_r$ for every
+ $\sigma\in v_{\leq r}$.
+\end{enumerate}
+\end{theorem}
+The sum in the second condition is the expected value of $v$ after
+executing the body $B$ from state $\sigma$: each successor value is
+weighted by the probability of reaching that state in one iteration.
+The third condition forces $u(\sigma)>0$ on enabled states, that is, on
+$S\cap\llbracket b\rrbracket$: if $u(\sigma)=0$, no successor can
+have a smaller natural-valued certificate.
+
+The fourth condition allows the bound on $u$ to depend on $r$; a global
+bound over $S$ is not required. For example, $u=v=x$ on nonnegative
+integer states satisfies $u\leq r$ whenever $v\leq r$, although $u$
+is unbounded over all states. The random-walk example in
+\Cref{sec:rule-examples} uses these certificates to prove AST of a loop
+with infinite expected runtime.
+
+\paragraph{Why the rule works.}
+Fix an initial state $\sigma_0\in\supp(M)$ and consider executions of
+$C$ from this state, observed at successive loop heads. Once the guard
+is false, we keep the terminal state fixed.
+We may replace $\varepsilon$ by $\min\{\varepsilon,1\}$ and hence assume
+$0<\varepsilon\leq1$.
+
+Fix a threshold $r\geq v(\sigma_0)$ and choose a positive integer
+$K_r$ bounding $u$ on $v_{\leq r}$.
+From every enabled state in $v_{\leq r}$, the probability of terminating
+or leaving $v_{\leq r}$ within the next $K_r$ iterations is at least
+$\varepsilon^{K_r}$.
+Indeed, until either event occurs, each iteration has conditional
+probability at least $\varepsilon$ of decreasing $u$ by at least one.
+Since by the sublevel boundedness $u$ starts with value at most $K_r$, there cannot be $K_r$ successive
+decreases while the loop remains enabled.
+Applying this bound in successive blocks of $K_r$ iterations shows
+that the probability of remaining enabled and inside $v_{\leq r}$
+for $mK_r$ iterations, with $m\geq1$, is at most
+$(1-\varepsilon^{K_r})^m$, which tends to zero as $m\to\infty$.
+Thus nontermination confined to $v_{\leq r}$ has probability zero.
+
+The values of $v$ along the successive loop-head states form a
+nonnegative supermartingale with finite initial value $v(\sigma_0)$.
+Its almost-sure convergence to a finite limit implies that these values
+are bounded with probability one. Consequently, almost every execution
+stays inside $v_{\leq r}$ for some integer threshold $r$.
+For each such threshold, nontermination confined to $v_{\leq r}$ has
+probability zero, as shown above. Taking the countable union over these
+thresholds proves AST from $\sigma_0$.
+The argument applies to every state in $\supp(M)$; countable linearity
+of the semantics then yields AST on $M$, without requiring a finite
+expectation of $v$ under the initial subdistributions.
+The formal proof in \Cref{sec:metatheory} establishes the same result
+by constructing certificates for the pCFG rule recalled in
+\Cref{sec:pcfg-rule}.
+
+\subsection{Two Examples}
+\label{sec:rule-examples}
+
+\paragraph{Symmetric random walk.}
+Consider the following program, where $k\in\mathbb N_{>0}$:
+\[
+ \ass{x}{k};\quad
+ \while{x>0}{\pchoice{\ass{x}{x-1}}{1/2}{\ass{x}{x+1}}}.
+\]
+Each iteration decreases or increases $x$ by one with equal probability;
+the loop terminates when $x$ reaches zero.
+Its expected termination time is infinite, but we can prove AST with
+the same function serving as both certificates.
+
+At loop entry, allowing any positive integer $k$, take
+\[
+ \begin{aligned}
+ M&=\{\dirac{\sigma}\mid\sigma(x)\in\mathbb N_{>0}\},\\
+ I&=\{\mu\in\subdists\mid
+       \supp(\mu)\subseteq\{\sigma\mid\sigma(x)\in\mathbb N\}\}.
+ \end{aligned}
+\]
+Clearly $M\subseteq I$. To check distributional inductivity
+(\Cref{def:distributional-invariant}), observe that the mass at $x=0$
+is retained, while every enabled state satisfies $x\geq1$ and its two
+successors have nonnegative integer values $x-1$ and $x+1$.
+Thus one iteration preserves the support restriction, so $I$ is a
+distributional invariant.
+
+Let
+\[
+ v(\sigma)=u(\sigma)=\sigma(x).
+\]
+Both functions give the current position of the random walk and vanish
+exactly at $x=0$, establishing the terminal-state condition.
+For every enabled state $\sigma$, abbreviating $x=\sigma(x)$, we have
+\[
+ \sum_{\sigma'}\den{B}(\dirac{\sigma})(\sigma')\cdot v(\sigma')
+ =\tfrac12(x-1)+\tfrac12(x+1)=x=v(\sigma).
+\]
+This establishes the supermartingale condition, with equality: $v$ is
+in fact a martingale. With probability $1/2$, the left branch decreases
+$u$ by one, so the decrease condition holds with $\varepsilon=1/2$.
+Finally, since $u=v$, we have $u\leq\lfloor r\rfloor$ on $v_{\leq r}$ for every $r \geq 0$.
+
+As all four conditions of \Cref{thm:program-rule} hold, proving AST.
+\Cref{sec:certificate-synthesis} describes how to automatically synthesize these certificates.
+
+\paragraph{Fast Dice Roller.}
+For a second illustration, specialize the Fast Dice Roller
+(FDR)~\cite{DBLP:journals/corr/abs-1304-1916} to sampling uniformly from
+$\{0,1,2\}$, i.e.\ $n=3$.
+Write states as pairs $(v,c)$.
+The program variable $v$ is distinct from the certificate $v(\sigma)$ below.
+Initially $(v,c)=(1,0)$, and the loop guard is $v<3$.
+An iteration doubles $v$, replaces $c$ by $2c+\beta$ for a fair bit
+$\beta$, and subtracts $3$ from both variables if the updated $c\geq3$.
+When the guard becomes false, the algorithm returns $c$.
+The enabled states and their successors after one complete iteration are:
+\[
+ \begin{array}{c@{\qquad}c@{\quad}c@{\qquad}c}
+ \sigma & \beta=0 & \beta=1 & u(\sigma)\\ \hline
+ (1,0) & (2,0) & (2,1) & 2\\
+ (2,0) & (4,0) & (4,1) & 1\\
+ (2,1) & (4,2) & (1,0) & 1
+ \end{array}
+\]
+Let $S$ be the enabled states above plus the terminal states
+$(4,0)$, $(4,1)$, and $(4,2)$.
+The set of all subdistributions supported on $S$ is a distributional
+invariant for the initial Dirac distribution at $(1,0)$:
+the table shows closure of the enabled-state support, and terminal
+mass is retained.
+
+Set $v(\sigma)=3$ on enabled states and $v(\sigma)=u(\sigma)=0$
+on terminal states, using the displayed values of $u$ otherwise.
+Here $u$ is the shortest number of iterations needed to reach a
+terminal state along a positive-probability path.
+In table order, the expected successor values of $v$ are $3,0,3/2$,
+so the supermartingale condition holds.
+The probabilities of strictly decreasing $u$ are $1,1,1/2$,
+giving $\varepsilon=1/2$.
+Moreover, $u\leq2$ everywhere, which implies sublevel boundedness.
+Thus \Cref{thm:program-rule} proves AST.
+Recycling from $(2,1)$ to $(1,0)$ increases $u$ from $1$ to $2$;
+the rule allows this because the other outcome decreases $u$.
+We prove AST for arbitrary $n$ in \Cref{sec:fdr}.
+
+In both examples, the distributional invariant identifies a set of
+loop-head states on which the certificates must satisfy the rule.
+Only its support information is needed for AST; additional relations
+between probability masses can be retained for output correctness.
+\Cref{sec:fdr} develops this reuse for FDR and compares the
+program-level and pCFG certificates.

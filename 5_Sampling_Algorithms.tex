@@ -1,9 +1,10 @@
 \section{Almost-Sure Termination of Discrete Samplers}
 \label{sec:case-studies}
 
-We apply the program-level AST rule to three discrete samplers: the
-Fast Dice Roller (FDR), the Fast Loaded Dice Roller (FLDR), and the
-Han--Hoshi sampler. For each, we give a distributional invariant,
+We apply the program-level AST rule to three discrete samplers:
+the Fast Dice Roller (FDR)~\cite{DBLP:journals/corr/abs-1304-1916},
+the Fast Loaded Dice Roller (FLDR)~\cite{DBLP:conf/aistats/SaadFRM20},
+and the Han--Hoshi sampler~\cite{HanHoshi1997}. For each, we give a distributional invariant,
 the two certificate functions, and a progress probability before
 checking the rule. FDR also illustrates the relation to pCFG proofs;
 FLDR and Han--Hoshi demonstrate progress through restart and interval
@@ -14,8 +15,9 @@ the program variable $v$ is distinct from the certificate $v(\sigma)$.
 For each fixed sampler input, the variants below are globally bounded
 and decrease with uniformly positive probability. A bounded-variant
 argument therefore suffices for AST and yields a
-finite expected number of iterations. These case studies illustrate
-the iteration-level proof interface. The unbounded random walk in
+finite expected number of iterations. These case studies illustrate how our rule establishes AST by
+reasoning about one complete execution of the loop body and
+specifying certificates only where the loop guard is evaluated. The unbounded random walk in
 \Cref{sec:rule-examples} illustrates the broader scope of the rule:
 it is AST despite infinite expected runtime, with the same function
 serving as both certificates.
@@ -23,25 +25,11 @@ serving as both certificates.
 \subsection{Fast Dice Roller: Certificates at Two Levels}
 \label{sec:fdr}
 
-\subsubsection{Program and Invariant.}
-We extend the small FDR illustration in \Cref{sec:rule-examples} to arbitrary
-$n\in\mathbb N_{>0}$. FDR samples uniformly from
-$\{0,\ldots,n-1\}$ using fair coin
-flips~\cite{DBLP:journals/corr/abs-1304-1916}:
-\begin{lstlisting}[basicstyle=\ttfamily\small,mathescape=true,frame=single]
-$v := 1;\ c := 0;$
-while ($v<n$) do
-  $v := 2v;$
-  $c := 2c$ [1/2] $c := 2c+1;$
-  if ($c\ge n$) then $v:=v-n;\ c:=c-n$ else skip
-end
-\end{lstlisting}
-Here $v$ is the size of the current candidate range and $c$ is the
-candidate. A fair bit doubles the range and appends one binary digit
-to the candidate. If the updated $c\geq n$, subtracting $n$ from both
-variables recycles the unused part of the range for subsequent
-iterations. Otherwise, a range of size at least $n$ permits the loop
-to terminate and return $c$.
+\paragraph{Program and invariant.}
+We extend the FDR example for $n=3$ in \Cref{sec:rule-examples} to
+arbitrary $n\in\mathbb N_{>0}$. The program, given in
+\Cref{sec:intro}, samples uniformly from $\{0,\ldots,n-1\}$
+using fair coin flips~\cite{DBLP:journals/corr/abs-1304-1916}.
 
 The distributional-invariant proof
 of~\cite{zilken2026verifyingsamplingalgorithmsdistributional} establishes
@@ -82,15 +70,15 @@ updates preserve it from enabled states; \Cref{app:calculations}
 checks the two cases. Terminal mass is retained unchanged, so
 $I_{\mathrm{FDR}}$ is a distributional invariant.
 
-\subsubsection{Program-Level AST Proof.}
+\paragraph{Program-level AST Proof.}
 We first use guarded affine certificates. Together with $I_{\mathrm{FDR}}$,
 choose
 \begin{equation}
- \begin{aligned}
- v(\sigma)&=\begin{cases}n,&v<n,\\0,&v\geq n,\end{cases}
- &u(\sigma)&=\begin{cases}n-v+c,&v<n,\\0,&v\geq n,\end{cases}
- &\varepsilon&=\tfrac12.
- \end{aligned}
+\begin{aligned}
+v(\sigma)&=\begin{cases}n,&v<n,\\0,&v\geq n,\end{cases}
+&u(\sigma)&=\begin{cases}n-v+c,&v<n,\\0,&v\geq n,\end{cases}
+&\text{and}\quad \varepsilon&=\tfrac12.
+\end{aligned}
  \label{eq:fdr-affine-certificates}
 \end{equation}
 These functions are defined on $S_{\mathrm{FDR}}$. The supermartingale
@@ -127,38 +115,47 @@ $v_{\leq r}$, uniformly even when $n$ varies. All four conditions hold.
 
 The active-state expression $n-v+c$ is affine in the program variables
 and input parameter. \Cref{sec:synthesis-examples} recovers these same
-certificates automatically with affine templates.
+certificates automatically using affine templates.
 
 A logarithmic alternative and its relation to shortest terminating paths
 are developed in \Cref{app:fdr-log-variant}. We use this alternative
 for the explicit pCFG comparison below; the affine certificates suffice
 for the program-level proof and its synthesis.
 
-\subsubsection{pCFG-Level Proof and Comparison.}
-The pCFG rule of \Cref{sec:pcfg-rule} also proves AST of FDR.
-The affine certificates in
+\paragraph{pCFG-level proof and comparison.}
+The pCFG rule of \Cref{sec:pcfg-rule} can also be used to prove
+AST of FDR. The affine certificates in
 \eqref{eq:fdr-affine-certificates} can be extended to pCFG certificates
-by the construction in \Cref{sec:metatheory}, so this choice is
-available at both levels. The pCFG additionally needs annotations at
-the guard, assignments, fair choice, conditional, and recycling updates.
-Its loop head carries \eqref{eq:fdr-support}; intermediate locations
-carry the corresponding facts after partially executed updates.
+by the construction in \Cref{sec:metatheory}.
+The pCFG rule additionally requires annotations at the guard,
+assignments, fair choice, conditional, and recycling updates.
+The location where the loop guard is evaluated carries
+\eqref{eq:fdr-support}; intermediate locations carry the corresponding
+facts after partially executed updates.
 
-For a fully explicit comparison, \Cref{app:fdr-pcfg-proof} expands
-the logarithmic variant \eqref{eq:fdr-log-variant} into annotations
-for the graph. It uses $V=n$ at nonterminal locations and $V=0$ at
-the exit, and scales the logarithmic variant by $7$, the maximum
-number of transitions per iteration, before adding location offsets.
+For a fully explicit comparison, Appendix~\ref{app:fdr-pcfg-proof}
+expands the logarithmic variant \eqref{eq:fdr-log-variant} into
+annotations for the pCFG. It uses $V=n$ at nonterminal locations
+and $V=0$ at the exit, and scales the logarithmic variant by $7$,
+the maximum number of transitions per iteration, before adding
+location offsets.
 After doubling $v$, the old difference is expressed as $v/2-c$;
 the local invariant records the required integrality and parity.
-The appendix checks strict descent on deterministic edges and descent
-with probability $1/2$ at the fair choice.
+Appendix~\ref{app:fdr-pcfg-proof} checks strict descent on deterministic
+edges and descent with probability $1/2$ at the fair choice.
 
-Both certificate choices prove the same AST result at either level.
-At program level, \eqref{eq:fdr-post} combines all intermediate effects,
-so the supplied certificates need no location offsets. The comparison
-concerns the representation of proof obligations, not verification
-time or an increase in proving power.
+Both the affine and the logarithmic certificates yield AST proofs
+at both the program and pCFG levels.
+The explicit pCFG variant $U$ requires eleven separate cases,
+one for each program location.
+Our AST rule compares certificate values only at the point where
+the loop guard is evaluated and requires no annotations for
+locations inside the loop body.
+The successor distribution in \eqref{eq:fdr-post} combines all
+intermediate effects, so the supplied certificates need no location
+offsets. In particular, the program-level logarithmic variant
+\eqref{eq:fdr-log-variant} has only two cases, distinguishing
+enabled from terminal states.
 
 \subsection{Fast Loaded Dice Roller: Rejection and Restart}
 \label{sec:fldr}
@@ -236,7 +233,8 @@ $d<\phi_h(c)$ and, for $\sigma\in S_{\mathrm{FLDR}}$, choose
  v(\sigma)=\begin{cases}0&\sigma\not\models b,\\m&\sigma\models b,\end{cases}
  \qquad
  u(\sigma)=\begin{cases}0&\sigma\not\models b,\\k-c&\sigma\models b,\end{cases}
- \qquad \varepsilon=\tfrac12.
+ \qquad\text{and}\qquad
+ \varepsilon=\tfrac12.
 \]
 \begin{theorem}[AST of FLDR]
 \label{thm:fldr}
@@ -381,16 +379,15 @@ For $\sigma\in S_{\mathrm{HH}}$, let
 be the number of internal target boundaries lying strictly inside
 $J(c,v)$. Together with $I_{\mathrm{HH}}$, choose
 \[
- \mathsf V(\sigma)=\mathsf U(\sigma)=
+ v(\sigma)=u(\sigma)=
  \begin{cases}
  0,&r\ne0,\\
  \max\{1,N(\sigma)\},&r=0,
  \end{cases}
- \qquad \varepsilon=\tfrac12.
+ \qquad\text{and}\qquad \varepsilon=\tfrac12.
 \]
-Here $\mathsf V$ and $\mathsf U$ instantiate the functions $v$ and $u$
-of the program-level rule. The maximum with $1$ handles enabled
-states whose interval contains no internal boundary, including the
+The maximum with $1$ ensures that both certificates are positive
+whenever $r=0$, including states with $N(\sigma)=0$, such as the
 initialized state when $n=1$.
 
 \begin{theorem}[AST of Han--Hoshi]

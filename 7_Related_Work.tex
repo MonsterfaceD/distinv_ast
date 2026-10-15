@@ -29,12 +29,13 @@ uses their support and two state functions. Thus, the rule does not
 replace distributional output-correctness arguments.
 
 \paragraph{Certificate and invariant synthesis.}
-Constraint-based synthesis already supports martingales and ranking
-supermartingales~\cite{ChakarovSankaranarayanan2013}. Batz et
-al.~\cite{BatzEtAl2023} use counterexample-guided synthesis of piecewise
-linear quantitative invariants at source level, including for
-infinite-state programs. Their objectives include expected-outcome bounds
-and finite expected runtime. We instantiate this search pattern with two AST certificates and the
+Constraint-based methods synthesize martingale and ranking-supermartingale
+certificates~\cite{ChakarovSankaranarayanan2013}. Batz et
+al.~\cite{BatzEtAl2023} synthesize piecewise linear quantitative invariants
+that certify bounds on expected outcomes and finite expected runtime.
+Their counterexample-guided approach operates at source level and also
+supports infinite-state programs.
+We instantiate this search pattern with two AST certificates and the
 sufficient coupling $U\leq V$. The random
 walk illustrates qualitative termination with infinite expected runtime.
 Neither CEGIS nor affine or piecewise affine templates are new here.
@@ -45,9 +46,11 @@ integer components and the constant term. Bounded search is incomplete
 even though successful candidates are checked universally over the
 encoded states.
 
-Haase et al.~\cite{haase2026generatingfunctionsmeetoccupation} synthesize
-occupation invariants represented by generating functions. Such
-invariants describe expected visit counts and support exact inference,
+Haase et al.~\cite{haase2026generatingfunctionsmeetoccupation} generalize
+probability generating functions to occupation measures and synthesize
+occupation invariants in this representation. The coefficients bound
+expected visit counts and need not sum to one.
+These invariants support exact inference,
 with positive AST obtainable under suitable finiteness conditions.
 Their unknowns and verification conditions therefore differ from our
 state-function certificates for qualitative AST. Template instantiation
@@ -58,7 +61,7 @@ The algorithms studied here are established constructions:
 Lumbroso's FDR~\cite{DBLP:journals/corr/abs-1304-1916}, Saad et al.'s
 FLDR~\cite{DBLP:conf/aistats/SaadFRM20}, and Han and Hoshi's interval
 algorithm~\cite{HanHoshi1997}. Zilken et
-al.~\cite{zilken2026verifyingsamplingalgorithmsdistributional} already
+al.~\cite{zilken2026verifyingsamplingalgorithmsdistributional}
 verify partial and total correctness of FDR and FLDR, combining
 distributional invariants with the pCFG two-certificate AST rule.
 The present paper formulates and proves a general iteration-level rule,
@@ -73,7 +76,8 @@ in Coq. Our handwritten proofs and solver-backed prototype do not
 provide that level of mechanization.
 
 \paragraph{Nondeterminism.}
-The rules of McIver et al. and Majumdar and Sathiyanarayana support
+The rules of McIver et al.~\cite{10.1145/3158121} and Majumdar and
+Sathiyanarayana~\cite{DBLP:journals/pacmpl/MajumdarS25} support
 demonic nondeterminism. Our current
 transformer assigns one post-distribution to each input. Extending the
 rule to universal scheduler quantification requires corresponding

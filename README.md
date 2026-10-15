@@ -1,4 +1,4 @@
-# Distribution-Based AST — revised draft, 13 October 2026
+# Distribution-Based AST — revised draft, 15 October 2026
 
 This project contains the program-level AST manuscript, sampler certificates,
 and an executable shared certificate-synthesis artifact. The synthesis results
@@ -10,6 +10,12 @@ reported in the manuscript and artifact README refer to the supplied
 - `main_esop.pdf`: generated anonymous draft, including all proof appendices.
 - `main_esop.tex`: main file; select this file in Overleaf.
 - `AST_Synthesis_Artifact/README.md`: artifact setup, inputs, results, and limits.
+
+This revision incorporates JPK's remaining comments from Section 6.2 onward.
+Sections 6.2–6.3 focus on the search principle and synthesized certificates;
+Appendix D contains the detailed procedure, loop models, certificate analyses,
+and artifact checks. The bibliography precedes the appendices.
+`AENDERUNGEN_1510.txt` lists the changes and validation performed.
 
 Build with pdfLaTeX and BibTeX, using a normal TeX Live or MiKTeX installation:
 
@@ -49,13 +55,13 @@ The complete delivered draft is therefore not yet a 25-page camera-ready paper.
 | `3_Program_Level_AST_Rule.tex` | Program-level rule, random walk and short FDR illustration |
 | `4_Soundness_and_Completeness.tex` | Complete pCFG rule, interface comparison and both certificate translations |
 | `5_Sampling_Algorithms.tex` | FDR, FLDR and Han–Hoshi |
-| `6_Certificate_Synthesis.tex` | Exact implemented synthesis procedure and results |
+| `6_Certificate_Synthesis.tex` | Synthesis constraints, concise search overview and experimental results |
 | `7_Related_Work.tex` | Focused comparison with prior work |
 | `8_Conclusion.tex` | Results and limits |
 | `appendices/A_Translation_and_AST_Preservation.tex` | Semantics, common initial-set certificates and arithmetic representation |
 | `appendices/B_One_Iteration_Calculations.tex` | FDR support and logarithmic variant, FLDR preprocessing proof and Han–Hoshi bound |
 | `appendices/C_Proof_Obligation_Comparison.tex` | Full FDR pCFG certificate and edge checks |
-| `appendices/D_Artifact_and_Proof_Notes.tex` | Reproduction, optional supplied partitions and scope of computational checks |
+| `appendices/D_Artifact_and_Proof_Notes.tex` | Detailed search procedure, loop models, certificate analyses, reproduction and computational checks |
 
 ## Reproduce the artifact
 
@@ -77,7 +83,7 @@ universally on their supplied domains; finite coefficient search is incomplete.
 Neither the AST metatheory nor the FLDR preprocessing theorem is mechanized.
 
 The data availability statement identifies `AST_Synthesis_Artifact.zip`,
-provided separately with this revision. Include that anonymous package with
+included in this project alongside the unpacked artifact directory. Include that anonymous package with
 the manuscript when making it available to reviewers; it contains no build
 logs or local path metadata. For a proceedings version, replace this access
 route with the permanent archival identifier.

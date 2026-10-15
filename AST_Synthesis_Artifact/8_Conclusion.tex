@@ -1,0 +1,30 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+We presented a sound and relatively complete program-level AST rule for
+fixed-probability loops with loop-free bodies. Users supply two state
+functions at loop heads; the certificate translations account for internal
+control locations. The rule uses distributional-invariant support, leaving
+quantitative output information available.
+
+The sampler proofs cover recycling, restart, and interval refinement.
+They illustrate the proof interface without establishing that distinct
+certificates are necessary. The unbounded random walk demonstrates AST
+with infinite expected runtime.
+
+A bounded CEGIS kernel synthesizes guarded affine and fixed-partition
+piecewise affine certificates. Successful candidates are checked over
+the full supplied invariant domains. Invariants, iteration semantics,
+partitions, and abstraction arguments remain inputs, while $U\leq V$
+restricts the coupling. Relative completeness of the rule therefore does
+not transfer to the search. Richer templates and automatic input generation
+remain future work.
+
+Nested loops require AST summaries and a new compositional argument:
+unbounded inner executions invalidate the bounded-path translation.
+For nondeterministic programs, \emph{demonic} semantics requires AST
+under every scheduler resolving the choices. An extension would therefore
+need invariant preservation and supermartingale inequalities for all
+admissible body distributions, together with a uniform variant-progress
+guarantee. Checking one selected distribution covers only that behavior;
+soundness of the extension remains to be established.

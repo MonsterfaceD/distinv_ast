@@ -1,0 +1,69 @@
+Überarbeitung vom 15. Oktober 2026
+================================
+
+Ausgangspunkt: das für diesen Auftrag hochgeladene Projekt 1510.zip.
+Berücksichtigt: alle handschriftlichen Kommentare ab Section 6.2 in
+AST_ESOP-commentsJPK2.pdf. In den folgenden Appendices waren keine weiteren
+handschriftlichen Kommentare vorhanden.
+
+1. Sections 6.2 und 6.3
+   - Haupttext um rund 60 Prozent gekürzt; Fokus auf CEGIS-Grundprinzip,
+     vorgegebene Partitionen, Ergebnistabelle und Aussage der Zertifikate.
+   - Vollständige Suchschritte, Schrankenfolge, Implementierungsdetails,
+     Modellkodierungen, Zusatzanalysen und die FLDR-Baumfigur nach Appendix D
+     verschoben. Die Details bleiben vollständig verfügbar.
+   - Appendix D neu gegliedert: D.1 Suchverfahren und Partitionen;
+     D.2 Modelle und Zertifikatanalysen; D.3 Reproduktion und Zusatzprüfungen.
+   - Alle fünf Tabellenzeilen einschließlich Zertifikaten, erfolgreicher
+     Koeffizientenschranke und Kandidatenzahl unverändert; mit den gelieferten
+     Ergebnissen in AST_Synthesis_Artifact/results.json abgeglichen.
+   - Die bereits vorhandene Überschrift mit "Experimental Results" erhalten.
+   - Section 6 bis einschließlich 6.1 unverändert.
+
+2. Alle fünf Anmerkungen in Related Work
+   - Die Frage "to synthesize what?" durch explizite Benennung der
+     synthetisierten Zertifikate und der quantitativen Invarianten geklärt.
+   - "probability" bei Haase fachlich präzisiert: Der Ansatz erweitert
+     probability generating functions auf Occupation Measures. Die
+     Koeffizienten beschränken erwartete Besuchszahlen und müssen nicht zu
+     eins summieren. Ein bloßes Ersetzen durch "probability generating
+     functions" hätte diesen Unterschied verwischt.
+     Abgeglichen mit Abschnitt 6.1 des Originalpapers:
+     https://doi.org/10.1007/978-3-032-22720-1_12
+   - "already" bei Zilken et al. gestrichen.
+   - Fehlendes McIver-Zitat im Absatz Nondeterminism ergänzt.
+   - Fehlendes Majumdar/Sathiyanarayana-Zitat dort ergänzt.
+
+3. Dokumentstruktur und Verweise
+   - Data availability und Bibliographie stehen nach der Conclusion und vor
+     den Appendices.
+   - Ausgelagerte Details erhalten gezielte Appendix-Verweise. Vorhandene
+     Labels bleiben erhalten; neue Appendix-Unterabschnitte verwenden den
+     Verweistyp [appendix].
+   - Ein bestehender Verweis in Section 3 zeigt nun auf die gesamte Section 6,
+     weil Section 6.3 nach der Kürzung primär die Ergebnisse berichtet.
+
+4. Projektpaket
+   - main_esop.pdf aus den überarbeiteten Quellen neu erzeugt.
+   - Vollständige LaTeX-Quellen und unveränderte Syntheseimplementierung samt
+     aufgezeichneten Ergebnissen enthalten.
+   - AST_Synthesis_Artifact.zip zusätzlich aus dem gelieferten Artefaktordner
+     erstellt, passend zur Data-availability-Angabe.
+   - Veraltete LaTeX-Hilfsdateien, Build-Logs und Python-Caches werden nicht
+     mitgeliefert. README aktualisiert.
+
+Die Implementierung und die aufgezeichneten Experimente wurden nicht geändert;
+für diese redaktionelle Überarbeitung war kein erneuter Syntheselauf nötig.
+
+5. Abschlussprüfung
+   - Vollständiger pdfLaTeX/BibTeX-Build erfolgreich; PDF umfasst 49 Seiten.
+   - Keine undefinierten Verweise oder Zitate und keine doppelten Labels.
+   - Bibliographie auf Seiten 32–33, Appendix A beginnt auf Seite 34.
+   - Geänderte Seiten, Bibliographieübergang und Appendix D visuell geprüft.
+   - Alle verwendeten Schriften eingebettet; keine Type-3-Schriften.
+   - Keine neuen Overfull-Boxen. Die zwei schon im Ausgangsprojekt vorhandenen
+     geringfügigen Meldungen in Section 4 und im Einleitungsabsatz von Section 6
+     bleiben unverändert.
+   - Frühe Paperabschnitte, Anhänge A–C, Makros, Bibliographieeinträge und
+     Artefaktdateien unverändert, abgesehen vom genannten einzelnen Verweis
+     in Section 3.

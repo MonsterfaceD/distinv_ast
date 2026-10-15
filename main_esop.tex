@@ -16,8 +16,9 @@
 
 \begin{document}
 
-\title{A Distribution-Based Proof Rule for Almost-Sure Termination}
-\subtitle{With Applications to Discrete Sampling}
+\title{A Distribution-Based Proof Rule\\
+for Almost-Sure Termination}
+\subtitle{With Applications to Discrete Sampling Algorithms}
 \titlerunning{A Distribution-Based Proof Rule for Almost-Sure Termination}
 
 \author{Anonymous author(s)}
@@ -27,30 +28,24 @@
 \maketitle
 
 \begin{abstract}
-Almost-sure termination means that a probabilistic program terminates
-with probability one. For sampling algorithms, this property is essential
-to ensure that no probability mass is lost through nontermination.
-Rejection and restart, however, can make termination arguments difficult.
-
 We present a distribution-based proof rule for almost-sure termination
 of fully probabilistic while-loops with loop-free bodies and fixed
-choice probabilities. The rule adapts an existing two-certificate
-approach from probabilistic control-flow graphs to complete loop
-iterations. A variant function captures probabilistic progress, while a
-nonnegative supermartingale function bounds the probability of
-reaching states in which the variant takes large values.
-Both certificates need to be specified only at the start of each
-loop iteration. The rule additionally requires a state-based invariant, which can
-be obtained from the support of a distributional invariant
-established to prove output correctness. We prove soundness and relative completeness
-and apply the rule to the Fast Dice Roller, the Fast Loaded Dice Roller,
-and Han--Hoshi sampling.
+choice probabilities. The rule follows an existing two-certificate
+approach for probabilistic control-flow graphs. A variant function
+captures probabilistic progress, while a nonnegative supermartingale
+bounds the probability of reaching states in which the variant takes
+large values. The certificate conditions refer to entire loop
+iterations, whose effects are described by distribution transformers.
+Distributional invariants established to prove output correctness
+can be reused: their support determines the states on which the
+termination conditions must hold. We prove soundness and relative
+completeness and apply the rule to three discrete sampling algorithms:
+the Fast Dice Roller, the Fast Loaded Dice Roller, and the Han--Hoshi
+sampler.
 
-We further implement a prototype that synthesizes guarded affine
-and piecewise-affine certificates from supplied invariants using
-the semantics of a single loop iteration. The prototype synthesizes certificates for
-random-walk and sampler examples, including an almost-surely terminating
-loop with infinite expected runtime.
+Using a template-based approach, we automatically synthesize
+piecewise-affine AST certificates for random-walk and sampling
+examples, including a loop with infinite expected runtime.
 
 \keywords{Almost-sure termination \and
 Probabilistic programs \and
@@ -70,15 +65,6 @@ Template-based synthesis}
 \input{7_Related_Work}
 \input{8_Conclusion}
 
-\ifappendixversion
-\clearpage
-\appendix
-\input{appendices/A_Translation_and_AST_Preservation}
-\input{appendices/B_One_Iteration_Calculations}
-\input{appendices/C_Proof_Obligation_Comparison}
-\input{appendices/D_Artifact_and_Proof_Notes}
-\fi
-
 \paragraph{Data availability.}
 The accompanying package \texttt{AST\_Synthesis\_Artifact.zip} contains the
 synthesis implementation, input encodings, pinned dependency, recorded
@@ -89,4 +75,14 @@ supplied synthesis obligations.
 
 \bibliographystyle{splncs04}
 \bibliography{references}
+
+\ifappendixversion
+\clearpage
+\appendix
+\input{appendices/A_Translation_and_AST_Preservation}
+\input{appendices/B_One_Iteration_Calculations}
+\input{appendices/C_Proof_Obligation_Comparison}
+\input{appendices/D_Artifact_and_Proof_Notes}
+\fi
+
 \end{document}

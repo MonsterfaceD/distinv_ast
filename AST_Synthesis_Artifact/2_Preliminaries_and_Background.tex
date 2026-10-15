@@ -1,0 +1,213 @@
+\section{Preliminaries and Background}
+\label{sec:prelims}
+
+Fix a finite set $\vars$ of program variables.
+A program state $\sigma \colon \vars \to \mathbb{Q}$ assigns
+a rational value to each variable; we write $\sigma(x)$ for the
+value of $x$ in state $\sigma$.
+The set of all program states is the countable state space
+$\Sigma = \mathbb{Q}^{\vars}$.
+An arithmetic expression $a$ is interpreted as a total function
+$a \colon \Sigma \to \mathbb{Q}$, with $a(\sigma)$ denoting its
+value in state $\sigma$.
+For $x \in \vars$, the updated state $\sigma[x/a(\sigma)]$
+assigns $a(\sigma)$ to $x$ and agrees with $\sigma$ on all other
+variables; in particular, it is again an element of $\Sigma$.
+Multiple updates within one pair of brackets are simultaneous:
+all right-hand sides are evaluated in the original state.
+
+For a Boolean expression $b$, we write $\sigma \models b$ if $b$
+evaluates to true in state $\sigma$.
+Its set of satisfying states and its indicator function
+(the \emph{Iverson bracket}) are, respectively,
+\[
+  \llbracket b \rrbracket
+  = \{ \sigma \in \Sigma \mid \sigma \models b \},
+  \qquad
+  [b](\sigma)
+  =
+  \begin{cases}
+    1, & \text{if } \sigma \models b,\\
+    0, & \text{otherwise}.
+  \end{cases}
+\]
+Throughout, $\mathbb{N} = \{0,1,2,\ldots\}$ includes zero.
+
+\subsection{Programs, Subdistributions, and AST}
+
+We use a probabilistic while-language, a fragment of the probabilistic
+guarded-command language (pGCL) of McIver and
+Morgan~\cite{DBLP:series/mcs/McIverM05}:
+\[
+ \begin{aligned}
+ C &::= \ski\mid\ass{x}{a}\mid\comp{C}{C}\mid\pchoice{C}{p}{C}\\
+   &\phantom{{}::={}}\mid\ifelse{b}{C}{C}\mid\while{b}{C}.
+ \end{aligned}
+\]
+Here $x\in\vars$, $a$ is an arithmetic expression, $b$ is a Boolean
+expression, and $p\in[0,1]\cap\mathbb Q$ is a constant.
+The commands $\ski$, $\ass{x}{a}$, and $\comp{C_1}{C_2}$ denote
+doing nothing, assignment, and sequential
+composition, respectively. The probabilistic choice
+$\pchoice{C_1}{p}{C_2}$ executes $C_1$ with probability $p$ and $C_2$
+with probability $1-p$. A conditional selects its branch according to
+$b$, and $\while{b}{B}$ repeatedly executes program $B$ while $b$ holds.
+Unlike full pGCL, this fragment has no nondeterministic choice.
+
+A \emph{subdistribution} over $\Sigma$ is a function
+$\mu:\Sigma\to\mathbb R_{\geq0}$ with total probability mass, or
+\emph{weight}, $\weight{\mu}=\sum_{\sigma\in\Sigma}\mu(\sigma)\leq1$.
+Let $\subdists$ be the set of subdistributions; those of weight $1$
+are distributions. The \emph{support} of $\mu$ is
+$\supp(\mu)=\{\sigma\in\Sigma\mid\mu(\sigma)>0\}$.
+The Dirac distribution $\dirac{\sigma}$ assigns probability $1$ to
+$\sigma$ and $0$ to every other state. For a set
+$M\subseteq\subdists$, let
+$\supp(M)=\bigcup_{\mu\in M}\supp(\mu)$.
+We restrict a subdistribution to states satisfying $b$ by pointwise
+multiplication: $([b]\mu)(\sigma)=[b](\sigma) \cdot \mu(\sigma)$.
+Subdistributions are ordered pointwise:
+$\mu\leq\nu$ iff $\mu(\sigma)\leq\nu(\sigma)$ for every $\sigma$;
+$0$ denotes the zero subdistribution.
+
+\paragraph{Denotational semantics.}
+The semantics of program $C$ is a \emph{distribution transformer}
+$\den{C}:\subdists\to\subdists$.
+Given an input subdistribution $\mu$, the value
+$\den{C}(\mu)(\sigma)$ is the probability mass of executions that
+terminate in state $\sigma$. Following the forward semantics of
+Kozen~\cite{DBLP:conf/focs/Kozen79,DBLP:conf/stoc/Kozen83}, we define:
+\begin{align*}
+ \den{\ski}(\mu)&=\mu,\\
+ \den{\ass{x}{a}}(\mu)(\sigma)
+   &=\sum_{\sigma':\,\sigma'[x/a(\sigma')]=\sigma}\mu(\sigma'),\\
+ \den{\comp{C_1}{C_2}}(\mu)
+   &=\den{C_2}(\den{C_1}(\mu)),\\
+ \den{\pchoice{C_1}{p}{C_2}}(\mu)
+   &=p \cdot \den{C_1}(\mu)+(1-p)\cdot \den{C_2}(\mu),\\
+ \den{\ifelse{b}{C_1}{C_2}}(\mu)
+   &=\den{C_1}([b]\mu)+\den{C_2}([\neg b]\mu).
+\end{align*}
+Assignment collects the mass of all input states that yield the same
+updated state. Probabilistic choice weights the two output
+subdistributions, whereas a conditional first restricts the input
+to the states enabling each branch.
+
+For loops, we take a least fixed point over distribution transformers,
+as in~\cite{zilken2026verifyingsamplingalgorithmsdistributional}.
+Let $\mathcal H$ be the pointed $\omega$-cpo of $\omega$-continuous,
+mass-nonincreasing maps $\subdists\to\subdists$, ordered pointwise,
+with least element $\bot=\lambda\eta.0$.
+Here $\omega$-continuity means monotonicity and preservation of suprema
+of increasing countable chains. Define the functional
+$\Phi_{b,B}:\mathcal H\to\mathcal H$ and the loop semantics by:
+\begin{equation}
+ \begin{aligned}
+ \Phi_{b,B}(f)(\eta)&=[\neg b]\eta+f\bigl(\den{B}([b]\eta)\bigr),\\
+ \den{\while{b}{B}}(\mu)
+   &=(\lfp\Phi_{b,B})(\mu)
+     =\sup_{j\in\mathbb N}\Phi_{b,B}^j(\bot)(\mu).
+ \end{aligned}
+ \label{eq:while-transformer-fixpoint}
+\end{equation}
+The first summand retains the mass that exits immediately; the second
+executes the body on the enabled mass and applies $f$ to the result.
+The functional $\Phi_{b,B}$ is $\omega$-continuous and maps
+$\mathcal H$ into itself (see \Cref{app:translation}).
+Its zeroth approximant is $\bot$; for $j\geq1$, its $j$th approximant
+collects executions terminating after fewer than $j$ loop iterations.
+The supremum therefore includes every terminating execution.
+The mass lost during execution,
+$\weight{\mu}-\weight{\den{C}(\mu)}$, accounts for nontermination;
+for an input distribution, it is the probability of nontermination.
+
+The transformer $\den{C}$ is mass-nonincreasing,
+$\omega$-continuous, and linear on nonnegative linear combinations that are subdistributions (see \Cref{app:translation}) for every program $C$. In particular, linearity and
+$\omega$-continuity of $\den{C}$ give:
+\[
+ \den{C}\Bigl(\sum_i p_i \cdot \dirac{\sigma_i}\Bigr)
+   =\sum_i p_i \cdot \den{C}(\dirac{\sigma_i})
+ \qquad(p_i\geq0,\ \textstyle\sum_i p_i\leq1),
+\]
+also for countably many summands. Thus the semantics on arbitrary
+subdistributions is determined by its action on individual initial states.
+
+\begin{definition}[Almost-sure termination]
+A program $C$ is \emph{almost-surely terminating} on
+$M\subseteq\subdists$ if
+$\weight{\den{C}(\mu)}=\weight{\mu}$ for every $\mu\in M$.
+\end{definition}
+In particular, $C$ is AST from a state $\sigma$ if
+$\weight{\den{C}(\dirac{\sigma})}=1$.
+Almost-sure termination does not imply that the expected runtime of $C$
+is finite.
+
+\subsection{Distributional Invariants}
+
+A state invariant describes which variable values may occur during a
+loop. A \emph{distributional invariant} can additionally describe relations
+between their probability masses. We view one loop iteration as advancing
+the mass in states satisfying the guard while retaining the mass of
+executions that have already terminated. An invariant is a set of
+subdistributions that contains the initial subdistributions and is closed
+under this operation.
+
+\begin{definition}[Distributional invariant~\cite{zilken2026verifyingsamplingalgorithmsdistributional}]
+\label{def:distributional-invariant}
+Let $C=\while{b}{B}$ be a loop and let $M\subseteq\subdists$ be a set
+of initial subdistributions. A set $I\subseteq\subdists$ is a
+\emph{distributional invariant} if
+\[
+ M\subseteq I
+ \quad\text{and}\quad
+ [\neg b]\mu+\den{B}([b]\mu)\in I\quad\text{for all }\mu\in I.
+\]
+\end{definition}
+The first condition establishes the invariant before the loop starts.
+A set is \emph{distributionally inductive} if it satisfies the second
+condition, which preserves membership in $I$ through one loop iteration.
+Here $[\neg b]\mu$
+retains the terminated mass, and $\den{B}([b]\mu)$ advances the enabled
+mass. By induction, the resulting subdistribution belongs to $I$ after
+any finite number of iterations.
+
+\paragraph{Example.}
+Consider the following program over the single variable $x$:
+\[
+ \ass{x}{0};\quad
+ \while{x=0}{\pchoice{\ass{x}{0}}{1/2}
+   {\pchoice{\ass{x}{1}}{1/2}{\ass{x}{2}}}}.
+\]
+Each iteration either retries with $x=0$, with probability $1/2$, or
+terminates with $x=1$ or $x=2$, each with probability $1/4$.
+Write $\delta_i$ for the Dirac distribution on the state with $x=i$.
+At loop entry, $M=\{\delta_0\}$. The set
+\[
+ I=\{\mu_q\mid 0\leq q\leq1\},
+ \qquad
+ \mu_q=q \cdot \delta_0+\frac{1-q}{2} \cdot (\delta_1+\delta_2)
+\]
+expresses that the accumulated probability masses of the two terminating
+outputs are equal; $q$ is the mass still in the loop.
+It contains $\delta_0=\mu_1$. If $B$ denotes the body, then
+\[
+ [x\neq0]\mu_q+\den{B}([x=0]\mu_q)
+ =\frac q2 \cdot \delta_0+\frac{1-q/2}{2} \cdot (\delta_1+\delta_2)
+ =\mu_{q/2}\in I.
+\]
+Thus $I$ is a distributional invariant.
+The union of the supports of its distributions consists of the
+three states with $x\in\{0,1,2\}$.
+The invariant additionally records that the probability masses
+of the two terminating outputs are equal.
+
+This example illustrates the two steps required to establish
+a distributional invariant: initialization and inductivity.
+After $k$ iterations, the accumulated distribution is
+$\mu_{2^{-k}}$.
+The probability mass remaining in the loop therefore tends
+to zero, establishing AST, and the distributions converge to
+$\frac12\delta_1+\frac12\delta_2$.
+Hence both possible outputs occur with probability $1/2$.
+The AST proofs of the samplers in \Cref{sec:case-studies} reuse distributional
+invariants established for output correctness.

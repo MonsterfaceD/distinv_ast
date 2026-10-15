@@ -1,0 +1,88 @@
+% ESOP 2027 anonymous research-paper submission, Springer LNCS format.
+% ESOP 2027 research submissions have no page limit.
+% Camera-ready: 25 pages excluding bibliography; see README.md.
+\documentclass[runningheads]{llncs}
+
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\input{packages}
+\input{macros}
+
+% Include sections and subsections in the PDF navigation without printing a TOC.
+\setcounter{tocdepth}{2}
+
+\newif\ifappendixversion
+\appendixversiontrue
+
+\begin{document}
+
+\title{A Distribution-Based Proof Rule\\
+for Almost-Sure Termination}
+\subtitle{With Applications to Discrete Sampling Algorithms}
+\titlerunning{A Distribution-Based Proof Rule for Almost-Sure Termination}
+
+\author{Anonymous author(s)}
+\authorrunning{Anonymous author(s)}
+\institute{}
+
+\maketitle
+
+\begin{abstract}
+We present a distribution-based proof rule for almost-sure termination
+of fully probabilistic while-loops with loop-free bodies and fixed
+choice probabilities. The rule follows an existing two-certificate
+approach for probabilistic control-flow graphs. A variant function
+captures probabilistic progress, while a nonnegative supermartingale
+bounds the probability of reaching states in which the variant takes
+large values. The certificate conditions refer to entire loop
+iterations, whose effects are described by distribution transformers.
+Distributional invariants established to prove output correctness
+can be reused: their support determines the states on which the
+termination conditions must hold. We prove soundness and relative
+completeness and apply the rule to three discrete sampling algorithms:
+the Fast Dice Roller, the Fast Loaded Dice Roller, and the Han--Hoshi
+sampler.
+
+Using a template-based approach, we automatically synthesize
+piecewise-affine AST certificates for random-walk and sampling
+examples, including a loop with infinite expected runtime.
+
+\keywords{Almost-sure termination \and
+Probabilistic programs \and
+Distribution transformers \and
+Sampling algorithms \and
+Template-based synthesis}
+\end{abstract}
+
+% Main text: eight sections, in reading order.
+\input{1_Introduction}
+\input{2_Preliminaries_and_Background}
+\input{3_Program_Level_AST_Rule}
+\input{4_Soundness_and_Completeness}
+\input{5_Sampling_Algorithms}
+\FloatBarrier
+\input{6_Certificate_Synthesis}
+\input{7_Related_Work}
+\input{8_Conclusion}
+
+\paragraph{Data availability.}
+The accompanying package \texttt{AST\_Synthesis\_Artifact.zip} contains the
+synthesis implementation, input encodings, pinned dependency, recorded
+results, and exact-arithmetic diagnostics. Its README gives reproduction
+commands and maps outputs to the paper. No externally collected dataset
+is used. The metatheory is not mechanized; the implementation checks the
+supplied synthesis obligations.
+
+\bibliographystyle{splncs04}
+\bibliography{references}
+
+\ifappendixversion
+\clearpage
+\appendix
+\input{appendices/A_Translation_and_AST_Preservation}
+\input{appendices/B_One_Iteration_Calculations}
+\input{appendices/C_Proof_Obligation_Comparison}
+\input{appendices/D_Artifact_and_Proof_Notes}
+\fi
+
+\end{document}
